@@ -45,7 +45,9 @@ class UIContracts(unittest.TestCase):
         with self.client.get("/premiere") as response:
             page = response.get_data(as_text=True)
         for name in ("premiere-portal.js", "premiere-portal.css",
-                     "premiere-title-particles.js", "premiere-title-particles.css"):
+                     "premiere-title-particles.js", "premiere-title-particles.css",
+                     "scroll-cinema.js", "motion-presets.js", "webgl-scenes.js", "premiere-flock.js", "premiere-props.js",
+                     "cinematic-motion.css", "anime.min.js"):
             self.assertIn(name, page)
             with self.client.get("/" + name) as response:
                 self.assertEqual(response.status_code, 200, name)

@@ -1,13 +1,13 @@
 /* The premiere page. One shared scroll clock runs pictures through the gate,
-   with complete captions and a reversible editorial interlude.
-   Everything else is small: the marquee, cuts on arrival, the method's
-   evidence board, the wrist screen, and the kit's sound. */
+   with complete captions and a reversible editorial interlude. The scenes after
+   the film are drawn here too, each from its own progress (scroll-cinema.js).
+   Everything else is small: the marquee, the wrist screen, and the kit's sound. */
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const preference = matchMedia('(prefers-reduced-motion: reduce)');
-  const clock = window.PremiereScroll;
+  const clock = window.PremiereScroll, cinema = window.ScrollCinema;
   let reduced = preference.matches || document.body.classList.contains('motion-paused');
   let layout = {};
   const pad = (n, w = 2) => String(n).padStart(w, '0');
@@ -47,14 +47,6 @@
     navLinks.forEach(a => a.classList.toggle('here', a.hash === '#' + here));
   }
 
-  /* ---------- cuts on arrival ---------- */
-  const cueables = $$('.section-head, .dossier, .paperwork .print, .priors, .credits-roll > *');
-  cueables.forEach(el => el.classList.add('on-cue'));
-  const arrive = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('in'); arrive.unobserve(e.target); }
-  }), { rootMargin: '0px 0px -12% 0px' });
-  cueables.forEach(el => arrive.observe(el));
-
   /* ---------- the wrist, showing this film's case ---------- */
   const WRIST = { case_no: 1138, take: 9920, count: 6, pending: false, revealed: false, top: [
     { item: 'Vintage Rolex', value_usd: 4200 }, { item: 'Oil on canvas, unsigned', value_usd: 2400 },
@@ -78,6 +70,11 @@
   /* ---------- the reel ---------- */
   const video = $('.reel-video');
   const chapterEl = $('.reel-chapter'), counter = $('.reel-counter'), sub = $('.reel-sub');
+  /* The caption is a line of its own inside its row, so it can come and go by the film's
+     time while the row keeps its place (and its fade with the rest of the projector). */
+  const said = sub.appendChild(Object.assign(document.createElement('span'), { className: 'reel-line' }));
+  const saying = window.MotionPresets?.build(said, 'dialogue', 'lift');
+  const SAID_IN = .45, SAID_OUT = .35;      /* seconds of film a caption takes to arrive, and to go */
   const loading = $('.gate-loading'), meter = $('.gate-meter');
   const strip = $('.reel-strip'), stripItems = $$('.reel-strip li');
   let ready = false, frameShown = -1, lastLine = -1, lastT = 0;
@@ -121,7 +118,8 @@
     if (reduced) {
       sequence?.setActive(false); video.pause(); thread();
       loading.classList.add('done');
-      sub.textContent = LINES.map(l => l.text).join(' ');
+      said.textContent = LINES.map(l => l.text).join(' ');
+      saying?.clear();
       chapterEl.textContent = 'The film';
     } else video.pause();
     lastLine = -1; frameShown = -1;
@@ -141,7 +139,9 @@
 
     // Complete captions remain readable while scrubbing, with no per-character live-region chatter.
     const i = Math.max(0, LINES.findLastIndex(l => t >= l.t - 1e-3));
-    if (i !== lastLine) { sub.textContent = LINES[i].text; lastLine = i; }
+    if (i !== lastLine) { said.textContent = LINES[i].text; lastLine = i; }
+    /* The first is already there when the film opens, and the last stays to the end. */
+    saying?.seek(i ? clamp((t - LINES[i].t) / SAID_IN) : 1, i < LINES.length - 1 ? clamp((t - LINES[i].until + SAID_OUT) / SAID_OUT) : 0);
     if (sfx?.on) {
       if (lastT < BEEP_AT && t >= BEEP_AT) sfx.beep();
       if (lastT < THUD_AT && t >= THUD_AT) sfx.thud();
@@ -161,7 +161,10 @@
 
   const statement = $('.case-statement');
   const invitation = $('.scroll-invitation');
-  let editorial = [];
+  /* the crew's files and the paperwork's prints: each arrives in turn, dealt a little crooked */
+  const deal = (el, i, turns) => ({el, top: 0, offset: (i % 3) * 32, turn: turns[i % turns.length]});
+  const files = $$('.dossier').map((el, i) => deal(el, i, [-3, 1.5, 3]));
+  const sheets = $$('.paperwork .print').map((el, i) => deal(el, i, [-5, 5]));
   function measure() {
     const filmTop = clock.top(reel);
     layout = {
@@ -169,10 +172,10 @@
       filmEnd: filmTop + reel.offsetHeight - innerHeight,
       filmLength: Math.max(1, reel.offsetHeight - innerHeight),
       sections: ['film', 'crew', 'method', 'paperwork'].map(id => ({id, top: clock.top(document.getElementById(id))})),
-      steps: steps.map(el => clock.top(el)),
+      steps: steps.map(el => clock.top(el)), lastStep: steps.at(-1)?.offsetHeight || 1,
       statementTop: clock.top(statement), statementHeight: statement.offsetHeight,
     };
-    editorial = $$('.dossier, .paperwork .print').map((el, i) => ({el, top: clock.top(el), offset: (i % 3) * 32}));
+    for (const sheet of [...files, ...sheets]) sheet.top = clock.top(sheet.el);
   }
   clock.subscribe(({y, rawY, vh}) => {
     chrome(rawY); pickStep(rawY);
@@ -184,27 +187,84 @@
       paintReel(clamp((y - layout.filmTop) / layout.filmLength) * DURATION);
       perfs.forEach(p => p.style.setProperty('--roll', `${(-y * .3).toFixed(1)}px`));
     }
-    /* The story has no edges: it comes up out of the film's black as it scrolls into place
-       (enter), and before it lets go everything on it has left (exit), so what scrolls away
-       is only its ground, dissolving into the crew's. */
-    const p = reduced ? 1 : clamp((y - layout.statementTop) / Math.max(1, layout.statementHeight - vh));
-    const enter = reduced ? 1 : clamp((y + vh - layout.statementTop) / vh);
+  }, measure);
+
+  /* ---------- the scenes after the film (scroll-cinema.js gives each its progress) ---------- */
+  const ease = v => 1 - Math.pow(1 - v, 3);
+  /* The story has no edges: it comes up out of the film's black as it scrolls into place
+     (enter), and before it lets go everything on it has left (exit), so what scrolls away
+     is only its ground, dissolving into the crew's. */
+  function story(scene) {
+    const p = scene.progress, enter = scene.enter;
     const exit = reduced ? 0 : clamp((p - .8) / .18);
-    statement.style.setProperty('--story-enter', enter.toFixed(4));
-    statement.style.setProperty('--story-exit', exit.toFixed(4));
-    statement.style.setProperty('--story-scale', (1.03 + p * .09).toFixed(4));
-    statement.style.setProperty('--story-crossfade', clamp((p - .26) / .24).toFixed(4));
-    statement.style.setProperty('--story-first', (1 - clamp((p - .16) / .2)).toFixed(4));
-    statement.style.setProperty('--story-second', clamp((p - .38) / .18).toFixed(4));
-    statement.style.setProperty('--story-first-y', `${(-p * 60).toFixed(2)}px`);
-    statement.style.setProperty('--story-second-y', `${((1 - clamp((p - .34) / .24)) * 48 - exit * 36).toFixed(2)}px`);
-    for (const {el, top, offset} of editorial) {
-      const enter = reduced ? 1 : clamp((y + vh * .94 - top - offset) / (vh * .48));
-      const eased = 1 - Math.pow(1 - enter, 3);
+    scene.set('--story-enter', enter.toFixed(4));
+    scene.set('--story-exit', exit.toFixed(4));
+    scene.set('--story-scale', (1.03 + p * .09).toFixed(4));
+    scene.set('--story-crossfade', clamp((p - .26) / .24).toFixed(4));
+    scene.set('--story-first', (1 - clamp((p - .16) / .2)).toFixed(4));
+    scene.set('--story-second', clamp((p - .38) / .18).toFixed(4));
+    scene.set('--story-first-y', `${(-p * 60).toFixed(2)}px`);
+    scene.set('--story-second-y', `${((1 - clamp((p - .34) / .24)) * 48 - exit * 36).toFixed(2)}px`);
+  }
+  function arrivals(list, {y, vh, width}) {
+    const room = width > 720 ? 1 : 0;      /* on a phone a file fills the column: turned, its corners would leave the page */
+    for (const {el, top, offset, turn} of list) {
+      const eased = reduced ? 1 : ease(clamp((y + vh * .94 - top - offset) / (vh * .48)));
       el.style.setProperty('--arrival-y', `${((1 - eased) * 90).toFixed(2)}px`);
+      el.style.setProperty('--arrival-turn', `${((1 - eased) * turn * room).toFixed(2)}deg`);
       el.style.setProperty('--arrival-opacity', (.15 + eased * .85).toFixed(4));
     }
-  }, measure);
+  }
+  /* A scene on its way out sinks back and dims while the next one comes up over it:
+     one scene is never finished before the next has begun. It only starts once the
+     scene is in the top half of the window, so what is being read stays at full
+     strength, and once the scene has left the window it is put back as it was. */
+  function recede(el, exit, from = .45, to = 1, floor = .45) {
+    const gone = reduced || exit >= 1 ? 0 : cinema.smooth(cinema.range(exit, from, to));
+    el.style.opacity = gone ? (1 - gone * (1 - floor)).toFixed(3) : '';
+    el.style.translate = gone ? `0 ${(gone * Math.min(innerHeight * .07, 60)).toFixed(1)}px` : '';
+  }
+  /* The method's board: each print is laid over the last one as its step comes up, by
+     the scroll and not by a timer, so a step half read shows its print half laid. */
+  function board({y, vh}) {
+    const tops = layout.steps, mid = y + vh * .5;
+    let i = 0;
+    while (i < tops.length - 1 && tops[i + 1] <= mid) i++;
+    const length = i < tops.length - 1 ? tops[i + 1] - tops[i] : layout.lastStep;
+    const laid = cinema.smooth(cinema.range((mid - tops[i]) / Math.max(1, length), .6, 1));
+    prints.forEach(print => {
+      const n = Number(print.dataset.step);
+      const on = reduced ? null : n === i ? 1 : n === i + 1 ? laid : 0;
+      print.style.opacity = on === null ? '' : on.toFixed(3);
+      print.style.rotate = on === null ? '' : `${cinema.lerp(-1.2, .6, on).toFixed(2)}deg`;
+      print.style.scale = on === null ? '' : cinema.lerp(.985, 1, on).toFixed(4);
+    });
+  }
+  const wallpaper = $('.vault-wallpaper'), dossiers = $('.dossiers'), grid = $('.method-grid'), papers = $('.paperwork > .wrap');
+  if (cinema) {
+    cinema.scene('story', story);
+    cinema.scene('crew', (scene, state) => { arrivals(files, state); recede(dossiers, scene.exit); });
+    cinema.scene('method', (scene, state) => { board(state); recede(grid, scene.exit); });
+    /* paperwork into credits: fade to black, and the credits come up out of it */
+    cinema.scene('paperwork', (scene, state) => { arrivals(sheets, state); recede(papers, scene.exit, .1, .8, .15); });
+    /* The wall behind the page is one still photograph. Over the length of the page the
+       camera closes on it a little, so it is never quite the same frame twice. */
+    cinema.scene('premiere', scene => {
+      const push = reduced ? 0 : scene.progress;
+      wallpaper.style.transform = push ? `translate3d(0, ${(-push * 2).toFixed(3)}vh, 0) scale(${(1 + push * .05).toFixed(4)})` : '';
+    });
+  } else {
+    /* An older hub that does not serve scroll-cinema.js: the story and the arrivals still run. */
+    clock.subscribe(state => {
+      const {y, vh} = state;
+      story({
+        progress: reduced ? 1 : clamp((y - layout.statementTop) / Math.max(1, layout.statementHeight - vh)),
+        enter: reduced ? 1 : clamp((y + vh - layout.statementTop) / vh),
+        set: (name, value) => statement.style.setProperty(name, value),
+      });
+      arrivals([...files, ...sheets], state);
+    });
+  }
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { sequence?.setActive(false); video.pause(); }
   });

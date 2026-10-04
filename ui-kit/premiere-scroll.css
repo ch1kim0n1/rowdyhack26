@@ -28,6 +28,7 @@
 .gate { outline: none; border-radius: 0; }
 .reel-chapter { letter-spacing: .19em; color: var(--stamp-lit); }
 .reel-sub { font: clamp(14px, 1.25vw, 19px)/1.5 var(--f-type); color: var(--bone); min-height: 3em; }
+.reel-line { display: inline-block; }   /* each caption arrives and leaves by the film's time (premiere.js) */
 .reel-strip::after {
   content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 2px;
   background: var(--stamp-lit); transform: scaleX(var(--p, 0)); transform-origin: left;
@@ -68,6 +69,16 @@
 }
 .statement-room { object-position: 50% 0%; }
 .statement-evidence { opacity: var(--story-crossfade, 0); }
+/* The two photographs as one picture (webgl-scenes.js): ink spreads across the first
+   and the second is there where it has passed. Pushed in exactly as the images are,
+   and graded as they are by the canvas itself (a filter here would grey the ink).
+   They stay in the page under it, unseen; where there is no WebGL the crossfade above shows. */
+.statement-morph {
+  display: none; position: absolute; inset: 0; width: 100%; height: 100%;
+  transform: scale(var(--story-scale, 1)); transform-origin: 50% 12%;
+}
+.statement-plate.is-morphing .statement-morph { display: block; }
+.statement-plate.is-morphing .statement-image { opacity: 0; }
 /* Only the plate is shaded, and only a little, at its foot. */
 .statement-shade { position: absolute; inset: 0; background: linear-gradient(0deg, #090a0db3, transparent 20%); }
 .statement-copy { position: absolute; left: var(--gutter); right: var(--copy-right); top: 50%; }
@@ -92,14 +103,15 @@
   font: 10px var(--f-type); letter-spacing: .16em; text-transform: uppercase; color: var(--bone);
   opacity: calc(var(--story-enter, 1) - var(--story-exit, 0) * 1.6);
 }
-/* JS owns arrival translate/opacity; avoid fighting the older CSS timelines. */
+/* JS owns arrival translate/turn/opacity; avoid fighting the older CSS timelines. Each
+   file and print is dealt onto the desk a little crooked and settles at its own tilt. */
 body.premiere .dossier, body.premiere .paperwork .print {
   animation: none; opacity: 1; transform: none;
-  translate: 0 var(--arrival-y, 0px); transition: rotate 350ms var(--scroll-ease);
+  translate: 0 var(--arrival-y, 0px); rotate: calc(var(--tilt, 0deg) + var(--arrival-turn, 0deg));
+  transition: rotate 350ms var(--scroll-ease);
 }
 .premiere .dossier .print img, .premiere .paperwork .print img { opacity: var(--arrival-opacity, 1); }
 body.premiere .dossiers::before { animation: none; }
-.premiere .on-cue:not(.dossier):not(.print) { transition-timing-function: var(--scroll-ease); }
 .premiere .board-print { transition: opacity 650ms var(--scroll-ease), transform 800ms var(--scroll-ease); }
 
 @media (max-width: 720px) {
@@ -128,6 +140,84 @@ body.premiere .dossiers::before { animation: none; }
   body.premiere.film-static .statement-shade { background: #090a0dc7; }
 }
 
+/* ---------- props that answer the scroll (premiere-props.js) ---------- */
+/* The string is run from pin to pin as the files land. */
+body.premiere .dossiers::before { clip-path: inset(-14px calc((1 - var(--string, 1)) * 100%) -14px -14px); }
+/* Each file is stamped once it is down: the kit's slam (noir.css), stroke for stroke, landing
+   at this stamp's own strength. It comes from no further out than the kit's does: on a phone
+   a stamp sits against the edge of the page and has no room to be any bigger. */
+.cine-on .dossier .stamp.ink:not(.landed) { opacity: 0; }
+.dossier .stamp.ink.landed { animation: stamp-land var(--dur-stamp) var(--ez-stamp) both; }
+@keyframes stamp-land {
+  0% { transform: rotate(var(--rot, -6deg)) scale(1.16); opacity: 0; }
+  42% { transform: rotate(var(--rot, -6deg)) scale(.988); opacity: .85; }
+  64% { transform: rotate(var(--rot, -6deg)) scale(1.018); }
+  82% { transform: rotate(var(--rot, -6deg)) scale(.997); }
+  100% { transform: rotate(var(--rot, -6deg)); opacity: .85; }
+}
+/* As the method arrives the files are swept aside, each its own way. */
+.dossier:nth-child(1) { --sweep-x: -9%; --sweep-r: -5deg; }
+.dossier:nth-child(2) { --sweep-x: 0%; --sweep-r: 2deg; }
+.dossier:nth-child(3) { --sweep-x: 9%; --sweep-r: 5deg; }
+body.premiere .dossier {
+  translate: calc(var(--sweep, 0) * var(--sweep-x, 0%)) var(--arrival-y, 0px);
+  rotate: calc(var(--tilt, 0deg) + var(--arrival-turn, 0deg) + var(--sweep, 0) * var(--sweep-r, 0deg));
+}
+/* The projectionist's cue mark (the kit's .cue), clear of the marquee. */
+.premiere .cue { top: calc(var(--marquee-height) + 3vh); right: 4vw; width: 3.2vmin; }
+
+/* ---------- the rover, the wrist and the hat, turned by the scroll (premiere-props.js) ----------
+   Photographs taken walking round each, cut to one size with the thing in one place
+   (film/build-turn-plates.py), laid one over another in a single print. The scroll
+   turns it. Where motion is off, or there is no script, they lie side by side as a
+   contact sheet instead (below, and in the page's noscript).
+   A second print stands beside the rover: the rover on the job. It is a photograph
+   on its own and takes no part in the turn. The other scenes are a pair, a head and
+   a print, and every other one is flipped so the print changes sides down the page.
+   A scene sets its own length (--turn) and how many plates its sheet has to a row
+   (--sheet). */
+.turntable { position: relative; height: var(--turn, 340svh); }
+.turntable-stage {
+  position: sticky; top: 0; height: 100svh; overflow: clip;
+  display: grid; align-items: center; padding-top: var(--marquee-height);
+}
+.turntable-grid { display: grid; grid-template-columns: minmax(0, .72fr) minmax(0, 1fr) minmax(0, .56fr); gap: clamp(24px, 3.2vw, 56px); align-items: center; }
+.turntable-main { display: contents; }      /* the head and the turning print: columns of the grid here, the first screen on a phone */
+.turntable .section-head { margin-bottom: 0; }
+.turntable .section-title { font-size: clamp(48px, 5.6vw, 84px); }
+.turntable-print { justify-self: center; width: min(100%, calc(100svh - var(--marquee-height) - 130px)); }
+.turntable-field { align-self: end; }
+.turntable-field img { aspect-ratio: 4 / 3; }
+.turntable-pair .turntable-grid { grid-template-columns: minmax(0, .8fr) minmax(0, 1fr); }
+.turntable-flip .turntable-grid { grid-template-columns: minmax(0, 1fr) minmax(0, .92fr); }
+.turntable-flip .turntable-print { order: -1; }
+.turntable-note { margin-top: 18px; color: var(--ash); }
+.plates { list-style: none; position: relative; aspect-ratio: 1; background: #000; }
+.plates li { position: absolute; inset: 0; }
+.plates li + li { opacity: 0; }      /* the first plate until the scroll says otherwise */
+.print .plates img { height: 100%; aspect-ratio: auto; }
+/* The desk behind the rover is different in every photograph: its edges are let go a little. */
+.plates::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 54%, transparent 46%, rgba(9, 10, 13, .5) 100%); }
+/* Where three columns will not fit: the head and the turning print are the first screen,
+   pinned; the second print is under them, and comes up once the turn is done. */
+@media (max-width: 860px) {
+  .turntable { height: var(--turn-small, 300svh); }
+  .turntable-stage { display: block; height: auto; min-height: 100svh; padding-bottom: clamp(32px, 6vh, 56px); }
+  .turntable-grid, .turntable-pair .turntable-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .turntable-main { display: grid; gap: 20px; align-content: center; min-height: calc(100svh - var(--marquee-height)); }
+  .turntable .section-title { font-size: 52px; margin-block: 8px 12px; }
+  .turntable .section-lede { font-size: 14px; }
+  .turntable-print { width: min(100%, calc(100svh - var(--marquee-height) - 320px)); }
+  .turntable-field { justify-self: end; width: min(72%, 320px); }
+  .turntable-flip .turntable-print { order: 0; }
+  .turntable-pair .turntable-print { width: min(100%, calc(100svh - var(--marquee-height) - 360px)); }
+  .turntable-wrist .turntable-print { width: min(100%, calc(100svh - var(--marquee-height) - 400px)); }      /* its head has the most to say */
+  .turntable-note { margin-top: 10px; }
+}
+
+/* The flock (premiere-flock.js) crosses over the page, and under the marquee, the grain and the vignette. */
+.flock { position: fixed; inset: 0; z-index: 50; width: 100%; height: 100%; pointer-events: none; }
+
 /* Pause is a complete alternate reading mode, including dynamically toggled preferences. */
 body.premiere.film-static .reel { height: auto; }
 body.premiere.film-static .reel-stage { position: relative; height: auto; min-height: 0; padding-block: 112px 60px; clip-path: none; }
@@ -139,8 +229,14 @@ body.premiere.film-static .statement-copy { position: relative; inset: auto; opa
 body.premiere.film-static .statement-plate { top: 0; }
 body.premiere.film-static .statement-image { transform: none; }
 body.premiere.film-static :is(.statement-evidence, .statement-stones) { display: none; }
+body.premiere.film-static .turntable { height: auto; padding-block: var(--section-y); }
+body.premiere.film-static .turntable-stage { position: relative; height: auto; min-height: 0; padding-top: 0; }
+body.premiere.film-static .turntable-main { min-height: 0; }
+body.premiere.film-static .plates { aspect-ratio: auto; display: grid; grid-template-columns: repeat(var(--sheet, 3), minmax(0, 1fr)); gap: 6px; background: none; }
+body.premiere.film-static .plates li { position: static; opacity: 1; }
+body.premiere.film-static .print .plates img { height: auto; aspect-ratio: 1; }
+body.premiere.film-static .plates::after { display: none; }
 body.premiere.motion-paused *, body.premiere.motion-paused *::before, body.premiere.motion-paused *::after { animation: none !important; transition: none !important; }
-body.premiere.motion-paused .on-cue { opacity: 1; transform: none; translate: none; }
 body.premiere.motion-paused .scroll-invitation { display: none; }
 @media (prefers-reduced-motion: reduce), print {
   .premiere *, .premiere *::before, .premiere *::after { animation: none !important; transition: none !important; }
@@ -149,6 +245,14 @@ body.premiere.motion-paused .scroll-invitation { display: none; }
   .statement-copy { position: relative; inset: auto; opacity: 1; transform: none; margin-block: 40px; }
   .statement-plate { top: 0; }
   .statement-image { transform: none; }
-  .statement-evidence, .statement-stones { display: none; }
+  .statement-evidence, .statement-stones, .statement-morph, .flock { display: none !important; }
+  .turntable { height: auto; padding-block: var(--section-y); }
+  .turntable-stage { position: relative; height: auto; min-height: 0; padding-top: 0; }
+  .turntable-main { min-height: 0; }
+  .plates { aspect-ratio: auto; display: grid; grid-template-columns: repeat(var(--sheet, 3), minmax(0, 1fr)); gap: 6px; background: none; }
+  .plates li, .plates li + li { position: static; opacity: 1; }
+  .print .plates img { height: auto; aspect-ratio: 1; }
+  .plates::after { display: none; }
+  .statement-plate.is-morphing .statement-room { opacity: 1; }
   .scroll-invitation { display: none; }
 }

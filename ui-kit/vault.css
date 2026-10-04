@@ -74,3 +74,12 @@ body.vault-theme {
   .vault-dust { display: none; }
 }
 @media print { .vault-wallpaper, .vault-aura, .vault-dust, [data-vault-motion] { display: none !important; } }
+
+/* From the film into the product: a link between the premiere and the working screens
+   dissolves across instead of cutting, in the kit's own fade. Only where the browser
+   offers it, never for reduced motion, and vault.js skips it when motion is paused.
+   Each page opts in with one inline @view-transition rule in its head. */
+::view-transition-old(root), ::view-transition-new(root) {
+  animation-duration: var(--dur-fade);
+  animation-timing-function: var(--ez-film);
+}

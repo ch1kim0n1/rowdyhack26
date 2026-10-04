@@ -1,0 +1,58 @@
+/* Cinematic motion: what the scenes and presets need from CSS.
+   scroll-cinema.js and motion-presets.js write position, scale, opacity and blur
+   themselves, from the scroll. These rules only hold the masks type rises behind,
+   stand the older timers down where the scroll now owns a property, and put
+   everything back for print. Colour, type and spacing stay noir.css's.
+   html.cine-on is there only while motion is allowed; without it, and without
+   JavaScript, every element below simply stands where the page set it. */
+
+/* ---------- rise, behind a mask ----------
+   Display type comes up from under its own baseline. A .cut title is masked word by
+   word (noir.js has already cut it into glyphs); plain display type line by line.
+   The mask is on only while the type is moving, so nothing is clipped at rest. */
+.motion-mask, .motion-rise { display: block; }
+.cine-on [data-motion="rise"] .w { display: inline-block; }
+.cine-on [data-motion="rise"].is-rising .w,
+.cine-on [data-motion="rise"].is-rising > .motion-mask { clip-path: inset(-.3em -.1em -.07em); }
+
+/* ---------- mist: a line of type, letter by letter ----------
+   motion-presets.js sets the line again as letters, grouped in words so it wraps
+   where it did; the words themselves stay in the page for a screen reader. */
+.motion-word { display: inline-block; white-space: nowrap; }
+.motion-char { display: inline-block; }
+/* type: the same letters, struck on one at a time. The block is where the next one lands. */
+.motion-char.is-caret { opacity: 1 !important; color: transparent; background: var(--bone); }
+
+/* an inline label has no box of its own to move or to wipe across */
+.cine-on span.label[data-motion] { display: inline-block; }
+
+/* ---------- the scroll owns these now ----------
+   The board's prints and the dealt files were eased by a timer as well; two hands on
+   one property make it lag behind the wheel. */
+.cine-on .premiere .board-print,
+.cine-on body.premiere .dossier, .cine-on body.premiere .paperwork .print { transition: none; }
+.cine-on .premiere .vault-wallpaper { will-change: transform; }
+
+/* ---------- a screen that does not scroll ----------
+   The dispatch desk plays its presets once, as it opens: each panel settles into
+   place a beat after the one before. It is CSS alone, so it cannot hold up the desk's
+   polling or its controls, and the kit's reduced-motion rules already stop it. No
+   scale: a panel grown past its place would make the page wider than the window. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-cinematic-trigger="load"] [data-motion="settle"] {
+    animation: motion-settle var(--dur-fade) var(--ez-settle) backwards;
+    animation-delay: calc(var(--motion-order, 0) * var(--stagger-suspect));
+  }
+}
+[data-motion-order="1"] { --motion-order: 1; }
+[data-motion-order="2"] { --motion-order: 2; }
+[data-motion-order="3"] { --motion-order: 3; }
+@keyframes motion-settle { from { opacity: .8; translate: 0 12px; } }
+
+@media print {
+  .premiere [data-motion], .premiere [data-motion] :is(.ch, .motion-rise),
+  .premiere :is(.dossiers, .method-grid, .paperwork > .wrap) {
+    translate: none !important; scale: none !important; opacity: 1 !important; filter: none !important;
+  }
+  .premiere .vault-wallpaper { transform: none !important; }
+}

@@ -17,6 +17,9 @@
 <link rel="stylesheet" href="premiere-portal.css">
 <link rel="stylesheet" href="premiere-title-particles.css">
 <link rel="stylesheet" href="premiere-scroll.css">
+<link rel="stylesheet" href="cinematic-motion.css">
+<!-- The dissolve between screens (vault.css). The opt-in is inline because the browser reads it as the body opens, before a linked sheet has arrived. -->
+<style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
 <noscript><style>
   .case-statement { height: auto; background: #090a0d; }
   .statement-stage { position: relative; height: auto; padding: 80px var(--copy-right) 80px var(--gutter); }
@@ -25,17 +28,36 @@
   .reel { height: auto; }
   .reel-stage { position: relative; }
   .gate-loading, .reel-canvas, .scroll-invitation { display: none; }
+  .turntable { height: auto; padding-block: var(--section-y); }
+  .turntable-stage { position: relative; height: auto; min-height: 0; padding-top: 0; }
+  .turntable-main { min-height: 0; }
+  .plates { aspect-ratio: auto; display: grid; grid-template-columns: repeat(var(--sheet, 3), minmax(0, 1fr)); gap: 6px; background: none; }
+  .plates li, .plates li + li { position: static; opacity: 1; }
+  .print .plates img { height: auto; aspect-ratio: 1; }
+  .plates::after { display: none; }
   @media (max-width: 720px) { .statement-shade { background: #090a0dc7; } }
 </style></noscript>
 <script>
 /* The title sequence (intro.js) is decided before first paint: it plays on every
-   load, deep links included. Reduced or paused motion skips it. ?intro plays it
-   even then; ?intro=off never does (the browser suites, a link that must land at once). */
+   load, deep links included, and a reload starts the page from the top under it.
+   Reduced or paused motion skips it. ?intro plays it even then; ?intro=off never
+   does (the browser suites, a link that must land at once). */
 (() => {
   const asked = new URLSearchParams(location.search).get('intro');
   let still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   try { still ||= localStorage.getItem('appraisal-motion') === 'paused'; } catch { /* no storage: the system setting decides */ }
-  if (asked !== 'off' && (asked !== null || !still)) document.documentElement.classList.add('intro-on');
+  if (asked === 'off' || (asked === null && still)) return;
+  document.documentElement.classList.add('intro-on');
+  /* A reload plays the sequence again, so it opens on the title card again: not where the
+     page was left, and not at a #section it had been scrolled to. A link to a section,
+     and going back to the page, still land where they should. */
+  if (performance.getEntriesByType('navigation')[0]?.type !== 'reload') return;
+  history.scrollRestoration = 'manual';
+  if (location.hash) history.replaceState(history.state, '', location.pathname + location.search);
+  addEventListener('pageshow', () => {
+    scrollTo({ top: 0, behavior: 'instant' });
+    setTimeout(() => { history.scrollRestoration = 'auto'; });
+  }, { once: true });
 })();
 </script>
 <script src="intro.js" defer></script>
@@ -89,12 +111,12 @@
   </div>
 </header>
 
-<main>
+<main data-cinematic-scene="premiere">
 
 <!-- ===================== the title card ===================== -->
-<section class="hero" id="top" aria-labelledby="hero-title">
+<section class="hero" id="top" aria-labelledby="hero-title" data-cinematic-scene="hero">
   <h1 class="sr-only" id="hero-title">The Appraisal Job</h1>
-  <div class="hero-portal-pin">
+  <div class="hero-portal-pin" data-motion-rest>
   <div class="vault-stage" data-vault-stage>
     <div class="vault-scene">
       <picture class="vault-picture">
@@ -112,16 +134,16 @@
     <a class="scroll-invitation" href="#film"><span>Step inside the case</span><span class="scroll-line" aria-hidden="true"></span><span>Scroll to investigate&nbsp;↓</span></a>
   </div>
   <div class="hero-brief wrap">
-    <div><span class="label">Authorized Physical Red-Team Reconnaissance</span><p>Observe. Document.<br>Debrief the room.</p></div>
-    <p class="brief-copy">A camera on a cap. A scout in the approved area.<br>Every observation, one shared evidence ledger.</p>
-    <div class="brief-actions"><a class="btn primary" href="/">Open the live case <span aria-hidden="true">↗</span></a><a class="brief-film" href="#film">Watch the operation <span aria-hidden="true">↓</span></a></div>
+    <div><span class="label" data-motion="scan" data-motion-out="lift">Authorized Physical Red-Team Reconnaissance</span><p data-motion="rise" data-motion-out="lift">Observe. Document.<br><em>Debrief the room.</em></p></div>
+    <p class="brief-copy" data-motion="dialogue" data-motion-span=".3" data-motion-out="lift">A camera on a cap. A scout in the approved area.<br>Every observation, one shared evidence ledger.</p>
+    <div class="brief-actions" data-motion="settle" data-motion-span=".3"><a class="btn primary" href="/">Open the live case <span aria-hidden="true">↗</span></a><a class="brief-film" href="#film">Watch the operation <span aria-hidden="true">↓</span></a></div>
   </div>
-  <div class="mission-strip"><span>01 / Identify</span><span>02 / Appraise</span><span>03 / File the take</span><span class="meta tc-credit" id="tc-credit">Case No. 1138</span></div>
+  <div class="mission-strip"><span data-motion="rise" data-motion-start="1" data-motion-span=".2" data-motion-out="lift"><b>01</b><i> / </i>Identify</span><span data-motion="rise" data-motion-start="1" data-motion-span=".2" data-motion-order=".5" data-motion-out="lift"><b>02</b><i> / </i>Appraise</span><span data-motion="rise" data-motion-start="1" data-motion-span=".2" data-motion-order="1" data-motion-out="lift"><b>03</b><i> / </i>File the take</span><span class="meta tc-credit" id="tc-credit">Case No. 1138</span></div>
   </div>
 </section>
 
 <!-- ===================== the film, scrubbed by the scroll ===================== -->
-<section class="reel" id="film" aria-label="The film">
+<section class="reel" id="film" aria-label="The film" data-cinematic-scene="film">
   <div class="reel-stage">
     <div class="perfs l" aria-hidden="true"></div>
     <div class="perfs r" aria-hidden="true"></div>
@@ -151,9 +173,9 @@
 </section>
 
 <!-- ===================== the crew ===================== -->
-<section class="crew" id="crew" aria-labelledby="crew-title">
+<section class="crew" id="crew" aria-labelledby="crew-title" data-cinematic-scene="crew">
   <div class="wrap">
-    <div class="case-statement">
+    <div class="case-statement" data-cinematic-scene="story">
       <div class="statement-stage">
         <div class="statement-plate">
           <img class="statement-image statement-room" src="media/crew-hat-wrist.webp" alt="A crew member tips the hat. Its camera sits in the crown, and the wrist unit is strapped to the other forearm." loading="lazy" width="526" height="964">
@@ -172,17 +194,17 @@
       </div>
     </div>
     <header class="section-head">
-      <div class="label">Exhibit A</div>
-      <h2 class="section-title cut" id="crew-title">The Crew</h2>
-      <p class="section-lede">Three specialists. One authorized assessment. The hat identifies, the rover scouts, and the wrist keeps the asset tally close.</p>
+      <div class="label" data-motion="scan" data-motion-out="lift">Exhibit A</div>
+      <h2 class="section-title cut" id="crew-title" data-motion="rise" data-motion-out="lift">The Crew</h2>
+      <p class="section-lede" data-motion="focus" data-motion-out="lift">Three specialists. One authorized assessment. The hat identifies, the rover scouts, and the wrist keeps the asset tally close.</p>
     </header>
 
     <div class="dossiers">
       <article class="dossier" style="--tilt:-1.1deg">
         <div class="dossier-head"><span>Personnel file</span><span>No. 01</span></div>
         <figure class="print">
-          <img src="media/frame-walk.jpg" alt="The cap's view of the desk: an evidence marker frames a wristwatch, and the ledger types its price." loading="lazy">
-          <figcaption>What the cap sees</figcaption>
+          <img src="media/file-hat.webp" style="--frame:11%" alt="The hat: a black fedora with a camera lens set into the front of its crown, on a crew member tipping its brim." loading="lazy">
+          <figcaption>The cap, lens in the crown</figcaption>
         </figure>
         <h3 class="dossier-name">The Hat</h3>
         <dl class="dossier-file">
@@ -191,14 +213,14 @@
           <dt>Equipment</dt><dd>A camera on the brim, a reveal button, and a direct line to dispatch.</dd>
           <dt>Habits</dt><dd>Says a find out loud when it makes the top five.</dd>
         </dl>
-        <div class="stamp ink" style="--rot:-7deg">Known associate</div>
+        <div class="stamp ink" style="--rot:-7deg" data-motion="drift" data-motion-depth=".025">Known associate</div>
       </article>
 
       <article class="dossier" style="--tilt:.8deg">
         <div class="dossier-head"><span>Personnel file</span><span>No. 02</span></div>
-        <figure class="print oled-print">
-          <canvas class="wrist-oled" width="512" height="256" role="img" aria-label="The wrist unit's screen: case 1138, a take of 9,920 dollars, six items, and the top five finds with their prices."></canvas>
-          <figcaption>What the wrist shows</figcaption>
+        <figure class="print">
+          <img src="media/file-wrist.webp" alt="The wrist unit, close, as its wearer sees it: a small lit screen on a black mount strapped across the wrist, a braided cable plugged in at its side, a desk beyond. The screen reads Case 1138, live, total take 0 dollars, 0 exhibits filed, waiting for finds." loading="lazy">
+          <figcaption>The wrist unit, strapped on</figcaption>
         </figure>
         <h3 class="dossier-name">The Wrist</h3>
         <dl class="dossier-file">
@@ -207,14 +229,14 @@
           <dt>Equipment</dt><dd>A compact wrist display, updated throughout the operation.</dd>
           <dt>Habits</dt><dd>Says FLED once the lineup is filed. Says LINE DEAD when the hub goes quiet.</dd>
         </dl>
-        <div class="stamp ink" style="--rot:5deg">Known associate</div>
+        <div class="stamp ink" style="--rot:5deg" data-motion="drift" data-motion-depth=".025">Known associate</div>
       </article>
 
       <article class="dossier" style="--tilt:-.5deg">
         <div class="dossier-head"><span>Personnel file</span><span>No. 03</span></div>
         <figure class="print">
-          <img src="media/still-rover.jpg" alt="Floor level, under a headlamp: the rug, the desk legs and the blinds, the way the rover sees the room." loading="lazy">
-          <figcaption>What the rover sees</figcaption>
+          <img src="media/file-rover.webp" alt="The rover: a small four-wheeled robot car on the floor at a doorway, a camera and a pair of range sensors at its front, wires looped over its boards." loading="lazy">
+          <figcaption>The rover, at the door</figcaption>
         </figure>
         <h3 class="dossier-name">The Rover</h3>
         <dl class="dossier-file">
@@ -223,19 +245,106 @@
           <dt>Equipment</dt><dd>A mobile camera, two wheels, and controls at the dispatch desk.</dd>
           <dt>Habits</dt><dd>Holds up to fifty finds when the Wi-Fi blinks, then files them all.</dd>
         </dl>
-        <div class="stamp ink" style="--rot:-4deg">Known associate</div>
+        <div class="stamp ink" style="--rot:-4deg" data-motion="drift" data-motion-depth=".025">Known associate</div>
       </article>
     </div>
   </div>
 </section>
 
+<!-- ===================== the rover, turned by the scroll ===================== -->
+<section class="turntable" id="rover" aria-labelledby="rover-title" data-cinematic-scene="rover">
+  <div class="turntable-stage">
+    <div class="wrap turntable-grid">
+      <div class="turntable-main">
+      <header class="section-head">
+        <div class="label" data-motion="scan">File No. 03 · in the round</div>
+        <h2 class="section-title cut" id="rover-title" data-motion="rise">The Advance Man</h2>
+        <p class="section-lede" data-motion="focus">Nine photographs, taken walking round the rover. Scroll, and it turns.</p>
+      </header>
+      <figure class="print turntable-print" style="--tilt:-.8deg" data-motion="relief">
+        <ol class="plates">
+            <li data-view="Right side, from ahead"><img src="media/rover-turn/plate-0.webp" alt="The rover from its right front quarter: two white-rimmed wheels along its side, the camera on its tilt bracket and two round range sensors at the nose, jumper wires looped over the boards." loading="lazy" decoding="async"></li>
+            <li data-view="Right front quarter"><img src="media/rover-turn/plate-1.webp" alt="The rover turned a little toward the camera: the same side, with the nose and its sensor bar coming round." loading="lazy" decoding="async"></li>
+            <li data-view="Front, from the right"><img src="media/rover-turn/plate-2.webp" alt="The rover nearly front on, from its right: the camera bracket and the range sensors face forward over a strip of line sensors." loading="lazy" decoding="async"></li>
+            <li data-view="Head on"><img src="media/rover-turn/plate-3.webp" alt="The rover head on: the camera above, two range sensors below it, the line-sensor bar at the bottom, a tyre on either side." loading="lazy" decoding="async"></li>
+            <li data-view="Front, from the left"><img src="media/rover-turn/plate-4.webp" alt="The rover from just left of its nose: the camera's ribbon cable hangs down behind the range sensors." loading="lazy" decoding="async"></li>
+            <li data-view="Left front quarter"><img src="media/rover-turn/plate-5.webp" alt="The rover from its left front quarter: nose to the left, the left-hand wheels toward the camera." loading="lazy" decoding="async"></li>
+            <li data-view="Left side, from ahead"><img src="media/rover-turn/plate-6.webp" alt="The rover's left side, seen a little from ahead: both left wheels, the boards stacked above the rear one." loading="lazy" decoding="async"></li>
+            <li data-view="Left side"><img src="media/rover-turn/plate-7.webp" alt="The rover side on, from its left: the camera bracket at the front, the boards and their ports at the back, red and black power leads trailing." loading="lazy" decoding="async"></li>
+            <li data-view="Left rear quarter"><img src="media/rover-turn/plate-8.webp" alt="The rover from its left rear quarter: the back of the board stack and its power leads, the camera bracket beyond." loading="lazy" decoding="async"></li>
+        </ol>
+        <figcaption><span class="turn-name">The rover, nine plates</span><span class="turn-count">1 to 9</span></figcaption>
+      </figure>
+      </div>
+      <figure class="print turntable-field" style="--tilt:1.4deg" data-motion="relief" data-motion-order="2">
+        <img src="media/rover-field.webp" alt="The rover on a speckled floor at an open doorway, seen from low down: camera and range sensors forward, a cable strip under its front wheels, a corridor beyond." loading="lazy" decoding="async">
+        <figcaption>On the job, at a door</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== the wrist, turned by the scroll ===================== -->
+<section class="turntable turntable-pair turntable-flip turntable-wrist" id="wrist" aria-labelledby="wrist-title" data-cinematic-scene="wrist" style="--sheet:4; --turn:300svh; --turn-small:270svh">
+  <div class="turntable-stage">
+    <div class="wrap turntable-grid">
+      <div class="turntable-main">
+      <header class="section-head">
+        <div class="label" data-motion="scan">File No. 02 · in the round</div>
+        <h2 class="section-title cut" id="wrist-title" data-motion="rise">The Tally</h2>
+        <p class="section-lede" data-motion="focus">It pairs with the hat's camera and the rover's. Whatever either one finds, the wrist shows the most valuable of it: each item's guessed name, and its estimated price.</p>
+        <p class="turntable-note meta" data-motion="dialogue">Seven photographs, taken round it. Scroll, and it turns.</p>
+      </header>
+      <figure class="print turntable-print" style="--tilt:.9deg" data-motion="relief">
+        <ol class="plates">
+            <li data-view="Side on, the hand open"><img src="media/wrist-turn/plate-0.webp" alt="The wrist unit from the side: a forearm held level, palm up, a small lit screen on a black mount strapped across the inner wrist, a braided cable trailing from it." loading="lazy" decoding="async"></li>
+            <li data-view="From the forearm"><img src="media/wrist-turn/plate-1.webp" alt="The wrist unit seen from the forearm end, the hand open beyond it." loading="lazy" decoding="async"></li>
+            <li data-view="Over the forearm"><img src="media/wrist-turn/plate-2.webp" alt="Over the forearm, looking down the unit toward the hand: the screen lit, a status light at its foot." loading="lazy" decoding="async"></li>
+            <li data-view="From above"><img src="media/wrist-turn/plate-3.webp" alt="The wrist unit from above. Its screen reads: Case 1138, live, total take 0 dollars, 0 exhibits filed, waiting for finds." loading="lazy" decoding="async"></li>
+            <li data-view="Over the hand"><img src="media/wrist-turn/plate-4.webp" alt="From over the hand, looking back up the arm: the unit square to the camera, the palm below it." loading="lazy" decoding="async"></li>
+            <li data-view="The right edge coming round"><img src="media/wrist-turn/plate-5.webp" alt="The right edge coming round: the boards seen stacked, one above another, on the mount." loading="lazy" decoding="async"></li>
+            <li data-view="Edge on"><img src="media/wrist-turn/plate-6.webp" alt="The wrist unit edge on from the right: two boards and the screen stacked on a curved mount, strapped to the forearm." loading="lazy" decoding="async"></li>
+        </ol>
+        <figcaption><span class="turn-name">The wrist unit, seven plates</span><span class="turn-count">1 to 7</span></figcaption>
+      </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== the hat, turned by the scroll ===================== -->
+<section class="turntable turntable-pair" id="cap" aria-labelledby="cap-title" data-cinematic-scene="cap" style="--sheet:3; --turn:230svh; --turn-small:210svh">
+  <div class="turntable-stage">
+    <div class="wrap turntable-grid">
+      <div class="turntable-main">
+      <header class="section-head">
+        <div class="label" data-motion="scan">File No. 01 · in the round</div>
+        <h2 class="section-title cut" id="cap-title" data-motion="rise">The Hat</h2>
+        <p class="section-lede" data-motion="focus">One lens, through the felt at the front of the crown. Worn, it looks where the wearer looks.</p>
+        <p class="turntable-note meta" data-motion="dialogue">Five photographs, taken round it. Scroll, and it turns.</p>
+      </header>
+      <figure class="print turntable-print" style="--tilt:1.1deg" data-motion="relief">
+        <ol class="plates">
+            <li data-view="Right side"><img src="media/cap-turn/plate-0.webp" alt="The hat by itself on a desk, from its right: a black felt hat, the lens standing out of the front of the crown, pointing right." loading="lazy" decoding="async"></li>
+            <li data-view="Right front quarter"><img src="media/cap-turn/plate-1.webp" alt="The hat on the desk from its front right: the lens turned toward the camera, its markings readable round the glass." loading="lazy" decoding="async"></li>
+            <li data-view="Head on"><img src="media/cap-turn/plate-2.webp" alt="The hat on the desk, head on: the lens in the middle of the crown, held in a cut in the felt." loading="lazy" decoding="async"></li>
+            <li data-view="Left front quarter"><img src="media/cap-turn/plate-3.webp" alt="The hat on the desk from its front left: the lens on the left of the crown, angled toward the camera." loading="lazy" decoding="async"></li>
+            <li data-view="Left side"><img src="media/cap-turn/plate-4.webp" alt="The hat on the desk from its left: the lens barrel pointing left, clear of the crown." loading="lazy" decoding="async"></li>
+        </ol>
+        <figcaption><span class="turn-name">The hat, five plates</span><span class="turn-count">1 to 5</span></figcaption>
+      </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== how a look flows ===================== -->
-<section class="method" id="method" aria-labelledby="method-title">
+<section class="method" id="method" aria-labelledby="method-title" data-cinematic-scene="method">
   <div class="wrap">
     <header class="section-head">
-      <div class="label">Exhibit B</div>
-      <h2 class="section-title cut" id="method-title">How a look flows</h2>
-      <p class="section-lede">Turn an authorized walkthrough into a documented asset debrief. Every price carries its source; value ranks assets for review, not proven security risk. Visibility alone does not prove an asset is unsecured.</p>
+      <div class="label" data-motion="scan" data-motion-out="lift">Exhibit B</div>
+      <h2 class="section-title cut" id="method-title" data-motion="rise" data-motion-out="lift">How a look flows</h2>
+      <p class="section-lede" data-motion="focus" data-motion-out="lift">Turn an authorized walkthrough into a documented asset debrief. Every price carries its source; value ranks assets for review, not proven security risk. Visibility alone does not prove an asset is unsecured.</p>
     </header>
 
     <div class="method-grid">
@@ -251,32 +360,32 @@
       <ol class="procedure">
         <li class="step" data-step="0">
           <span class="step-n">01</span>
-          <h3 class="step-name">The gate</h3>
+          <h3 class="step-name" data-motion="type">The gate</h3>
           <p>The camera waits for a new view. A flicker or a passing hand does not count. A different shelf does.</p>
         </li>
         <li class="step" data-step="1">
           <span class="step-n">02</span>
-          <h3 class="step-name">The look</h3>
+          <h3 class="step-name" data-motion="type">The look</h3>
           <p>The hat identifies the object and marks its place in the room. Each find gets a name and a category. An offline catalog keeps the demo going when the connection drops.</p>
         </li>
         <li class="step" data-step="2">
           <span class="step-n">03</span>
-          <h3 class="step-name">The appraisal</h3>
+          <h3 class="step-name" data-motion="type">The appraisal</h3>
           <p>Sold listings come first, then a model’s quote, then a visual estimate. Every price tells you where it came from. Estimates are marked clearly.</p>
         </li>
         <li class="step" data-step="3">
           <span class="step-n">04</span>
-          <h3 class="step-name">The ledger</h3>
+          <h3 class="step-name" data-motion="type">The ledger</h3>
           <p>One shared ledger keeps the crew in sync and filters out repeat finds. Each entry records who spotted it, its value, and the evidence behind the appraisal.</p>
         </li>
         <li class="step" data-step="4">
           <span class="step-n">05</span>
-          <h3 class="step-name">The callout</h3>
+          <h3 class="step-name" data-motion="type">The callout</h3>
           <p>When a find makes the top five, the speaker reads it out and its marker flashes on the projector. The wrist picks up the new top five on its next poll.</p>
         </li>
         <li class="step" data-step="5">
           <span class="step-n">06</span>
-          <h3 class="step-name">The reveal</h3>
+          <h3 class="step-name" data-motion="type">The reveal</h3>
           <p>The button on the cap freezes the frame and opens the debrief: the five highest-value observed assets, a total, one stamp. The QR opens the case file on a phone. Press it again and the next assessment opens.</p>
         </li>
       </ol>
@@ -285,12 +394,12 @@
 </section>
 
 <!-- ===================== the paperwork ===================== -->
-<section class="paperwork" id="paperwork" aria-labelledby="paperwork-title">
+<section class="paperwork" id="paperwork" aria-labelledby="paperwork-title" data-cinematic-scene="paperwork">
   <div class="wrap">
     <header class="section-head">
-      <div class="label">Exhibit C</div>
-      <h2 class="section-title cut" id="paperwork-title">The Paperwork</h2>
-      <p class="section-lede">Four screens for an authorized assessment. “Take” means summed estimated asset value; “Loot Manifest” is the noir label for the asset case file. Offline and scripted results are demo data, not observed findings. Open any screen while the hub is running.</p>
+      <div class="label" data-motion="scan" data-motion-out="lift">Exhibit C</div>
+      <h2 class="section-title cut" id="paperwork-title" data-motion="rise" data-motion-out="lift">The Paperwork</h2>
+      <p class="section-lede" data-motion="focus" data-motion-out="lift">Four screens for an authorized assessment. “Take” means summed estimated asset value; “Loot Manifest” is the noir label for the asset case file. Offline and scripted results are demo data, not observed findings. Open any screen while the hub is running.</p>
     </header>
 
     <div class="prints">
@@ -313,10 +422,10 @@
     </div>
 
     <div class="priors" role="group" aria-label="Priors">
-      <div class="prior"><b>01</b><span class="label">Shared ledger</span><span class="prior-note">Every find. The whole crew.</span></div>
-      <div class="prior"><b>3</b><span class="label">Devices</span><span class="prior-note">Hat, wrist and rover. One ledger.</span></div>
-      <div class="prior"><b>3</b><span class="label">Price sources</span><span class="prior-note">Every number carries a why.</span></div>
-      <div class="prior"><b>05</b><span class="label">Prime suspects</span><span class="prior-note">The most valuable finds, ranked.</span></div>
+      <div class="prior"><b data-motion="rise">01</b><span class="label">Shared ledger</span><span class="prior-note">Every find. The whole crew.</span></div>
+      <div class="prior"><b data-motion="rise" data-motion-order="1">3</b><span class="label">Devices</span><span class="prior-note">Hat, wrist and rover. One ledger.</span></div>
+      <div class="prior"><b data-motion="rise" data-motion-order="2">3</b><span class="label">Price sources</span><span class="prior-note">Every number carries a why.</span></div>
+      <div class="prior"><b data-motion="rise" data-motion-order="3">05</b><span class="label">Prime suspects</span><span class="prior-note">The most valuable finds, ranked.</span></div>
     </div>
   </div>
 </section>
@@ -324,20 +433,20 @@
 </main>
 
 <!-- ===================== closing credits ===================== -->
-<footer class="credits" aria-label="Credits">
+<footer class="credits" aria-label="Credits" data-cinematic-scene="credits">
   <div class="wrap credits-roll">
-    <div class="meta">A RowdyHacks XII Picture</div>
+    <div class="meta" data-motion="mist">A RowdyHacks XII Picture</div>
     <dl class="credit-list">
-      <dt>Starring</dt><dd>Whatever's on the shelves</dd>
-      <dt>Appraisals by</dt><dd>The optic surveillance unit</dd>
-      <dt>Prices from</dt><dd>Sold comps, a model's quote, or the camera's own guess</dd>
-      <dt>Wardrobe</dt><dd>One structured baseball cap</dd>
-      <dt>Set</dt><dd>Behind the vault. After hours.</dd>
-      <dt>Type</dt><dd>League Gothic, Special Elite, Courier Prime, Caveat</dd>
+      <dt data-motion="slide-left">Starring</dt><dd data-motion="slide-right">Whatever's on the shelves</dd>
+      <dt data-motion="slide-left">Appraisals by</dt><dd data-motion="slide-right">The optic surveillance unit</dd>
+      <dt data-motion="slide-left">Prices from</dt><dd data-motion="slide-right">Sold comps, a model's quote, or the camera's own guess</dd>
+      <dt data-motion="slide-left">Wardrobe</dt><dd data-motion="slide-right">One structured baseball cap</dd>
+      <dt data-motion="slide-left">Set</dt><dd data-motion="slide-right">Behind the vault. After hours.</dd>
+      <dt data-motion="slide-left">Type</dt><dd data-motion="slide-right">League Gothic, Special Elite, Courier Prime, Caveat</dd>
     </dl>
-    <h2 class="end-title cut credits-end">The End</h2>
-    <div class="meta">Case No. 1138 · Closed</div>
-    <nav class="credits-nav" aria-label="Open the rig">
+    <h2 class="end-title cut credits-end" data-motion="depth-in" data-motion-span=".14">The End</h2>
+    <div class="meta" data-motion="mist">Case No. 1138 · Closed</div>
+    <nav class="credits-nav" aria-label="Open the rig" data-motion="relief">
       <a class="btn" href="/">The live screen</a>
       <a class="btn quiet" href="/manifest">The case file</a>
       <a class="btn quiet" href="/desk">The dispatch desk</a>
@@ -355,7 +464,13 @@
 <script src="premiere-sequence.js"></script>
 <script src="premiere-portal.js"></script>
 <script src="premiere-title-particles.js"></script>
+<script src="anime.min.js"></script>
+<script src="motion-presets.js"></script>
+<script src="scroll-cinema.js"></script>
 <script src="premiere.js"></script>
+<script src="webgl-scenes.js"></script>
+<script src="premiere-flock.js"></script>
+<script src="premiere-props.js"></script>
 <script src="premiere-diamond-type.js"></script>
 </body>
 </html>
