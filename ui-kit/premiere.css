@@ -188,6 +188,7 @@ body.in-reel .marquee { opacity: 0; pointer-events: none; }
 }
 .hero-brief .label { color: var(--stamp-lit); font-size: 10px; }
 .hero-brief > div > p { margin-top: 9px; font: 40px/.95 var(--f-display); text-transform: uppercase; letter-spacing: .02em; }
+.hero-brief em { color: var(--stamp-lit); font-style: normal; }
 .brief-copy { font: 15px/1.65 var(--f-type); color: var(--ash); }
 .brief-actions { display: grid; justify-items: center; gap: 13px; }
 .brief-film { color: var(--ash); font: 11px var(--f-type); text-transform: uppercase; letter-spacing: .12em; text-decoration: none; padding: 6px; }
@@ -197,7 +198,9 @@ body.in-reel .marquee { opacity: 0; pointer-events: none; }
 .btn.primary { background: var(--paper); border-color: var(--paper); color: var(--ink); font-family: var(--f-type); font-weight: 700; letter-spacing: .1em; gap: 22px; }
 .btn.primary:hover { background: #dcd9d1; border-color: #dcd9d1; }
 .mission-strip { display: flex; justify-content: space-between; gap: 18px; padding: 18px max(24px, calc((100vw - 1240px) / 2)); background: rgba(13,14,18,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: var(--ash); font: 10px var(--f-type); letter-spacing: .17em; text-transform: uppercase; }
-.mission-strip span:first-child { color: var(--paper); }
+.mission-strip > span:first-child { color: var(--paper); }
+.mission-strip b { font-weight: inherit; }      /* the step's number: set apart only where the band is large (premiere-portal.css) */
+.mission-strip i { font-style: normal; }
 .mission-strip .tc-credit { color: var(--ash); font-size: 10px; }
 @media (max-width: 780px) {
   .hero-brief { grid-template-columns: 1fr 1fr; gap: 24px; padding-block: 28px; }
@@ -363,6 +366,8 @@ body.in-reel .marquee { opacity: 0; pointer-events: none; }
 .dossier-head { display: flex; justify-content: space-between; font-family: var(--f-type); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--paper-ink-3); border-bottom: 1px solid var(--paper-rule); padding-bottom: 12px; margin-bottom: 20px; }
 .dossier .print { margin: 6px 4px 20px; padding: 8px 8px 32px; box-shadow: 0 8px 18px rgba(0,0,0,.28); rotate: -1.2deg; }
 .dossier .print figcaption { font-size: 12px; bottom: 8px; }
+/* The crew's own photographs are taller than the print's window: each is framed on the thing itself. */
+.dossier .print img { object-position: 50% var(--frame, 50%); }
 .dossier-name { font-family: var(--f-display); font-weight: 400; font-size: 48px; line-height: .9; letter-spacing: .03em; text-transform: uppercase; margin-bottom: 14px; color: var(--ink); }
 .dossier-file { display: grid; grid-template-columns: 76px 1fr; gap: 8px 12px; font-size: 14.5px; line-height: 1.45; }
 .dossier-file dt { font-family: var(--f-type); font-weight: 700; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-ink-3); padding-top: 3px; }

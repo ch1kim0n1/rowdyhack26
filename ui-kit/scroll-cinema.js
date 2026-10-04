@@ -60,6 +60,20 @@
     scenes.forEach(scene => watch?.observe(scene.el));
   }
 
+  /* Where an element stands on the page when nothing is pinned. A pinned (sticky) stage
+     reports wherever it is stuck at the moment it is measured, and a measure can come at
+     any moment (an image arriving, a resize), so a stage is counted from where it starts:
+     the top of its parent. Every pinned stage on this page is the first thing in its scene. */
+  function restTop(el, pinned) {
+    let top = 0;
+    for (let node = el; node; node = node.offsetParent) {
+      if (!pinned.has(node)) pinned.set(node, getComputedStyle(node).position === 'sticky');
+      if (pinned.get(node) && node.parentElement) return top + restTop(node.parentElement, pinned);
+      top += node.offsetTop;
+    }
+    return top;
+  }
+
   function cast() {
     elements.forEach(element => element.clear());
     elements = presets ? [...document.body.querySelectorAll('[data-motion]')]
@@ -79,9 +93,10 @@
       scene.height = scene.el.offsetHeight;
       scene.flush = true;
     }
+    const pinned = new Map();
     for (const element of elements) {
       const { el } = element;
-      element.top = clock.top(el);
+      element.top = restTop(el, pinned);
       element.height = el.offsetHeight;
       const start = parseFloat(el.dataset.motionStart) || START, span = parseFloat(el.dataset.motionSpan) || SPAN;
       let from = element.top - vh * start + (Number(el.dataset.motionOrder) || 0) * ORDER;

@@ -1120,6 +1120,8 @@ def premiere_page():
 @app.get("/scroll-cinema.js")
 @app.get("/motion-presets.js")
 @app.get("/webgl-scenes.js")
+@app.get("/premiere-flock.js")
+@app.get("/premiere-props.js")
 @app.get("/cinematic-motion.css")
 @app.get("/intro.js")
 @app.get("/desk.css")

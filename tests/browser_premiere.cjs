@@ -55,7 +55,7 @@ async function audit(page, label) {
   const page=await context.newPage(); page.on('pageerror', e=>errors.push(String(e)));
   await page.goto(base+'/premiere?intro=off#top');
   await check('New routes and all sequence frames are served', async()=>{
-    for(const asset of ['premiere-scroll.js','premiere-scroll.css','premiere-sequence.js','premiere-diamond-type.js','scroll-cinema.js','motion-presets.js','webgl-scenes.js','cinematic-motion.css','anime.min.js','media/crew-hat-wrist.webp','media/crew-hat.webp','media/scroll-frames/manifest.json'])
+    for(const asset of ['premiere-scroll.js','premiere-scroll.css','premiere-sequence.js','premiere-diamond-type.js','scroll-cinema.js','motion-presets.js','webgl-scenes.js','premiere-flock.js','premiere-props.js','cinematic-motion.css','anime.min.js','media/crew-hat-wrist.webp','media/crew-hat.webp','media/scroll-frames/manifest.json'])
     { const res=await fetch(base+'/'+asset); await res.arrayBuffer(); assert.equal(res.status,200,asset); }   // read it: an unread image body crashes Node's fetch when the server closes
     const manifest=await (await fetch(base+'/media/scroll-frames/manifest.json')).json();
     assert.equal(manifest.count,501);
@@ -191,7 +191,7 @@ async function audit(page, label) {
   });
   await check('Every scene has a progress, and an entrance follows the scroll forward and back',async()=>{
     await page.setViewportSize({width:1440,height:900}); await page.goto('about:blank'); await page.goto(base+'/premiere?intro=off#top'); await settle(page);
-    assert.deepEqual(await page.evaluate(()=>ScrollCinema.scenes.map(s=>s.name)),['premiere','hero','film','crew','story','method','paperwork','credits']);
+    assert.deepEqual(await page.evaluate(()=>ScrollCinema.scenes.map(s=>s.name)),['premiere','hero','film','crew','story','rover','wrist','cap','method','paperwork','credits']);
     assert.ok(await page.evaluate(()=>document.documentElement.classList.contains('cine-on')&&ScrollCinema.motion.live&&ScrollCinema.motion.elements>30));
     // The crew's title, with its top `at` window-heights down the window.
     const title=async at=>{
@@ -240,18 +240,55 @@ async function audit(page, label) {
     await page.screenshot({path:path.join(output,'board-dissolve-desktop.png')});
     assert.deepEqual(await board(1.05),[0,1,0,0,0,0]);
     assert.deepEqual(await board(.3),[1,0,0,0,0,0],'and lifted again on the way back');
-    // The crew's files are still on screen, dimmed and sinking, while the method's head is arriving.
-    await page.evaluate(()=>{ const el=document.querySelector('.method'); scrollTo({top:PremiereScroll.top(el)-innerHeight*.45,behavior:'instant'}); }); await settle(page);
+    // The crew's files are still on screen, dimmed and sinking, while the next scene's head (the rover's) is arriving.
+    await page.evaluate(()=>{ const el=document.querySelector('.turntable'); scrollTo({top:PremiereScroll.top(el)-innerHeight*.45,behavior:'instant'}); }); await settle(page);
     const overlap=await page.evaluate(()=>({files:Number(getComputedStyle(document.querySelector('.dossiers')).opacity),
-      bottom:document.querySelector('.dossiers').getBoundingClientRect().bottom, head:document.querySelector('#method-title').getBoundingClientRect().top, vh:innerHeight}));
+      bottom:document.querySelector('.dossiers').getBoundingClientRect().bottom, head:document.querySelector('#rover-title').getBoundingClientRect().top, vh:innerHeight}));
     assert.ok(overlap.files<1&&overlap.files>.15&&overlap.bottom>0&&overlap.head<overlap.vh,`one scene overlaps the next: ${JSON.stringify(overlap)}`);
   });
-  await check('The story photographs dissolve through WebGL, and through the CSS crossfade where there is none',async()=>{
+  await check('After the film the mission band is set large: the line, its accent, three numbered steps, all on one screen',async()=>{
+    await page.setViewportSize({width:1440,height:900}); await page.goto('about:blank'); await page.goto(base+'/premiere?intro=off#top'); await settle(page);
+    // Its top just under the marquee: the place in the scroll where all of it has arrived and none of it has begun to leave.
+    await page.evaluate(()=>scrollTo({top:PremiereScroll.top(document.querySelector('.mission-later'))-document.querySelector('.marquee').offsetHeight,behavior:'instant'})); await settle(page);
+    const band=await page.evaluate(()=>{ const px=(q,p='fontSize')=>parseFloat(getComputedStyle(document.querySelector(q))[p]);
+      const steps=[...document.querySelectorAll('.mission-strip > span:not(.tc-credit)')], line=document.querySelector('.hero-brief > div > p');
+      const box=el=>el.getBoundingClientRect();
+      return {line:px('.hero-brief > div > p'), copy:px('.brief-copy'), step:px('.mission-strip > span'), label:px('.hero-brief .label'), number:px('.mission-strip b'),
+        said:line.textContent.replace(/\s+/g,' ').trim(), accent:getComputedStyle(line.querySelector('em')).color!==getComputedStyle(line).color,
+        steps:steps.map(s=>s.textContent.replace(/\s+/g,' ').trim()), face:getComputedStyle(steps[0]).fontFamily.split(',')[0].replace(/"/g,''),
+        row:new Set(steps.map(s=>Math.round(box(s).bottom))).size, whole:box(document.querySelector('.hero-brief .label')).top>=box(document.querySelector('.marquee')).bottom&&Math.max(...steps.map(s=>box(s).bottom))<=innerHeight,
+        still:[...document.querySelectorAll('.hero-brief [data-motion], .mission-strip > span:not(.tc-credit)')].every(el=>!el.style.opacity&&!el.style.translate&&!el.classList.contains('is-rising'))}; });
+    assert.ok(band.line>=140&&band.copy>=20&&band.step>=60&&band.label>=13&&band.number>=13,`set at a size to be read from a seat: ${JSON.stringify(band)}`);
+    assert.deepEqual([band.said,band.accent,band.steps,band.face,band.row],['Observe. Document.Debrief the room.',true,['01 / Identify','02 / Appraise','03 / File the take'],'League Gothic',1],JSON.stringify(band));
+    assert.deepEqual([band.whole,band.still],[true,true],`all of it on one screen, arrived and at rest: ${JSON.stringify(band)}`);
+    await page.screenshot({path:path.join(output,'mission-band-desktop.png')});
+    await audit(page,'mission-band-desktop');
+    // The crew's file for the wrist shows the unit itself, close, in the print's own window.
+    await page.evaluate(()=>scrollTo({top:PremiereScroll.top(document.querySelector('.dossiers'))-innerHeight*.12,behavior:'instant'})); await settle(page);
+    await page.waitForFunction(()=>[...document.querySelectorAll('.dossier .print img')].every(i=>i.complete&&i.naturalWidth>0));
+    assert.deepEqual(await page.evaluate(()=>[...document.querySelectorAll('.dossier .print img')].map(i=>[i.getAttribute('src'),+(i.naturalWidth/i.naturalHeight).toFixed(2)])[1]),['media/file-wrist.webp',1.6]);
+  });
+  await check('Ink spreads across the story\'s photograph and leaves the next one, through WebGL; a CSS crossfade where there is none',async()=>{
     const plate=async p=>{ await atStory(page,p); return page.locator('.statement-plate').screenshot(); };
     await atStory(page,.2);
     await page.waitForFunction(()=>document.querySelector('.statement-morph')?.dataset.running==='true');
     const first=await plate(.2), mid=await plate(.38), second=await plate(.55);
-    assert.ok(!first.equals(mid)&&!mid.equals(second)&&!first.equals(second),'the plate shows three different pictures at the start, the middle and the end of the dissolve');
+    assert.ok(!first.equals(mid)&&!mid.equals(second)&&!first.equals(second),'the plate shows three different pictures at the start, the middle and the end of the change');
+    // Ink spreads across the print: red only while it is spreading, and by then the second photograph is above its front and the first below.
+    const probe=await context.newPage();
+    const inked=async png=>probe.evaluate(async b64=>{
+      const img=new Image(); img.src='data:image/png;base64,'+b64; await img.decode();
+      const c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
+      const g=c.getContext('2d'); g.drawImage(img,0,0); const d=g.getImageData(0,0,c.width,c.height).data;
+      let red=0, top=c.height, bottom=0;
+      for(let y=0;y<c.height;y++) for(let x=0;x<c.width;x++) { const i=(y*c.width+x)*4;
+        if(d[i]>d[i+1]+45&&d[i]>d[i+2]+45) { red++; if(y<top)top=y; if(y>bottom)bottom=y; } }
+      return {share:red/(c.width*c.height), top:top/c.height, bottom:bottom/c.height};
+    },png.toString('base64'));
+    const before=await inked(first), during=await inked(mid), after=await inked(second);
+    await probe.close();
+    assert.ok(before.share===0&&after.share===0,`no ink before it lands or once it has gone: ${JSON.stringify([before,after])}`);
+    assert.ok(during.share>.02&&during.share<.5&&during.top>.1&&during.bottom<.98,`a band of ink part way down the print: ${JSON.stringify(during)}`);
     fs.writeFileSync(path.join(output,'story-morph-desktop.png'),mid);
     assert.deepEqual(await page.evaluate(()=>[...document.querySelectorAll('.statement-image')].map(i=>[getComputedStyle(i).opacity,!!i.alt])),[['0',true],['0',true]],'the photographs stay in the page, with their alt text, under the canvas');
     const c=await browser.newContext({viewport:{width:1440,height:900}}); const p=await c.newPage(); p.on('pageerror',e=>errors.push(String(e)));
@@ -263,6 +300,155 @@ async function audit(page, label) {
     assert.deepEqual([plain.morph,plain.on,plain.room],[false,false,'1']);
     assert.ok(Math.abs(plain.evidence-.5)<.02,`without WebGL the second photograph fades across: ${JSON.stringify(plain)}`);
     await c.close();
+  });
+  await check('Props answer the scroll: the string, the stamps, the sweep, the typed steps and the cue mark',async()=>{
+    // `frac` window-heights down the window; for the crew's exit, how far its foot has come up it.
+    const at=async(sel,frac)=>{ await page.evaluate(([sel,frac])=>{ const el=document.querySelector(sel); scrollTo({top:PremiereScroll.top(el)-innerHeight*frac,behavior:'instant'}); },[sel,frac]); await settle(page); };
+    const leaving=async exit=>{ await page.evaluate(exit=>{ const el=document.querySelector('.crew'); scrollTo({top:PremiereScroll.top(el)+el.offsetHeight-innerHeight*(1-exit),behavior:'instant'}); },exit); await settle(page); };
+    const desk=()=>page.evaluate(()=>{ const files=document.querySelector('.dossiers'), stamps=[...document.querySelectorAll('.dossier .stamp')];
+      return {string:Number(files.style.getPropertyValue('--string')), sweep:Number(files.style.getPropertyValue('--sweep')||0), down:stamps.map(s=>s.classList.contains('landed')),
+        inked:Number(getComputedStyle(stamps[0]).opacity), turn:parseFloat(getComputedStyle(document.querySelector('.dossier')).rotate), cue:document.querySelector('.cue').classList.contains('on')}; });
+    await at('.dossiers',1.05); const waiting=await desk();
+    assert.deepEqual([waiting.string,waiting.down,waiting.inked],[0,[false,false,false],0],`before the files land: ${JSON.stringify(waiting)}`);
+    await at('.dossiers',.6); const running=await desk();
+    assert.ok(running.string>0&&running.string<1,`the string is part way from pin to pin: ${JSON.stringify(running)}`);
+    await at('.dossier .stamp',.5);
+    await page.waitForFunction(()=>[...document.querySelectorAll('.dossier .stamp')].every(s=>s.getAnimations().every(a=>a.playState==='finished')));
+    const landed=await desk();
+    assert.deepEqual([landed.string,landed.down],[1,[true,true,true]],`the string is run and every file is stamped: ${JSON.stringify(landed)}`);
+    assert.ok(Math.abs(landed.inked-.85)<.01&&Math.abs(landed.turn+1.1)<.05,`a stamp lands at its own strength, on a file at its own tilt: ${JSON.stringify(landed)}`);
+    await page.screenshot({path:path.join(output,'props-desk-desktop.png')});
+    // The cue mark blinks twice as the scene's end comes up; meanwhile the files are swept aside, then put back.
+    const cues=[]; for(const exit of [.02,.1,.2,.3,.5]) { await leaving(exit); cues.push((await desk()).cue); }
+    assert.deepEqual(cues,[false,true,false,true,false]);
+    await leaving(.8); const swept=await desk();
+    assert.ok(swept.sweep>.5&&swept.turn<-3,`swept aside: ${JSON.stringify(swept)}`);
+    await leaving(1.15); assert.equal((await desk()).sweep,0);
+    // A step's name is typed on, behind a caret, and is whole and plain once it has arrived.
+    const typing=()=>page.evaluate(()=>{ const h=document.querySelector(".step[data-step='2'] .step-name"), chars=[...h.querySelectorAll('.motion-char')];
+      return {said:h.querySelector('.sr-only').textContent, struck:chars.filter(c=>getComputedStyle(c).opacity==='1'&&!c.classList.contains('is-caret')).length,
+        carets:chars.filter(c=>c.classList.contains('is-caret')).length, total:chars.length, styled:chars.filter(c=>c.style.opacity).length}; });
+    await at(".step[data-step='2'] .step-name",.8); const half=await typing();
+    assert.ok(half.said==='The appraisal'&&half.struck>1&&half.struck<half.total-2&&half.carets===1,`part typed: ${JSON.stringify(half)}`);
+    await at(".step[data-step='2'] .step-name",.3); const whole=await typing();
+    assert.deepEqual([whole.struck,whole.carets,whole.styled],[whole.total,0,0],`typed: ${JSON.stringify(whole)}`);
+  });
+  // A turntable scene, by its section's id. `turned` is how far through its pinned length the scene is.
+  const turntable=id=>({
+    at:async turned=>{
+      await page.evaluate(([id,v])=>{ const el=document.getElementById(id);
+        scrollTo({top:PremiereScroll.top(el)+(el.offsetHeight-el.querySelector('.turntable-stage').offsetHeight)*v,behavior:'instant'}); },[id,turned]); await settle(page);
+      await page.waitForFunction(id=>[...document.querySelectorAll(`#${id} img`)].every(i=>i.complete&&i.naturalWidth>0),id);
+      return page.evaluate(id=>{ const el=document.getElementById(id), stage=el.querySelector('.turntable-stage').getBoundingClientRect(), print=el.querySelector('.turntable-print').getBoundingClientRect();
+        return {seen:[...el.querySelectorAll('.plates li')].map(li=>Number(getComputedStyle(li).opacity)), name:el.querySelector('.turn-name').textContent, count:el.querySelector('.turn-count').textContent,
+          pinned:Math.round(stage.top), fits:print.top>=stage.top&&print.bottom<=innerHeight&&print.left>=0&&print.right<=innerWidth}; },id);
+    },
+    // Paused: the print is tilted, so the sheet's rows and columns are counted by layout, not by where the corners land.
+    sheet:()=>page.evaluate(id=>{ const el=document.getElementById(id), lis=[...el.querySelectorAll('.plates li')];
+      return {shown:lis.every(li=>getComputedStyle(li).opacity==='1'&&!li.style.opacity), rows:new Set(lis.map(li=>li.offsetTop)).size, cols:new Set(lis.map(li=>li.offsetLeft)).size,
+        tall:el.offsetHeight<innerHeight*2, name:el.querySelector('.turn-name').textContent}; },id),
+  });
+  const only=(n,...on)=>Array.from({length:n},(_,i)=>on.includes(i)?1:0);
+  await check('The rover turns with the scroll through the nine photographs, and is a contact sheet when motion is off',async()=>{
+    for(let i=0;i<9;i++) { const res=await fetch(`${base}/media/rover-turn/plate-${i}.webp`); await res.arrayBuffer(); assert.equal(res.status,200,`plate ${i}`); }
+    assert.ok(await page.evaluate(()=>document.querySelector('.crew').nextElementSibling.id==='rover'),'it comes right after the crew');
+    const rover=turntable('rover');
+    // Plate k is alone on the print a tenth of the way into its turn: .05 + .9 * (k + .1) / 8 of the way through the scene.
+    const first=await rover.at(0), front=await rover.at(.39875), between=await rover.at(.4775), last=await rover.at(1), again=await rover.at(.39875);
+    assert.deepEqual([first.seen,first.name,first.count,first.pinned,first.fits],[only(9,0),'Right side, from ahead','1 / 9',0,true],`the first plate, pinned and whole in the window: ${JSON.stringify(first)}`);
+    assert.deepEqual([front.seen,front.name,front.count],[only(9,3),'Head on','4 / 9'],`head on, alone: ${JSON.stringify(front)}`);
+    assert.ok(between.seen[3]===1&&between.seen[4]>0&&between.seen[4]<1&&between.seen.filter(o=>o>0).length===2,`the next plate coming through over it: ${JSON.stringify(between)}`);
+    assert.deepEqual([last.seen,last.name,last.count],[only(9,7,8),'Left rear quarter','9 / 9'],`the last plate: ${JSON.stringify(last)}`);
+    assert.deepEqual(again,front,'scrolling back turns it back');
+    // A second photograph stands beside the turn. It is a print of its own: not one of the nine, and it does not change.
+    const beside=()=>page.evaluate(()=>{ const f=document.querySelector('.turntable-field'), a=f.getBoundingClientRect(), b=document.querySelector('#rover .turntable-print').getBoundingClientRect();
+      return {src:f.querySelector('img').getAttribute('src'), inTurn:!!f.closest('.plates')||!!f.closest('.turntable-print'), plates:document.querySelectorAll('#rover .plates li').length,
+        right:a.left>=b.right-4, whole:a.top>=0&&a.bottom<=innerHeight&&a.right<=innerWidth, shown:getComputedStyle(f).opacity}; });
+    const field=await beside();
+    // A measure can come while the stage is pinned (an image arriving, a resize). What is on the stage must stay on it.
+    const held=()=>page.evaluate(()=>[...document.querySelectorAll('#rover [data-motion]')].map(el=>getComputedStyle(el).opacity).join(' '));
+    assert.equal(await held(),'1 1 1 1 1');
+    await page.evaluate(()=>PremiereScroll.invalidate()); await settle(page);
+    assert.equal(await held(),'1 1 1 1 1','measured again while pinned, the head and both prints are still there');
+    await rover.at(.8);
+    assert.deepEqual(field,{src:'media/rover-field.webp',inTurn:false,plates:9,right:true,whole:true,shown:'1'},`the second print: ${JSON.stringify(field)}`);
+    assert.deepEqual(await beside(),field,'and it is the same at the other end of the turn');
+    await rover.at(.39875); await page.screenshot({path:path.join(output,'rover-turn-desktop.png')});
+    await audit(page,'rover-desktop');
+    // Paused: no pin, and the nine side by side.
+    await page.getByRole('button',{name:'Pause motion',exact:true}).click(); await settle(page);
+    assert.deepEqual(await rover.sheet(),{shown:true,rows:3,cols:3,tall:true,name:'The rover, nine plates'},'a three by three contact sheet');
+    await page.getByRole('button',{name:'Resume motion',exact:true}).click(); await settle(page);
+  });
+  await check('The wrist unit turns the same way, through seven photographs, and its head says what it pairs with and what it shows',async()=>{
+    for(let i=0;i<7;i++) { const res=await fetch(`${base}/media/wrist-turn/plate-${i}.webp`); await res.arrayBuffer(); assert.equal(res.status,200,`plate ${i}`); }
+    assert.ok(await page.evaluate(()=>document.querySelector('#rover').nextElementSibling.id==='wrist'),'after the rover');
+    const wrist=turntable('wrist');
+    const first=await wrist.at(0), above=await wrist.at(.05+.9*3.1/6), between=await wrist.at(.05+.9*3.8/6), last=await wrist.at(1), again=await wrist.at(.05+.9*3.1/6);
+    assert.deepEqual([first.seen,first.name,first.count,first.pinned,first.fits],[only(7,0),'Side on, the hand open','1 / 7',0,true],`the first plate, pinned and whole in the window: ${JSON.stringify(first)}`);
+    assert.deepEqual([above.seen,above.name,above.count],[only(7,3),'From above','4 / 7'],`from above, alone: ${JSON.stringify(above)}`);
+    assert.ok(between.seen[3]===1&&between.seen[4]>0&&between.seen[4]<1&&between.seen.filter(o=>o>0).length===2,`the next plate coming through over it: ${JSON.stringify(between)}`);
+    assert.deepEqual([last.seen,last.name,last.count],[only(7,5,6),'Edge on','7 / 7'],`the last plate: ${JSON.stringify(last)}`);
+    assert.deepEqual(again,above,'scrolling back turns it back');
+    // What the wrist is for, in the page's own words, beside the print (which is on the left here).
+    const told=await page.evaluate(()=>{ const el=document.getElementById('wrist'), head=el.querySelector('.section-head').getBoundingClientRect(), print=el.querySelector('.turntable-print').getBoundingClientRect();
+      return {text:el.querySelector('.section-lede').textContent, title:el.querySelector('h2').getAttribute('aria-label'), printLeft:print.right<=head.left+4}; });
+    assert.match(told.text,/pairs with the hat's camera and the rover's/); assert.match(told.text,/most valuable/); assert.match(told.text,/guessed name/); assert.match(told.text,/estimated price/);
+    assert.deepEqual([told.title,told.printLeft],['The Tally',true]);
+    await wrist.at(.05+.9*3.1/6); await page.screenshot({path:path.join(output,'wrist-turn-desktop.png')});
+    await audit(page,'wrist-desktop');
+    await page.getByRole('button',{name:'Pause motion',exact:true}).click(); await settle(page);
+    assert.deepEqual(await wrist.sheet(),{shown:true,rows:2,cols:4,tall:true,name:'The wrist unit, seven plates'},'seven plates, four to a row');
+    await page.getByRole('button',{name:'Resume motion',exact:true}).click(); await settle(page);
+  });
+  await check('The hat turns through five photographs, and it is on the page once',async()=>{
+    for(let i=0;i<5;i++) { const res=await fetch(`${base}/media/cap-turn/plate-${i}.webp`); await res.arrayBuffer(); assert.equal(res.status,200,`plate ${i}`); }
+    assert.deepEqual(await page.evaluate(()=>[...document.querySelectorAll('.turntable')].map(el=>el.id+':'+el.querySelector('h2').getAttribute('aria-label')).concat(document.querySelector('#cap').nextElementSibling.className)),
+      ['rover:The Advance Man','wrist:The Tally','cap:The Hat','method'],'the rover, the wrist, the hat, then the method');
+    const cap=turntable('cap');
+    const side=await cap.at(0), on=await cap.at(.05+.9*2.1/4), between=await cap.at(.05+.9*2.8/4), other=await cap.at(1), again=await cap.at(.05+.9*2.1/4);
+    assert.deepEqual([side.seen,side.name,side.count,side.pinned,side.fits],[only(5,0),'Right side','1 / 5',0,true],`the first plate, pinned and whole in the window: ${JSON.stringify(side)}`);
+    assert.deepEqual([on.seen,on.name,on.count],[only(5,2),'Head on','3 / 5'],`head on, alone: ${JSON.stringify(on)}`);
+    assert.ok(between.seen[2]===1&&between.seen[3]>0&&between.seen[3]<1&&between.seen.filter(o=>o>0).length===2,`the next plate coming through over it: ${JSON.stringify(between)}`);
+    assert.deepEqual([other.seen,other.name,other.count],[only(5,3,4),'Left side','5 / 5'],`the last plate: ${JSON.stringify(other)}`);
+    assert.deepEqual(again,on,'scrolling back turns it back');
+    const shape=await page.evaluate(()=>{ const a=document.getElementById('cap'), b=document.getElementById('rover');
+      return {shorter:a.offsetHeight<b.offsetHeight, printRight:a.querySelector('.section-head').getBoundingClientRect().right<=a.querySelector('.turntable-print').getBoundingClientRect().left+4}; });
+    assert.deepEqual(shape,{shorter:true,printRight:true});
+    await cap.at(.05+.9*2.1/4); await page.screenshot({path:path.join(output,'hat-turn-desktop.png')});
+    await audit(page,'hat-desktop');
+    await page.getByRole('button',{name:'Pause motion',exact:true}).click(); await settle(page);
+    assert.deepEqual(await cap.sheet(),{shown:true,rows:2,cols:3,tall:true,name:'The hat, five plates'},'five plates, three to a row');
+    await page.getByRole('button',{name:'Resume motion',exact:true}).click(); await settle(page);
+  });
+  await check('Between the paperwork and the credits a flock crosses, and half way over it draws the diamond',async()=>{
+    // `across`: how far over the flock is, 0 to 1. It is the paperwork leaving: the stretch of scroll that fades the room to black.
+    const flock=async across=>{
+      await page.evaluate(v=>{ const el=document.querySelector('.paperwork');
+        scrollTo({top:PremiereScroll.top(el)+el.offsetHeight-innerHeight+innerHeight*(.05+.9*v),behavior:'instant'}); },across); await settle(page);
+      await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(r)))));
+      return page.evaluate(()=>{
+        const c=document.querySelector('.flock'), d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
+        let lit=0, left=c.width, right=0, top=c.height, bottom=0;
+        for(let y=0;y<c.height;y++) for(let x=0;x<c.width;x++) if(d[(y*c.width+x)*4+3]>60) { lit++; if(x<left)left=x; if(x>right)right=x; if(y<top)top=y; if(y>bottom)bottom=y; }
+        return {running:c.dataset.running, shown:Number(c.dataset.shown||0), formed:Number(c.dataset.formed||0), lit, wide:right-left, tall:bottom-top, centre:(left+right)/2/c.width};
+      });
+    };
+    const before=await flock(-.2), coming=await flock(.2), stone=await flock(.5);
+    await page.screenshot({path:path.join(output,'flock-diamond-desktop.png')});
+    const going=await flock(.8), after=await flock(1.2), back=await flock(.5);
+    assert.deepEqual([before.running,before.lit],['false',0],'nothing in the air before the room starts to darken');
+    assert.ok(coming.running==='true'&&coming.shown>10&&coming.formed<.5,`coming in: ${JSON.stringify(coming)}`);
+    assert.ok(stone.shown>=140&&stone.formed>.95&&stone.lit>2000,`every bird in its place: ${JSON.stringify(stone)}`);
+    // At this size the stone is about 460px wide and 375px tall, in the middle of the window: so is the flock.
+    assert.ok(stone.wide>380&&stone.wide<560&&stone.tall>300&&stone.tall<460&&Math.abs(stone.centre-.5)<.04,`the flock is the diamond: ${JSON.stringify(stone)}`);
+    assert.ok(going.running==='true'&&going.formed<.6&&going.wide>stone.wide,`breaking up and leaving: ${JSON.stringify(going)}`);
+    assert.deepEqual([after.running,after.lit],['false',0],'and gone, with nothing left drawn');
+    assert.ok(back.formed>.95,'scrolling back brings it home');
+    // Paused, it comes down.
+    await page.getByRole('button',{name:'Pause motion',exact:true}).click(); await settle(page);
+    await page.waitForFunction(()=>document.querySelector('.flock').dataset.running==='false');
+    await page.getByRole('button',{name:'Resume motion',exact:true}).click(); await settle(page);
   });
   await check('Pausing clears every entrance, navigation still works, and a settled scene passes the audit',async()=>{
     await page.evaluate(()=>{ const el=document.querySelector('#paperwork-title'); scrollTo({top:PremiereScroll.top(el)-innerHeight*1.2,behavior:'instant'}); }); await settle(page);
@@ -329,9 +515,11 @@ async function audit(page, label) {
     assert.equal(await p.locator('.statement-first .statement-line').evaluate(el=>getComputedStyle(el).opacity),'1');
     const still=()=>p.evaluate(()=>({live:document.documentElement.classList.contains('cine-on'), built:ScrollCinema.motion.elements,
       masks:document.querySelectorAll('.motion-mask, .motion-char').length, morph:document.querySelector('.statement-plate').classList.contains('is-morphing'),
+      flock:document.querySelector('.flock').dataset.running, cue:document.querySelector('.cue').classList.contains('on'),
+      stamped:[...document.querySelectorAll('.dossier .stamp')].every(s=>getComputedStyle(s).opacity!=='0'),
       moved:[...document.querySelectorAll('[data-motion], [data-motion] .ch, .motion-char, .reel-line, .board-print, .dossiers, .method-grid')]
         .filter(el=>el.style.translate||el.style.opacity||el.style.filter||el.style.scale).length}));
-    assert.deepEqual(await still(),{live:false,built:0,masks:0,morph:false,moved:0},'reduced motion builds no scene motion and leaves none on the page');
+    assert.deepEqual(await still(),{live:false,built:0,masks:0,morph:false,flock:'false',cue:false,stamped:true,moved:0},'reduced motion builds no scene motion and leaves none on the page');
     await audit(p,'reduced-mobile');
     await p.emulateMedia({reducedMotion:'no-preference'}); await settle(p);
     assert.equal(await p.locator('body').evaluate(el=>el.classList.contains('film-static')),false);

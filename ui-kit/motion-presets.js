@@ -27,6 +27,7 @@
     lift: { y: -34, o: 0 },                     /* the way out: up and gone */
     'depth-in': { s: 1.08, o: 0, b: 5 },
     mist: { x: -2, y: 8, s: .9, o: 0, b: 7 },   /* letter by letter: see letters() */
+    type: { o: 0 },                             /* struck on, a letter at a time, behind a caret */
     crossfade: { o: 0 },
     drift: {},                                  /* a layer at its own speed: see drift() */
   };
@@ -48,6 +49,8 @@
     return bezier ? `cubicBezier(${bezier[1]})` : otherwise;
   };
   const plain = el => ![...el.childNodes].some(node => node.nodeType === 1 && node.nodeName !== 'BR');
+  const phrase = el => [...el.children].every(child => /^(BR|EM|STRONG|B|I)$/.test(child.nodeName));      /* type with an accent in it is still type */
+  const keys = typeof Noir !== 'undefined' ? Noir.sfx : null;      /* the kit's typewriter, heard only if sound is on */
   const strip = el => MOVES.forEach(property => el.style.removeProperty(property));
 
   /* What rises behind a mask: the glyphs noir.js cut a .cut title into, or each line of
@@ -58,7 +61,7 @@
     if (glyphs.length) return glyphs;
     const wrapped = [...el.querySelectorAll(':scope > .motion-mask > .motion-rise')];
     if (wrapped.length) return wrapped;
-    if (!plain(el)) return null;
+    if (!phrase(el)) return null;
     const lines = [[]];
     for (const node of [...el.childNodes]) {
       if (node.nodeName === 'BR') { lines.push([]); node.remove(); }
@@ -142,20 +145,22 @@
     if (!preset) return null;
     if (name === 'drift') return capability.compact ? null : drift(el);
     if (!anime) return null;
-    const pieces = name === 'rise' ? mask(el) : name === 'mist' ? letters(el) : null;
+    const typed = name === 'type';
+    const pieces = name === 'rise' ? mask(el) : name === 'mist' || typed ? letters(el) : null;
     const parts = pieces?.length ? pieces : null;
     const masked = !!parts && name === 'rise';
     const targets = parts || [el];
     const from = masked ? { y: MASKED } : fitted(preset, targets[0]);
     const settle = curve('--ez-settle', 'easeOutCubic'), film = curve('--ez-film', 'easeInOutSine');
-    const eased = key => key === 'o' || key === 'b' ? film : settle;
+    /* A typed letter is not eased: it is not there, and then it is (its turn lasts 1 of 1000). */
+    const eased = key => typed ? 'linear' : key === 'o' || key === 'b' ? film : settle;
 
     const state = targets.map(() => ({ ...from }));
     const several = targets.length > 1;
     const entrance = {
       targets: state, autoplay: false, easing: 'linear',
-      duration: several ? 600 : 1000,                  /* glyphs, lines and letters follow one another */
-      delay: several ? anime.stagger(400 / (targets.length - 1)) : 0,
+      duration: !several ? 1000 : typed ? 1 : 600,     /* glyphs, lines and letters follow one another */
+      delay: several ? anime.stagger((typed ? 999 : 400) / (targets.length - 1)) : 0,
     };
     for (const key of Object.keys(from)) entrance[key] = { value: [from[key], REST[key]], easing: eased(key) };
     const arriving = anime(entrance);
@@ -167,10 +172,19 @@
     if (to) for (const key of Object.keys(to)) exit[key] = { value: [REST[key], to[key]], easing: eased(key) };
     const departing = to && anime(exit);
 
-    let at = -1, away = -1, dressed = false, lifted = false, arrived = true, left = false;
+    let at = -1, away = -1, dressed = false, lifted = false, arrived = true, left = false, caret = -1;
+    /* The block stands where the next letter will land, and each letter struck is a key heard. */
+    function strike(next) {
+      if (next === caret) return;
+      targets[caret]?.classList.remove('is-caret');
+      targets[next]?.classList.add('is-caret');
+      if (next > caret && caret >= 0) keys?.key();
+      caret = next;
+    }
     function undress() {
       if (!dressed) return;
       dressed = lifted = left = false; arrived = true;
+      if (typed) strike(-1);
       el.classList.remove('is-rising');
       for (const target of new Set([...targets, el])) strip(target);
       el.style.removeProperty('will-change');
@@ -192,8 +206,10 @@
           if (masked) el.classList.add('is-rising');
           arriving.seek(arriving.duration * p);
           targets.forEach((target, i) => write(target.style, state[i], masked));
+          if (typed) strike(state.findIndex(v => v.o < .5));
         } else if (!arrived) {
           arrived = true;
+          if (typed) strike(-1);
           el.classList.remove('is-rising');
           targets.forEach(strip);
         }

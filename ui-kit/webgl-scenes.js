@@ -1,13 +1,15 @@
 /* WebGL scenes: where one picture becomes another instead of fading across it.
-   The story's two photographs of the crew: as the scroll takes the scene from its
-   first beat to its second, the first photograph gives way through a displaced
-   dissolve, the picture swimming a little where the two meet, like a dissolve cut on
-   an optical printer. Both photographs stay in the page as images, with their alt
-   text; the canvas is only how they are shown.
-   No WebGL, a lost context, a photograph that has not loaded, or motion reduced or
-   paused: this file stands down and the page's own CSS crossfade
-   (premiere-scroll.css) is what shows. It draws only when the scene is near the
-   window and its progress has changed. */
+   The story's two photographs of the crew. As the scroll takes the scene from its
+   first beat to its second, ink lands on the first photograph at the hat's lens and
+   spreads across the print like a puddle: an uneven front, running further where the
+   paper lets it, red and wet at its lip. Where it has passed, the second photograph
+   is there. It is the kit's one ink (--stamp, --stamp-lit), and it moves only as the
+   scroll does, so scrolling back draws it in again.
+   Both photographs stay in the page as images, with their alt text; the canvas is
+   only how they are shown. No WebGL, a lost context, a photograph that has not
+   loaded, or motion reduced or paused: this file stands down and the page's own CSS
+   crossfade (premiere-scroll.css) is what shows. It draws only when the scene is
+   near the window and its progress has changed. */
 (() => {
   'use strict';
   const cinema = window.ScrollCinema, capability = window.MotionPresets?.capability;
@@ -30,18 +32,25 @@
       gl_Position = vec4(corner, 0., 1.);
     }`;
   /* Each photograph is placed as CSS places it (object-fit: cover, at its own
-     object-position), so the canvas and the images it stands in for agree. */
+     object-position) and graded as CSS grades it, so the canvas and the images it
+     stands in for agree. The grade is done here and not by a filter on the canvas,
+     because a filter would take the red out of the ink as well. */
   const FRAGMENT = `
     precision mediump float;
     varying vec2 at;
     uniform sampler2D first, second;
     uniform vec4 fitFirst, fitSecond;
+    uniform vec2 origin;
     uniform float progress, aspect;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    /* Gradient noise, not value noise: its contours are round, and a puddle's edge has no corners. */
+    vec2 lean(vec2 i) { float a = 6.2831853 * hash(i); return vec2(cos(a), sin(a)); }
     float grain(vec2 p) {
       vec2 i = floor(p), f = fract(p);
-      f = f * f * f * (f * (f * 6. - 15.) + 10.);
-      return mix(mix(hash(i), hash(i + vec2(1., 0.)), f.x), mix(hash(i + vec2(0., 1.)), hash(i + vec2(1., 1.)), f.x), f.y);
+      vec2 u = f * f * f * (f * (f * 6. - 15.) + 10.);
+      float a = dot(lean(i), f), b = dot(lean(i + vec2(1., 0.)), f - vec2(1., 0.));
+      float c = dot(lean(i + vec2(0., 1.)), f - vec2(0., 1.)), d = dot(lean(i + vec2(1.)), f - vec2(1.));
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y) * .7 + .5;
     }
     /* Four turns of it, each at an angle to the last, so no edge of the grid shows through. */
     float haze(vec2 p) {
@@ -53,19 +62,33 @@
       }
       return sum / .9375;
     }
+    /* grayscale(1) contrast(1.08) brightness(.88), as premiere-scroll.css has it on the images */
+    vec3 grade(vec3 c) { return vec3(((dot(c, vec3(.2126, .7152, .0722)) - .5) * 1.08 + .5) * .88); }
     void main() {
-      vec2 p = mat2(.8, .6, -.6, .8) * vec2(at.x * aspect, at.y) * 2.2;
-      float n = haze(p);
-      /* The picture swims most at the middle of the dissolve and not at all at either end. */
-      float middle = sin(progress * 3.14159);
-      vec2 swim = (vec2(n, haze(p + 31.)) - .5) * .09 * middle;
-      vec4 a = texture2D(first, (at + swim * progress) * fitFirst.xy + fitFirst.zw);
-      vec4 b = texture2D(second, (at - swim * (1. - progress)) * fitSecond.xy + fitSecond.zw);
-      /* The second photograph comes through the haze unevenly: nowhere at 0, everywhere at 1. */
-      vec3 both = mix(a.rgb, b.rgb, smoothstep(0., .35, progress * 1.35 - n));
-      /* Two negatives printed together take a little more light where they overlap. */
-      gl_FragColor = vec4(both * (1. + .16 * middle), 1.);
+      vec2 p = vec2(at.x * aspect, at.y), o = vec2(origin.x * aspect, origin.y);
+      /* how far the ink must run to reach the furthest corner of the print */
+      float reach = max(max(distance(o, vec2(0.)), distance(o, vec2(aspect, 0.))), max(distance(o, vec2(0., 1.)), distance(o, vec2(aspect, 1.))));
+      vec2 q = mat2(.8, .6, -.6, .8) * p;
+      /* Distance from where it landed, made uneven: it runs further where the paper lets it. */
+      float run = distance(p, o) / reach + (haze(q * 2.4) - .5) * .7 + (haze(q * 7. + 17.) - .5) * .14;
+      /* The front starts behind every point of the print and ends beyond every point of it,
+         so at 0 the first photograph is untouched and at 1 the second is. */
+      float edge = run - mix(-.6, 1.7, progress);                 /* below zero: the ink has been here */
+      float wet = smoothstep(.006, -.006, edge);
+      /* The lip of a puddle stands proud and bends what is under it. */
+      vec2 bend = normalize(p - o + 1e-4) * smoothstep(.07, 0., abs(edge)) * .012 * vec2(1. / aspect, 1.);
+      vec3 a = grade(texture2D(first, (at + bend) * fitFirst.xy + fitFirst.zw).rgb);
+      vec3 b = grade(texture2D(second, (at - bend) * fitSecond.xy + fitSecond.zw).rgb);
+      vec3 picture = mix(a * (1. - .3 * smoothstep(.05, 0., edge)), b, wet);      /* and throws a little shadow ahead of itself */
+      /* The ink is deep at the front and thins away behind it, and the new picture comes up through it. */
+      vec3 ink = mix(vec3(.647, .176, .196), vec3(.898, .455, .463), smoothstep(-.035, 0., edge));
+      picture = mix(picture, ink, wet * smoothstep(-.17, 0., edge) * .84);
+      /* one line of light along the very lip, where it is wettest */
+      picture += vec3(.95, .94, .91) * smoothstep(.011, 0., abs(edge + .005)) * .5;
+      gl_FragColor = vec4(picture, 1.);
     }`;
+  /* Where the ink lands: the hat's lens, as a part of the first photograph's width and height. */
+  const LENS = [.375, .1];
 
   let G = null, lost = false, dirty = true, drawn = -1, running = false;
   const textures = [null, null];
@@ -93,7 +116,7 @@
     const uniform = name => gl.getUniformLocation(linked, name);
     gl.uniform1i(uniform('first'), 0);
     gl.uniform1i(uniform('second'), 1);
-    return { fits: [uniform('fitFirst'), uniform('fitSecond')], progress: uniform('progress'), aspect: uniform('aspect') };
+    return { fits: [uniform('fitFirst'), uniform('fitSecond')], progress: uniform('progress'), aspect: uniform('aspect'), origin: uniform('origin') };
   }
 
   function load(index) {
@@ -127,6 +150,7 @@
       const left = image.offsetLeft + (boxWidth - shown[0]) * (position[0] ?? .5);
       const top = image.offsetTop + (boxHeight - shown[1]) * (position[1] ?? .5);
       gl.uniform4f(G.fits[index], width / shown[0], height / shown[1], -left / shown[0], -top / shown[1]);
+      if (!index) gl.uniform2f(G.origin, (left + LENS[0] * shown[0]) / width, (top + LENS[1] * shown[1]) / height);
     });
     return true;
   }

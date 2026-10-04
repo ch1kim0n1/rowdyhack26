@@ -64,18 +64,49 @@ body.portal-open .marquee:not(:focus-within) { opacity: 0; pointer-events: none;
    out of it, so there is no edge on either side: nothing here draws a line. */
 .mission-later {
   position: relative;
-  padding-block: clamp(56px, 12vh, 136px) clamp(40px, 8vh, 96px);
+  /* The whole of it fits one window under the marquee, so there is a place in the scroll
+     where every line of it has arrived and none has begun to leave. */
+  padding-block: clamp(64px, 10.5vh, 120px) clamp(56px, 10vh, 120px);
   background: #090a0d;
 }
+/* Here the band has a screen to itself, so it is set like a scene and not like a
+   caption: the line is the picture, its second half in the one red ink; the copy is
+   typed at a size that can be read from a seat; and the three steps stand in a row
+   in the display face, numbered, the way the priors do further down. */
 .mission-later .hero-brief {
   background: none; box-shadow: none; clip-path: none;
   backdrop-filter: none; -webkit-backdrop-filter: none;
+  grid-template-columns: minmax(0, 1fr) auto; align-items: end;
+  gap: clamp(24px, 3.4vw, 48px) clamp(32px, 6vw, 96px); padding-block: 0;
 }
+.mission-later .hero-brief > div:first-child { grid-column: 1 / -1; }
+.mission-later .hero-brief .label { font-size: 13px; letter-spacing: .24em; }
+.mission-later .hero-brief > div > p { margin-top: 20px; font-size: clamp(60px, min(10.6vw, 17vh), 176px); line-height: .86; letter-spacing: .01em; }
+.mission-later .brief-copy { font: clamp(17px, 1.5vw, 23px)/1.6 var(--f-typed); color: var(--bone); }
+.mission-later .brief-actions { justify-items: stretch; gap: 14px; }
+.mission-later .brief-actions .btn { min-height: 58px; padding: 0 28px; font-size: 14px; }
+.mission-later .brief-film { font-size: 12px; text-align: center; }
 .mission-later .mission-strip {
   border-block: 0; background: none;
   backdrop-filter: none; -webkit-backdrop-filter: none;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: end; gap: 0;
+  width: min(1240px, 100% - 32px); margin: clamp(36px, 6vh, 64px) auto 0; padding: 0;
 }
+.mission-later .mission-strip > span:not(.tc-credit) {
+  padding: 6px 24px 0; border-left: var(--rule) solid var(--hair);
+  font: clamp(38px, 4.6vw, 72px)/.9 var(--f-display); letter-spacing: .02em; color: var(--paper);
+}
+.mission-later .mission-strip > span:first-child { padding-left: 0; border-left: 0; }
+.mission-later .mission-strip b { display: block; margin-bottom: 14px; font: 700 13px/1 var(--f-type); letter-spacing: .24em; color: var(--stamp-lit); }
+.mission-later .mission-strip i { display: none; }
+.mission-later .mission-strip .tc-credit { margin-bottom: 6px; }
 .mission-later .brief-film span { display: inline-block; rotate: 180deg; }   /* the film is above now */
+@media (max-width: 780px) {
+  .mission-later .hero-brief, .mission-later .mission-strip { grid-template-columns: minmax(0, 1fr); }
+  .mission-later .brief-actions { display: grid; justify-items: start; }
+  .mission-later .mission-strip { row-gap: 22px; }
+  .mission-later .mission-strip > span:not(.tc-credit) { padding-left: 0; border-left: 0; }
+}
 /* Its lines arrive one after another as it comes up (data-motion, scroll-cinema.js). */
 /* The crew's ground comes up out of that black on a long eased ramp rather than a
    short straight one: a dissolve, with no place the eye can find an edge. */

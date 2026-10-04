@@ -462,13 +462,19 @@ The scenes after the film run on a small motion system, in four files. Nothing i
   | `depth-in` | From 1.08, for large type |
   | `settle`, `dialogue` | 12px up into place: `settle` from 80% and slightly large, `dialogue` from nothing |
   | `mist` | A line of plain type, letter by letter out of blur. The words stay in the page for a screen reader |
+  | `type` | The same letters struck on one at a time behind a block caret, with the kit's key sound if sound is on |
   | `lift` | Up 34px and gone. The usual exit |
   | `crossfade` | Opacity only |
   | `drift` | A layer that lags the scroll by `data-motion-depth` |
 
   An exit runs as the element's foot nears the top of the window, and the element is put back once it is above it. `data-motion-order` holds a neighbour back a step, `data-motion-start` and `data-motion-span` move where an entrance begins and how long it takes, and anything inside `[data-motion-rest]` stays put. Curves are `--ez-settle` and `--ez-film`. A phone moves 60% as far with no blur, nothing large is blurred, and nothing is scaled past the window's width.
-- `webgl-scenes.js` dissolves the story's two photographs into one another through a displaced blend. Without WebGL, or with motion off, the CSS crossfade shows instead.
+- `webgl-scenes.js` changes the story's first photograph into its second with ink: it lands at the hat's lens and spreads across the print like a puddle, an uneven front with a wet red lip, and the second photograph is there where it has passed. The front follows the scroll, both ways. The canvas grades the photographs itself (a CSS filter would grey the ink). Without WebGL, or with motion off, the CSS crossfade shows instead.
 - `cinematic-motion.css` holds the masks, stands down the older timers where the scroll now owns a property, and resets everything for print.
+
+Two set pieces sit on that system, each in a file of its own and each standing down when motion is paused or reduced:
+
+- `premiere-props.js`: the crew's red string is run from pin to pin as the files land; each file is stamped with the kit's slam once it is down; the files are swept aside as the next scene arrives; and the kit's changeover cue mark blinks twice, top right, before every change of scene. It also turns the rover, the wrist unit and the hat: after the crew, three pinned scenes each lay the photographs of one thing, one over another in a single print, as the scroll goes by (nine of the rover, seven of the wrist, five of the hat). The plates are square crops of the photographs in `film/rover/`, `film/wrist/` and `film/cap/`, cut by `film/build-turn-plates.py` so the thing stands the same in all of them. `film/wrist/` holds fourteen photographs and the script's `WRIST_TURN` says which seven are used. A scene sets its own length with `--turn` (and `--turn-small` for a narrow window) and its contact sheet's columns with `--sheet`; `turntable-pair` is a head and a print, and `turntable-flip` puts the print on the left. With motion off, or no script, the plates are a contact sheet. Any `section.turntable` with a `.plates` list, a `.turn-name` and a `.turn-count` is turned the same way. The wrist's head is where the page says what the wrist is for: it pairs with the hat's camera and the rover's, and shows the most valuable finds with a guessed name and an estimated price. A second print stands beside the turning one (`media/rover-field.webp`, the rover at a door): a photograph on its own that takes no part in the turn. Where three columns will not fit it sits under the first screen and comes up once the turn is done.
+- `premiere-flock.js`: between the paperwork and the credits, as the room fades to black, 150 birds cross the screen on a canvas (70 on a phone) and half way over they draw the diamond. Where each bird is comes from the scroll, so scrolling back turns the flock round; its wingbeats are its own.
 
 The film's captions use the same presets by the film's own time: each arrives (`dialogue`) and leaves (`lift`) over a fraction of a second of film, so they move with the wheel like the picture.
 
