@@ -321,7 +321,7 @@ class PremiereAndDesk(unittest.TestCase):
             res.close()
 
     def test_live_screens_load_conditional_motion_before_the_runtime(self):
-        for path in ("/", "/desk", "/demo.html"):
+        for path in ("/reveal", "/desk", "/demo.html"):
             response = self.client.get(path)
             try:
                 page = response.get_data(as_text=True)
@@ -342,11 +342,16 @@ class PremiereAndDesk(unittest.TestCase):
                        'brand/appraisal-job-hero-wide.webp', 'data-vault-motion'):
             self.assertIn(marker, premiere)
         with self.client.get("/") as response:
-            dashboard = response.get_data(as_text=True)
-        for marker in ('data-job="appraisal"', 'data-job="mastermind"',
-                       'id="job-sheet"', 'id="report-link"', 'id="skip-reveal"',
-                       'class="vault-theme projector"', 'data-vault-motion'):
-            self.assertIn(marker, dashboard)
+            landing = response.get_data(as_text=True)
+        for marker in ('class="premiere vault-theme"', 'data-cinematic-scene="premiere"'):
+            self.assertIn(marker, landing)
+        for door in ("/reveal", "/projector"):
+            with self.client.get(door) as response:
+                dashboard = response.get_data(as_text=True)
+            for marker in ('data-job="appraisal"', 'data-job="mastermind"',
+                           'id="job-sheet"', 'id="report-link"', 'id="skip-reveal"',
+                           'class="vault-theme projector"', 'data-vault-motion'):
+                self.assertIn(marker, dashboard)
         with self.client.get("/vault.js") as response:
             runtime = response.get_data(as_text=True)
         self.assertIn("appraisal-motion", runtime)
@@ -733,7 +738,7 @@ class DriveChain(unittest.TestCase):
         protects nothing."""
         os.environ["RIG_TOKEN"] = "crew-secret"
         try:
-            page = self.client.get("/").get_data(as_text=True)
+            page = self.client.get("/reveal").get_data(as_text=True)
             self.assertNotIn("crew-secret", page)
         finally:
             os.environ.pop("RIG_TOKEN", None)

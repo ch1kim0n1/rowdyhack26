@@ -41,14 +41,14 @@ async function axe(page, name){
   const context = await browser.newContext({viewport:{width:1440,height:900}});
   const page = await context.newPage(); page.on('pageerror', error => errors.push(String(error)));
   // Keep the connector's cleanup handle available for isolated component checks.
-  await page.route(base + '/', async route => {
+  await page.route(base + '/reveal', async route => {
     const response = await route.fetch();
     const body = (await response.text()).replace("Noir.connect('/state.json');", "window.stopPolling = Noir.connect('/state.json');");
     await route.fulfill({response,body});
   });
   await fixture({count:0});
   await check('Cold open skips instantly and does not replay', async () => {
-    await page.goto(base); await page.waitForFunction(() => document.body.classList.contains('cold-open'));
+    await page.goto(base+'/reveal'); await page.waitForFunction(() => document.body.classList.contains('cold-open'));
     await page.screenshot({path:path.join(output,'cold-open.png')});
     await page.keyboard.press('Space');
     assert.equal(await page.evaluate(() => document.body.classList.contains('cold-open')), false);
@@ -162,7 +162,7 @@ async function axe(page, name){
   const reduced = await browser.newContext({viewport:{width:1440,height:900}, reducedMotion:'reduce'});
   const still = await reduced.newPage(); still.on('pageerror', error => errors.push(String(error)));
   await check('Reduced motion makes title, typing and reveal immediate', async () => {
-    await fixture({count:5,revealed:true}); await still.goto(base);
+    await fixture({count:5,revealed:true}); await still.goto(base+'/reveal');
     await still.waitForFunction(() => document.querySelector('#stamp-closed').style.opacity === '1');
     assert.equal(await still.evaluate(() => document.body.classList.contains('revealing')), false);
     assert.equal(await still.locator('.suspect.in:not(.vacant)').count(), 5);
@@ -174,7 +174,7 @@ async function axe(page, name){
   await check('Vault UI stays intact; loading feedback and both motion controls share one preference', async () => {
     const live = await context.newPage(); live.on('pageerror', error => errors.push(String(error)));
     const lab = await context.newPage(); lab.on('pageerror', error => errors.push(String(error)));
-    await fixture({count:0,pending:true}); await live.goto(base);
+    await fixture({count:0,pending:true}); await live.goto(base+'/reveal');
     await live.waitForFunction(() => document.querySelector('[data-motion-status]').dataset.phase === 'analyzing');
     assert.equal(await live.locator('[data-motion-status] .motion-toggle').isVisible(), false);
     assert.equal(await live.locator('[data-job="mastermind"]').count(), 1);

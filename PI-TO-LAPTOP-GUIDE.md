@@ -72,7 +72,7 @@ If cellular or Wi-Fi drops completely:
 
 1. Plug an Ethernet cable directly from the Pi to the laptop.
 2. Both machines will negotiate link-local IP addresses (169.254.x.x).
-3. Access the dashboard at `http://raspberrypi.local:5000`.
+3. Access the dashboard at `http://raspberrypi.local:5000/reveal` (`/` lands on the premiere).
 4. The local scan loop, OLED, speech, and reveal work offline without internet. Only external pricing lookups fall back to cached model estimates.
 
 ---

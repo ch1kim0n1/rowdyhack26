@@ -30,7 +30,7 @@ class UIContracts(unittest.TestCase):
             hub.store._case_no = 42
         hub.store.add_item({"item": '<img src=x onerror="alert(1)">', "value_usd": 400})
         manifest = self.client.get("/manifest").get_data(as_text=True)
-        dashboard = self.client.get("/").get_data(as_text=True)
+        dashboard = self.client.get("/reveal").get_data(as_text=True)
         self.assertIn("CASE NO. 0042", manifest)
         self.assertIn("0042</span>", dashboard)
         self.assertNotIn('<img src=x', manifest)

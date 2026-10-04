@@ -359,7 +359,7 @@ class ReportsInBothModes(unittest.TestCase):
 
 class Dashboard(unittest.TestCase):
     def test_both_doors_and_the_job_sheet_are_on_the_page(self):
-        page = rig_app.app.test_client().get("/").get_data(as_text=True)
+        page = rig_app.app.test_client().get("/reveal").get_data(as_text=True)
         for needle in ('data-job="appraisal"', 'data-job="mastermind"', 'id="job-sheet"',
                        'name="bag_lb"', 'name="time_s"', 'name="level" value="small"', 'value="big"',
                        'id="plan-panel"', 'id="mode-chip"', 'id="plan-take"'):

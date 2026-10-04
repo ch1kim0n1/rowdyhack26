@@ -144,7 +144,14 @@ def manifest_url() -> str:
 
 
 @app.get("/")
+def landing():
+    """The premiere is the front door: hosted or local, / lands on the case
+    pitch; the projector lives at /reveal."""
+    return send_from_directory(KIT, "premiere.html")
+
+
 @app.get("/reveal")
+@app.get("/projector")
 def dashboard():
     # RIG_TOKEN is NOT rendered into this page: a shared secret that any LAN
     # client can scrape out of the page source protects nothing. The operator
