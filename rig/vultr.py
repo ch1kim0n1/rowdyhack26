@@ -24,8 +24,27 @@ BASE_URL = "https://api.vultrinference.com/v1"
 DEFAULT_VISION_MODEL = "deepseek-v4-flash-0731"
 DEFAULT_TEXT_MODEL = "deepseek-v4.1-flash"
 TIMEOUT = 20
+# The default text model reasons before it answers, and those reasoning tokens
+# count against max_tokens: at 220 the whole budget went to thinking and the
+# reply came back empty. The prompts still ask for 2-3 sentences.
+TEXT_MAX_TOKENS = 1200
+# A busy frame lists many objects; at 900 the JSON was cut off mid-object.
+VISION_MAX_TOKENS = 1500
 
 _client = None
+
+
+def _max_tokens(default: int) -> int:
+    """VULTR_MAX_TOKENS overrides both caps: a model that thinks hard before it
+    answers (GLM 5.3) needs far more room than the defaults give it."""
+    return config.env_int("VULTR_MAX_TOKENS", default, lo=64, hi=200_000)
+
+
+def _effort() -> dict:
+    """VULTR_REASONING_EFFORT=low|medium|high is passed to models that reason.
+    Unset sends nothing, so models that don't take the option are unaffected."""
+    effort = config.env_str("VULTR_REASONING_EFFORT").lower()
+    return {"reasoning_effort": effort} if effort in {"low", "medium", "high"} else {}
 
 
 def enabled() -> bool:
@@ -46,7 +65,8 @@ def _vultr_client():
         _client = OpenAI(
             api_key=config.env_str("VULTR_API_KEY"),
             base_url=config.env_str("VULTR_BASE_URL", BASE_URL),
-            timeout=TIMEOUT,
+            # A long think can outlast the default; VULTR_TIMEOUT raises it.
+            timeout=config.env_float("VULTR_TIMEOUT", TIMEOUT, lo=5.0),
         )
     return _client
 
@@ -60,7 +80,8 @@ def raw(image_b64: str, prompt: str) -> str | None:
     try:
         resp = _vultr_client().chat.completions.create(
             model=model,
-            max_tokens=900,
+            max_tokens=_max_tokens(VISION_MAX_TOKENS),
+            **_effort(),
             messages=[{
                 "role": "user",
                 "content": [
@@ -125,7 +146,8 @@ def analyze(rows: list[dict], take: float) -> str | None:
     try:
         resp = _vultr_client().chat.completions.create(
             model=model,
-            max_tokens=220,
+            max_tokens=_max_tokens(TEXT_MAX_TOKENS),
+            **_effort(),
             messages=[{"role": "user", "content": _ANALYSIS_PROMPT.format(ledger=ledger)}],
         )
         text = (resp.choices[0].message.content or "").strip()
@@ -156,7 +178,8 @@ def analyze_analytics(stats: dict) -> str | None:
     try:
         resp = _vultr_client().chat.completions.create(
             model=model,
-            max_tokens=220,
+            max_tokens=_max_tokens(TEXT_MAX_TOKENS),
+            **_effort(),
             messages=[{"role": "user",
                        "content": _ANALYTICS_PROMPT.format(stats=json.dumps(stats, default=str))}],
         )

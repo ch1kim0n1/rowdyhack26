@@ -103,10 +103,12 @@ class RobotDriver(Driver):
     the stop) already owns the wheels. The wait happens outside the lock so
     rapid teleop sends don't queue: each move just supersedes the last."""
 
-    def __init__(self):
-        from gpiozero import Robot
-        lf, lb, rf, rb = drive_pins()
-        self._robot = Robot(left=(lf, lb), right=(rf, rb))
+    def __init__(self, robot=None):
+        if robot is None:
+            from gpiozero import Robot
+            lf, lb, rf, rb = drive_pins()
+            robot = Robot(left=(lf, lb), right=(rf, rb))
+        self._robot = robot     # anything with forward/backward/left/right/stop
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self._gen = 0
@@ -217,7 +219,60 @@ class RobotDriver(Driver):
         return legs
 
 
+class _PicarX:
+    """A SunFounder PiCar-X behind the same five verbs gpiozero's Robot has.
+
+    Its motors hang off the Robot HAT, not bare GPIO pins, and it steers with a
+    front servo like a car: left/right turn the wheels and roll forward. (So a
+    breadcrumb return, which assumes a spin-in-place turn, only approximates
+    the way back on this chassis.)"""
+
+    TURN = 30   # degrees; the steering servo's limit
+
+    def __init__(self):
+        from picarx import Picarx
+        self._px = Picarx()
+        self._speed = config.env_int("PICARX_SPEED", 40, lo=10, hi=100)
+
+    def _go(self, angle: int, backward: bool = False) -> None:
+        self._px.set_dir_servo_angle(angle)
+        (self._px.backward if backward else self._px.forward)(self._speed)
+
+    def forward(self) -> None:
+        self._go(0)
+
+    def backward(self) -> None:
+        self._go(0, backward=True)
+
+    def left(self) -> None:
+        self._go(-self.TURN)
+
+    def right(self) -> None:
+        self._go(self.TURN)
+
+    def stop(self) -> None:
+        self._px.stop()
+        self._px.set_dir_servo_angle(0)
+
+
+def drive_kit() -> str:
+    """DRIVE_KIT: picarx = SunFounder PiCar-X (Robot HAT); gpio = a TB6612/L298N
+    pair on DRIVE_PINS. Empty tries the PiCar-X first, then GPIO."""
+    return config.env_str("DRIVE_KIT").lower()
+
+
 def get_driver() -> Driver:
+    kit = drive_kit()
+    if kit in ("", "picarx"):
+        try:
+            driver = RobotDriver(_PicarX())
+            log.info("drive wheels on a SunFounder PiCar-X (Robot HAT)")
+            journal.event("motor-driver", True, "PiCar-X")
+            return driver
+        except Exception as exc:
+            # No picarx library on a gpio rover is the normal case, not news.
+            if kit == "picarx" or not isinstance(exc, ImportError):
+                log.warning("PiCar-X driver unavailable (%s: %s)", type(exc).__name__, exc)
     try:
         driver = RobotDriver()
         log.info("drive wheels on DRIVE_PINS=%s", ",".join(map(str, drive_pins())))

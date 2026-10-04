@@ -67,21 +67,27 @@ EXITS_PROMPT = (
     "bbox is normalized 0-1 around the exit; omit it if unsure. "
     'If no exit is visible, {"item": null}.'
 )
-# Multi-object pass: every object in the frame, not just the clearest one, so
-# the whole scene streams into the Tiger ledger for analysis. The same per-item
-# fields and the same badge / payment-card safeguards as the single prompt.
+# Multi-object pass: every object the model can actually name and price, not
+# just the clearest one, so the scene streams into the Tiger ledger for analysis.
+# The same per-item fields and the same badge / payment-card safeguards as the
+# single prompt. `worth_filing` enforces the "named and priced" rule on the reply.
 MULTI_PROMPT = (
-    "Identify EVERY distinct physical object visible in this frame for a resale "
-    "appraisal — not only the clearest one. Count headphones, laptops, phones, "
-    "chairs, tables, lamps, fans, mugs, bottles, books, bags, jewelry, tools, "
-    "and appliances — every separate item you can make out. "
+    "Identify EVERY distinct item in this frame that you can recognize and that has "
+    "resale value — not only the clearest one, and including things further back: "
+    "headphones, laptops, phones, "
+    "cameras, watches, jewelry, bags, tools, appliances, and the like. "
+    "List an object ONLY if you can tell what it is. Leave out anything you would "
+    "have to call unknown or unclear, blurry background shapes and silhouettes, "
+    "people and the clothes they are wearing, and the building itself (walls, "
+    "ceiling, floor, columns, windows, doors, built-in lights). "
     'Respond ONLY with JSON of the form {"objects":[ ... ]} where each element is '
     '{"item":"<brand and model>","desc":"<5 words>","category":"<broad type>",'
     '"value_usd":<number>,"weight_lb":<number>,"bbox":[x,y,w,h]}. '
     "item is the product a buyer would search, brand plus model when legible "
     "(Sony WH-1000XM6, Razer BlackShark V2); if only the brand is clear, stop at the brand; "
     "if neither, use a plain description (wooden chair, desk fan). "
-    "value_usd is the typical used US street price of that exact item, not MSRP and not a category average. "
+    "value_usd is the typical used US street price of that exact item, not MSRP and not a category average; "
+    "leave out anything worth nothing. "
     "weight_lb is the item's typical weight in pounds from its specs; omit it if you cannot tell. "
     "bbox is normalized 0-1 [x,y,w,h] around that object; omit it if unsure. "
     "List each object once, most prominent first. "
@@ -224,9 +230,27 @@ def active_prompt() -> str:
     return EXITS_PROMPT if exits_mode() else PROMPT
 
 
+MAX_OBJECTS_HI = 30
+
+
 def max_objects() -> int:
     """How many objects one multi-object look may file. VISION_MAX_OBJECTS."""
-    return config.env_int("VISION_MAX_OBJECTS", 8, lo=1, hi=30)
+    return config.env_int("VISION_MAX_OBJECTS", 8, lo=1, hi=MAX_OBJECTS_HI)
+
+
+# Names a model falls back on when it has not actually recognized the thing.
+# "Unknown brand headphones" is recognized (it's headphones); "unknown object" is not.
+_UNIDENTIFIED = re.compile(
+    r"\b(unknown(?!\s+(?:brand|make|model))|unidentified|unidentifiable|unclear|"
+    r"unrecognized|unrecognizable|indistinct|silhouette|background|person|people)\b", re.I)
+
+
+def worth_filing(obj: dict) -> bool:
+    """A multi-object find earns a place on screen and in the ledger only when
+    the model named it and put a price on it (estimated or not). Guesses like
+    "Unknown dark headset", background silhouettes, people, and $0 items are
+    dropped here even if the prompt failed to keep them out of the reply."""
+    return obj["value_usd"] > 0 and not _UNIDENTIFIED.search(obj["item"])
 
 
 def identify(image_b64: str) -> dict | None:
@@ -271,13 +295,14 @@ def identify(image_b64: str) -> dict | None:
 
 
 def identify_all(image_b64: str) -> list[dict]:
-    """Every object in the frame, not just the clearest — the live walk's eyes.
+    """Every named, priced object in the frame, not just the clearest — the live
+    walk's eyes.
 
     One model call returns a JSON array; each element is normalized exactly like
-    identify() (same value, bbox, badge, and payment-card scrubbing). Falls back
-    to the single-object path for exits mode and to the offline catalog when no
-    provider is configured or every provider fails, so the contract never
-    returns None and the walk always gets something to file.
+    identify() (same value, bbox, badge, and payment-card scrubbing), then kept
+    only if it is `worth_filing`. Uses the single-object path for exits mode and
+    the offline catalog only when offline is asked for or no provider is set up;
+    a provider that fails returns an empty list, never a stand-in.
     """
     global _last_call_failed
     if config.env_flag("RIG_OFFLINE", False):
@@ -308,7 +333,8 @@ def identify_all(image_b64: str) -> list[dict]:
                 continue
             return []                      # provider answered and saw nothing
         try:
-            objs = parse_many(text, limit)
+            # Filter before the cap, so a guess can't take a real find's slot.
+            objs = [o for o in parse_many(text, MAX_OBJECTS_HI) if worth_filing(o)][:limit]
         except (json.JSONDecodeError, ValueError, IndexError, AttributeError):
             _last_call_failed = True
             log.warning("%s multi-object vision returned nothing usable: %s", name, text[:180])
@@ -317,8 +343,10 @@ def identify_all(image_b64: str) -> list[dict]:
             obj.setdefault("source", name)
         return objs
 
-    log.warning("all multi-object vision providers failed; using offline fallback")
-    return [offline_fallback(image_b64)]
+    # A live provider is set up and it failed this once: file nothing. Inventing
+    # a catalog item here would put a find on the ledger that the camera never saw.
+    log.warning("all multi-object vision providers failed; nothing filed for this look")
+    return []
 
 
 def _openai_raw(image_b64: str, prompt: str) -> str | None:
@@ -493,7 +521,14 @@ def parse_many(text: str, limit: int) -> list[dict]:
     """Every exhibit from a multi-object reply: {"objects":[...]} or a bare array,
     tolerating a single-object reply too. Raises on a body that holds no JSON at
     all, so the caller can fall through to the next provider."""
-    data = _extract_json(text)
+    try:
+        data = _extract_json(text)
+    except json.JSONDecodeError:
+        # A long list can hit the token cap mid-object. The objects that did
+        # arrive whole are still good: keep them rather than lose the look.
+        data = _salvage_objects(text)
+        if not data:
+            raise
     if isinstance(data, dict):
         arr = data.get("objects")
         if arr is None:
@@ -514,6 +549,25 @@ def parse_many(text: str, limit: int) -> list[dict]:
             break
     return out
 
+
+
+def _salvage_objects(text: str) -> list:
+    """The complete {...} elements at the front of a cut-off JSON array."""
+    start = text.find("[")
+    if start < 0:
+        return []
+    decoder = json.JSONDecoder()
+    out, pos = [], start + 1
+    while True:
+        while pos < len(text) and (text[pos].isspace() or text[pos] == ","):
+            pos += 1
+        if pos >= len(text) or text[pos] != "{":
+            return out
+        try:
+            obj, pos = decoder.raw_decode(text, pos)
+        except json.JSONDecodeError:
+            return out
+        out.append(obj)
 
 
 def valid_bbox(raw) -> list[float] | None:

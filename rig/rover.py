@@ -17,7 +17,7 @@ from collections import deque
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-from rig import capture, config, journal, pricing, vision
+from rig import capture, config, journal
 
 log = logging.getLogger("rig.rover")
 
@@ -66,14 +66,26 @@ def look_every() -> float:
     return config.env_float("LOOK_EVERY", 2.5, lo=0.5)
 
 
-_latest_frame = None   # return_home sights the beacon through this
+def rover_vision() -> bool:
+    """ROVER_VISION=0 leaves the looking to the hub: the rover only streams its
+    camera (GET :5001/frame.jpg) and drives, so it needs no model keys and a
+    hub on CAM_SOURCE=rover doesn't file every find twice."""
+    return config.env_flag("ROVER_VISION", True)
+
+
+_latest_frame = None   # return_home sights the beacon through this; :5001/frame.jpg serves it
 
 
 def run(opener=None, identify=None, post=None, ping=None, sleep=time.sleep, ticks=None) -> None:
     """Grab, gate, price, file at the hub. Injectable like app.scan_loop."""
     global _latest_frame
     opener = opener or capture.open_camera
-    identify = identify or vision.identify_all
+    look = rover_vision()
+    if look:
+        # Imported here, not at the top: a feed-only rover (ROVER_VISION=0) never
+        # identifies or prices, so it runs on a Pi without rapidfuzz or model SDKs.
+        from rig import pricing, vision
+        identify = identify or vision.identify_all
     post = post or (lambda payload: post_exhibit(hub_url(), payload))
     ping = ping_hub if ping is None else ping
     from rig import drive
@@ -119,7 +131,8 @@ def run(opener=None, identify=None, post=None, ping=None, sleep=time.sleep, tick
             journal.event("camera", False, "grab returned nothing")
             sleep(1)
             continue
-        if capture.scene_changed(frame) and (time.monotonic() - last_look) >= look_every():
+        if (look and capture.scene_changed(frame)
+                and (time.monotonic() - last_look) >= look_every()):
             last_look = time.monotonic()
             b64 = capture.frame_b64(frame)
             result = identify(b64)
@@ -160,8 +173,9 @@ def main() -> None:
         pass
     journal.setup()                     # after dotenv so .env can set RIG_LOG_*
     from rig import drive, drive_server
-    server = drive_server.start(drive.get_driver())
-    log.info("rover filing to %s", hub_url())
+    server = drive_server.start(drive.get_driver(), frame_source=lambda: _latest_frame)
+    log.info("rover filing to %s%s", hub_url(),
+             "" if rover_vision() else " (camera feed only; the hub does the looking)")
     try:
         run()
     finally:

@@ -310,7 +310,11 @@ class Store:
         except OSError:
             log.warning("could not save the exhibit still", exc_info=True)
 
-    def snapshot(self) -> dict:
+    def snapshot(self, marker_ttl: float | None = None) -> dict:
+        """The case for the consoles. `marker_ttl` is how many seconds a fresh
+        sighting keeps its bbox (the on-screen box); older exhibits stay in the
+        tally and the ledger but lose the box. None keeps every box."""
+        now = time.monotonic()
         with self._lock:
             items = []
             for it in self._items:
@@ -325,8 +329,12 @@ class Store:
                     "origin": it.get("origin") or "hat",
                     "status": it.get("status") or "available",
                 }
-                if it.get("bbox"):
-                    row["bbox"] = list(it["bbox"])
+                fresh = marker_ttl is None or now - it.get("seen", float("-inf")) <= marker_ttl
+                # With a marker lifetime, the box is where it was last sighted;
+                # the filed bbox stays paired with the filed still for crops.
+                box = (it.get("live_bbox") if marker_ttl is not None else None) or it.get("bbox")
+                if box and fresh:
+                    row["bbox"] = list(box)
                 if it.get("card"):
                     row["card"] = dict(it["card"])
                 items.append(row)
@@ -380,8 +388,8 @@ class Store:
         with self._lock:
             return round(sum(i["value_usd"] for i in self._items), 2)
 
-    def _rejects_locked(self, name: str, category: str,
-                        card: dict | None = None) -> tuple[bool, tuple | None]:
+    def _rejects_locked(self, name: str, category: str, card: dict | None = None,
+                        bbox: list | None = None) -> tuple[bool, tuple | None]:
         """Dedup + gates, with _lock held. Same object twice is not a new
         exhibit: fuzzy name, tighter when the category matches, so "laptop"
         and "MacBook" don't both count. Badges with a legible number dedup on
@@ -407,6 +415,11 @@ class Store:
             same_cat = (existing.get("category") == category
                         and category not in {"", "exit"})
             if score > 85 or (same_cat and score > 55):
+                if bbox:
+                    # Seen again: not a new exhibit, but its box goes back up
+                    # where it is now, so the crew can tell the camera knows it.
+                    existing["live_bbox"] = bbox
+                    existing["seen"] = time.monotonic()
                 save = None
                 if category == "badge" and self._merge_card_locked(existing, card):
                     save = self._payload_locked()
@@ -427,7 +440,8 @@ class Store:
         category = candidate.get("category") or ""
         card = clean_card(candidate.get("card")) if category == "badge" else None
         with self._lock:
-            rejected, save = self._rejects_locked(name, category, card)
+            rejected, save = self._rejects_locked(
+                name, category, card, _clean_bbox(candidate.get("bbox")))
         if rejected:
             if save:
                 self._write_state(*save)
@@ -452,6 +466,9 @@ class Store:
                     "weight_lb": clean_weight(candidate.get("weight_lb")),
                     "status": "available",
                     "frame_jpeg": still,
+                    # When it was sighted, for the live marker's lifetime. Not
+                    # saved: a reopened case starts with no markers on screen.
+                    "seen": time.monotonic(),
                 }
                 self._items.append(item)
                 payload, seq = self._payload_locked()

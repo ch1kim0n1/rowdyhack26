@@ -3,6 +3,9 @@
 Tiny stdlib server on port 5001 so the rover needs no extra deps. The hub
 forwards laptop teleop here (see app.py /api/drive); RIG_TOKEN, when set on
 the rover, is honored the same way via the X-Rig-Token header.
+
+GET /frame.jpg is the rover camera's latest frame, for a hub running with
+CAM_SOURCE=rover.
 """
 from __future__ import annotations
 
@@ -37,7 +40,10 @@ def _return_after() -> float:
 _last_cmd = [0.0]  # mutable cell; stamped on every /drive hit
 
 
-def drive_server(driver: Driver, port: int = PORT) -> ThreadingHTTPServer:
+def drive_server(driver: Driver, port: int = PORT, frame_source=None) -> ThreadingHTTPServer:
+    """`frame_source` is a no-arg callable returning the rover camera's latest
+    frame (or None). When given, GET /frame.jpg serves it so the hub can show
+    the rover's view (CAM_SOURCE=rover on the hub)."""
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self):
             if self.path.split("?")[0].rstrip("/") != "/drive":
@@ -88,10 +94,30 @@ def drive_server(driver: Driver, port: int = PORT) -> ThreadingHTTPServer:
             self.wfile.write(payload)
 
         def do_GET(self):
-            if self.path.split("?")[0].rstrip("/") == "/health":
+            path = self.path.split("?")[0].rstrip("/")
+            if path == "/health":
                 payload = json.dumps({"ok": True, "driver": type(driver).__name__}).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+            elif path == "/frame.jpg" and frame_source is not None:
+                # The camera is a read like the hub's own /frame.jpg: token-gated.
+                if not _token_ok(self.headers):
+                    self.send_response(401)
+                    self.end_headers()
+                    return
+                frame = frame_source()
+                if frame is None:
+                    self.send_response(503)
+                    self.end_headers()
+                    return
+                from rig import capture  # lazy: /drive alone needs no OpenCV
+                payload = capture.frame_jpeg(frame)
+                self.send_response(200)
+                self.send_header("Content-Type", "image/jpeg")
+                self.send_header("Cache-Control", "no-store")
                 self.send_header("Content-Length", str(len(payload)))
                 self.end_headers()
                 self.wfile.write(payload)
@@ -106,8 +132,8 @@ def drive_server(driver: Driver, port: int = PORT) -> ThreadingHTTPServer:
     return server
 
 
-def start(driver: Driver, port: int = PORT) -> ThreadingHTTPServer:
-    server = drive_server(driver, port)
+def start(driver: Driver, port: int = PORT, frame_source=None) -> ThreadingHTTPServer:
+    server = drive_server(driver, port, frame_source)
     threading.Thread(target=server.serve_forever, daemon=True, name="drive-http").start()
     log.info("drive endpoint on :%s", port)
     after = _return_after()

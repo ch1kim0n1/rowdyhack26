@@ -34,6 +34,7 @@ from rig import (
     capture,
     config,
     display,
+    feed,
     journal,
     listen,
     mastermind,
@@ -179,6 +180,13 @@ def manifest():
     )
 
 
+def marker_seconds() -> float | None:
+    """How long a new find keeps its box on the live view. MARKER_SECONDS=0
+    keeps every box up for the whole case (the old behaviour)."""
+    secs = config.env_float("MARKER_SECONDS", 3.0, lo=0.0)
+    return secs or None
+
+
 # Read endpoints: open while the LAN demo has no token, crew-only once
 # RIG_TOKEN is set — the feed, the ledger, and the mugshot crops then answer
 # 401 until the console supplies the token it was prompted for. Pages stay
@@ -189,8 +197,13 @@ def manifest():
 def state():
     if not _authorized():
         abort(401)
-    snap = store.snapshot()
-    snap["rover_ok"] = _rover.target() is not None
+    snap = store.snapshot(marker_ttl=marker_seconds())
+    # A URL feed has no heartbeat: the rover is "on the line" while frames arrive.
+    snap["rover_ok"] = _rover.target() is not None or (
+        _feed_url() is not None and store.camera_ok())
+    live = _live_id()
+    if live and snap["camera_ok"]:
+        snap["frame_id"] = live     # the console loads /frame.jpg?live-… once and it plays
     rid = store.report_id()
     # The id only, never the share key: the report itself enforces access.
     snap["report"] = {"id": rid, "url": f"/report/{rid}"} if rid else None
@@ -204,8 +217,25 @@ def state():
 def frame():
     if not _authorized():
         abort(401)
+    if request.query_string.startswith(b"live"):
+        reader = _stream_reader()
+        if reader is not None:
+            return Response(_relay(reader), mimetype="multipart/x-mixed-replace; boundary=frame",
+                            headers={"Cache-Control": "no-store"})
     data = store.frame_jpeg() or blank_jpeg()
     return Response(data, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+
+
+def _relay(reader: feed.StreamReader):
+    """The rover's frames to one console as MJPEG, untouched: no decode, no
+    re-encode, newest frame only. A quiet second re-sends the last frame, which
+    is also how a closed tab gets noticed and its thread freed."""
+    seq = -1
+    while True:
+        seq, jpeg = reader.wait(seq, 1.0)
+        jpeg = jpeg or store.frame_jpeg() or blank_jpeg()
+        yield (b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: "
+               + str(len(jpeg)).encode() + b"\r\n\r\n" + jpeg + b"\r\n")
 
 
 @app.get("/crop/<int:n>.jpg")
@@ -635,6 +665,121 @@ ROVER_TTL = 30  # seconds without a heartbeat before teleop forgets it
 _rover = _RoverRegistry(ROVER_TTL)
 
 
+def cam_source() -> str:
+    """CAM_SOURCE: empty = the hub's own webcam; "rover" = the registered
+    rover's frames; an http(s) URL = a JPEG snapshot URL polled per frame (a
+    SunFounder vilib stream is http://<pi>:9000/mjpg.jpg)."""
+    return config.env_str("CAM_SOURCE")
+
+
+def rover_feed() -> bool:
+    """True when the hub's picture and its looks come from the rover's camera
+    instead of a local webcam. With CAM_SOURCE=rover, run the rover with
+    ROVER_VISION=0 so the same find isn't filed from both ends."""
+    return _feed_url() is not None or cam_source().lower() == "rover"
+
+
+def _feed_url() -> str | None:
+    source = cam_source()
+    return source if source.lower().startswith(("http://", "https://")) else None
+
+
+class _RoverCamera:
+    """The rover's camera in the shape scan_loop expects from cv2.VideoCapture
+    (isOpened / read / release), fed by GET <rover>:5001/frame.jpg. "Open"
+    means a rover is registered; a missed frame reads as a lost camera, so the
+    loop shows CAMERA LOST and retries exactly as it does for a pulled webcam."""
+
+    PORT = 5001                     # the rover's drive_server
+    FRAME_TIMEOUT = 2
+    FRAME_MAX = 8 * 1024 * 1024
+
+    def _request(self):
+        from urllib.request import Request
+        addr = _rover.target()
+        if addr is None:
+            return None
+        token = _rig_token()
+        host = f"[{addr}]" if ":" in addr else addr
+        return Request(f"http://{host}:{self.PORT}/frame.jpg",
+                       headers={"X-Rig-Token": token} if token else {})
+
+    def isOpened(self) -> bool:
+        return self._request() is not None
+
+    def read(self):
+        from urllib.request import build_opener
+        req = self._request()
+        if req is None:
+            return False, None
+        try:
+            with build_opener(NoRedirect()).open(req, timeout=self.FRAME_TIMEOUT) as resp:
+                frame = capture.decode_jpeg(resp.read(self.FRAME_MAX))
+        except (OSError, ValueError):
+            return False, None
+        return frame is not None, frame
+
+    def release(self) -> None:
+        pass
+
+
+class _UrlCamera(_RoverCamera):
+    """A camera someone else is already serving: CAM_SOURCE is a URL that
+    returns one JPEG per GET. No rover registration and no rig token; the
+    token is ours, and this host may not be."""
+
+    def _request(self):
+        from urllib.request import Request
+        url = _feed_url()
+        return Request(url) if url else None
+
+    def read(self):
+        reader = _stream_reader()
+        if reader is None:
+            return super().read()           # a still-image URL: one GET per frame
+        _, jpeg = reader.latest()
+        frame = capture.decode_jpeg(jpeg) if jpeg else None
+        return frame is not None, frame
+
+
+_BOOT = int(time.time())
+_reader: feed.StreamReader | None = None
+_reader_lock = threading.Lock()
+
+
+def _stream_reader() -> feed.StreamReader | None:
+    """The reader for a CAM_SOURCE that is an MJPEG stream, started on first
+    use. None for a still-image URL, the rover's own frames, or a local webcam."""
+    global _reader
+    url = _feed_url()
+    if not feed.is_stream_url(url):
+        return None
+    with _reader_lock:
+        if _reader is None or _reader.url != url:
+            if _reader is not None:
+                _reader.stop()
+            _reader = feed.StreamReader(url).start()
+        return _reader
+
+
+def _live_id() -> str | None:
+    """A frame_id that stays put while the picture is relayed as a stream, so a
+    console loads /frame.jpg once and its <img> plays the MJPEG at the camera's
+    own frame rate. Not in token mode (an authed console fetches a blob, and a
+    stream never finishes) and not while our own rover program has the camera."""
+    if _rig_token() or _rover.target() is not None:
+        return None
+    return f"live-{_BOOT}" if _stream_reader() is not None else None
+
+
+def _remote_camera():
+    """Our own rover program wins while it is pinging; otherwise the URL feed
+    (if one is set). So the Pi can run either program without a hub restart."""
+    if _rover.target() is not None or not _feed_url():
+        return _RoverCamera()
+    return _UrlCamera()
+
+
 @app.post("/api/rover_ping")
 def rover_ping():
     """Rover heartbeat: registers the address teleop should forward to."""
@@ -902,6 +1047,7 @@ def health():
         },
         # Last-seen ages only: never the rover's address.
         "rover": {"registered": _rover.target() is not None, "seen_s_ago": _rover.seen_ago()},
+        "feed": {"stream": _reader is not None, "fps": _reader.fps() if _reader else None},
         "wrist": {"seen_s_ago": _seen_ago(_wrist_seen)},
         "tiger": timescale.status(),
         "vultr": {"enabled": vultr.enabled(), "vision_first": vultr.vision_first()},
@@ -1043,7 +1189,7 @@ def look_every() -> float:
 
 def scan_loop(opener=None, identify=None, sleep=time.sleep, ticks=None) -> None:
     """Grab, gate, price. ticks stops the loop so a test can run it once."""
-    opener = opener or capture.open_camera
+    opener = opener or (_remote_camera if rover_feed() else capture.open_camera)
     identify = identify or vision.identify_all
     live = sleep is time.sleep
     frame_every = FRAME_EVERY if live else 0
@@ -1117,18 +1263,20 @@ def _examine(frame, identify=None) -> None:
 
     `identify` may return one object, a list, or None — an injected single-object
     function (the tests, the offline path) is normalized to a list, so the hat
-    now files the whole scene, not just the clearest item. EVERY object is
-    streamed to the Tiger ledger (dedup or not — the raw event history wants the
-    repeats); the deduped case ledger still drives the live UI.
+    now files the whole scene, not just the clearest item. EVERY object vision
+    returns (it keeps only named, priced ones) is streamed to the Tiger ledger
+    (dedup or not — the raw event history wants the repeats); the deduped case
+    ledger still drives the live UI.
     """
     identify = identify or vision.identify_all
     result = identify(capture.frame_b64(frame))
     objects = result if isinstance(result, list) else ([] if not result else [result])
     any_added = False
+    device = "rover" if rover_feed() else "hat"   # whose camera took the frame
     for parsed in objects:
         pricing.finalize_exhibit(parsed, vision.exits_mode())
-        added, hot = store.add_item(parsed, frame)
-        timescale.record_detection(store, parsed, device="hat", hot=hot)
+        added, hot = store.add_item({**parsed, "origin": device}, frame)
+        timescale.record_detection(store, parsed, device=device, hot=hot)
         if added:
             any_added = True
             display.show_take(store.take(), store.count(), store.case_no())

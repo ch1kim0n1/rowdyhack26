@@ -1,0 +1,20 @@
+[Unit]
+Description=Whisplay MQTT wrist display
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=pizerow
+WorkingDirectory=/home/pizerow/Whisplay/example
+EnvironmentFile=/home/pizerow/rowdy/wrist.env
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/usr/bin/python3 /home/pizerow/Whisplay/example/wrist_mqtt.py
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target

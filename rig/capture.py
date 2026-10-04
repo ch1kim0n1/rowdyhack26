@@ -45,10 +45,57 @@ def scan_always() -> bool:
     return config.env_flag("SCAN_ALWAYS", False)
 
 
+class _PiCamera:
+    """A Pi Camera Module through picamera2 (libcamera), in the VideoCapture
+    shape the scan loops expect. On current Pi OS a CSI camera shows up as
+    /dev/video0 but V4L2 hands OpenCV no frames, so this is the fallback."""
+
+    def __init__(self):
+        from picamera2 import Picamera2
+        self._cam = Picamera2()
+        # picamera2's "RGB888" is BGR in memory, which is what OpenCV wants.
+        self._cam.configure(self._cam.create_video_configuration(
+            main={"size": (1280, 720), "format": "RGB888"}))
+        self._cam.start()
+        self._open = True
+
+    def isOpened(self) -> bool:
+        return self._open
+
+    def read(self):
+        if not self._open:
+            return False, None
+        try:
+            return True, self._cam.capture_array()
+        except Exception:
+            return False, None
+
+    def release(self) -> None:
+        if self._open:
+            self._open = False
+            try:
+                self._cam.stop()
+                self._cam.close()
+            except Exception:
+                pass
+
+
+def _open_pi_camera():
+    try:
+        return _PiCamera()
+    except Exception:
+        return None
+
+
 def open_camera():
     """Open CAM_INDEX. A failed try is released so the device is not stuck open."""
     global _preferred
     index = config.env_int("CAM_INDEX", 0)
+    linux = sys.platform.startswith("linux")
+    if config.env_str("CAM_BACKEND").lower() in ("picamera", "picamera2", "libcamera"):
+        pi_cam = _open_pi_camera()      # asked for by name: don't poke V4L2 first
+        if pi_cam is not None:
+            return pi_cam
     order = list(backend_order())
     if _preferred is not None and _preferred in order:
         order.remove(_preferred)
@@ -57,17 +104,23 @@ def open_camera():
     for backend in order:
         cam = cv2.VideoCapture(index) if backend == cv2.CAP_ANY else cv2.VideoCapture(index, backend)
         if cam is not None and cam.isOpened():
-            _preferred = backend
             try:
                 cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
             except Exception:
                 pass
-            for _ in range(8):
-                cam.read()
-            return cam
+            warm = [cam.read()[0] for _ in range(8)]
+            if any(warm) or not linux:
+                _preferred = backend
+                return cam
+            # Opened but frameless: a CSI camera behind libcamera. Let go of the
+            # device so picamera2 can have it.
         if cam is not None:
             cam.release()
         last = cam
+    if linux:
+        pi_cam = _open_pi_camera()
+        if pi_cam is not None:
+            return pi_cam
     return last if last is not None else cv2.VideoCapture(index)
 
 
@@ -78,6 +131,13 @@ def grab_frame(cam):
     if not ok or frame is None:
         return None
     return frame
+
+
+def decode_jpeg(data: bytes):
+    """JPEG bytes back to a frame, or None if they are not an image."""
+    if not data:
+        return None
+    return cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
 
 
 def frame_jpeg(frame, quality: int = 85) -> bytes:
