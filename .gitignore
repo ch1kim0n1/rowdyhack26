@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+rig/oled-live.png
+rig/oled-preview.png
+rig/state/
+.venv/
+venv/
+node_modules/
+test-artifacts/
+home-marker.png
+work/
+.ruff_cache/
+.DS_Store
