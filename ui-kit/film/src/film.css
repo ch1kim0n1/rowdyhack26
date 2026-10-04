@@ -1,0 +1,76 @@
+/* The film stage: a fixed 1600x900 frame. Everything that moves is driven
+   from the timeline in JS, frame by frame, so CSS motion is switched off. */
+html, body { margin: 0; height: auto; background: #000; overflow: hidden; }
+.film-frame *, .film-frame *::before, .film-frame *::after { animation: none !important; transition: none !important; }
+
+.film-frame {
+  position: relative;
+  width: 1600px; height: 900px;
+  overflow: hidden;
+  background: var(--black);
+}
+.film-frame .layer { position: absolute; inset: 0; }
+
+/* the footage: graded like surveillance stock, the same grade the dashboard uses */
+.shot {
+  position: absolute; left: 0; top: 0;
+  width: 1600px; height: 900px;
+  transform-origin: 0 0;
+  overflow: hidden;
+}
+.shot canvas {
+  display: block;
+  width: 1600px; height: 900px;
+  filter: grayscale(1) contrast(1.24) brightness(.97) url(#noir-grade);
+}
+.shot .markers { position: absolute; inset: 0; }
+.shot .wash { position: absolute; inset: 0; background: var(--bone); opacity: 0; }
+.shot .lens-fall {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 92% 82% at 50% 50%, transparent 58%, rgba(0,0,0,.55) 100%);
+}
+
+/* ---------- the frame's layers ---------- */
+.film-frame { background: var(--ink); }
+.shot { z-index: 5; }
+.film-frame .view { position: absolute; inset: 0; height: auto; }
+.film-frame .view-live { z-index: 10; }
+.film-frame .view-live .feed { background: transparent; }
+.film-frame .view-reveal { z-index: 30; background: var(--ink); }
+.hud { z-index: 20; }
+.blackout { z-index: 83; background: #000; }
+.film-frame .log-line.typing::after { opacity: var(--caret, 1); }
+
+/* ---------- the walk: what the cap sees, with the kit laid over it ---------- */
+.hud .hud-scrim { position: absolute; left: 0; right: 0; pointer-events: none; }
+.hud .hud-scrim.top { top: 0; height: 130px; background: linear-gradient(rgba(8,8,7,.72), rgba(8,8,7,0)); }
+.hud .hud-scrim.bot { bottom: 0; height: 340px; background: linear-gradient(rgba(8,8,7,0), rgba(8,8,7,.84)); }
+.hud .film-chrome { position: absolute; left: 0; right: 0; top: 0; border-bottom-color: rgba(143,141,131,.32); }
+.hud .hud-log { position: absolute; left: 40px; bottom: 46px; width: 720px; height: 180px; }
+.hud .hud-log .log-line { position: absolute; left: 0; right: 0; height: 52px; }
+.hud .hud-take { position: absolute; right: 40px; bottom: 40px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.hud .hud-take .odo { font-size: calc(124px * var(--odo-k, 1)); }
+.hud .hud-count { color: var(--bone); }
+
+/* the film is watched smaller than a projector, so the walk's type is set larger */
+.hud .film-chrome { padding: 18px 28px 14px; }
+.hud .film-chrome .label, .hud .film-chrome .meta { font-size: 15px; }
+.hud .hud-take .label { font-size: 15px; color: var(--bone); }
+.hud .hud-count { font-size: 15px; }
+.hud .hud-log .log-line { height: 60px; }
+.hud .hud-log .log-line .ex-name { font-size: 44px; }
+.hud .hud-log .log-line .amt { font-size: 54px; }
+.hud .hud-log .log-line .ex-k { font-size: 15px; }
+.hud .hud-log .log-line.pending { font-size: 26px; }
+.hud .hud-log .file-still { width: 42px; }
+.film-frame .marker .tag { font-size: 15px; padding: 3px 9px; }
+.film-frame .marker .cap { font-size: 16px; padding: 2px 8px; max-width: 46ch; }
+.film-frame .case-chip { border-width: 2px; }
+
+/* the lineup has to fit one 900px frame */
+.film-frame .reveal-title { padding-top: 10px; height: 92px; }
+.film-frame .suspect { width: 236px; }
+.film-frame .the-end .meta { font-size: 16px; }
+
+/* FILM.view(): the set alone, for stills and lighting checks */
+.film-frame.bare > :not(.shot), .film-frame.bare .shot > :not(canvas) { display: none !important; }

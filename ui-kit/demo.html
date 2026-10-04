@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Casefile Demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230f0e0c'/%3E%3Crect x='6' y='3' width='20' height='26' fill='%23efe9db'/%3E%3Cg fill='%230f0e0c'%3E%3Crect x='8' y='5' width='3' height='3'/%3E%3Crect x='8' y='11' width='3' height='3'/%3E%3Crect x='8' y='17' width='3' height='3'/%3E%3Crect x='8' y='23' width='3' height='3'/%3E%3Crect x='21' y='5' width='3' height='3'/%3E%3Crect x='21' y='11' width='3' height='3'/%3E%3Crect x='21' y='17' width='3' height='3'/%3E%3Crect x='21' y='23' width='3' height='3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="stylesheet" href="noir.css">
+<link rel="stylesheet" href="motion.css">
+<style>
+  /* demo-only glue (in production these come from the Flask template) */
+  .fake-room {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 55% at 30% 30%, #2e2c26, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 75% 65%, #211f1b, transparent 70%),
+      linear-gradient(180deg, #14130f, #0a0908);
+  }
+  .keys { position: fixed; right: 22px; top: 44px; z-index: var(--z-hud); max-width: 320px;
+          padding: 10px 12px; background: var(--ink); border: 1px solid var(--smoke);
+          font-size: 10px; line-height: 1.9; letter-spacing: .12em; color: var(--ash);
+          text-transform: uppercase; transition: opacity .4s; }
+  .keys b { color: var(--bone); }
+  .keys.off { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body class="idle">
+
+<!-- ================= THE MARKUP BELOW IS THE TEMPLATE. Copy it as-is. ================= -->
+
+<!-- SVG filter defs. They must live inline in the HTML for filter:url(#...) to resolve. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="noir-grade">
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+        <feFuncG type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+        <feFuncB type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+      </feComponentTransfer>
+    </filter>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/>
+    </filter>
+    <filter id="stamp-rough" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="flicker" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div id="scratch" aria-hidden="true"></div>
+<div class="curtain" id="curtain" aria-hidden="true"></div>
+
+<!-- ================= ATTRACT MODE (shown whenever nobody is walking) ================= -->
+<div class="titlecard" aria-hidden="true">
+  <div class="bar v b1"></div><div class="bar v b2"></div><div class="bar v b3"></div>
+  <div class="bar h b4"></div><div class="bar h b5"></div>
+  <div class="tc-body">
+    <div class="meta">A RowdyHacks XII Picture</div>
+    <div class="tc-title cut">The<br>Appraisal<br>Job</div>
+    <div class="meta tc-credit" id="tc-credit">Case No. 1138</div>
+  </div>
+  <div class="meta tc-cta">Put the cap on. Walk the room. Press the button.</div>
+</div>
+
+<!-- ================= LIVE VIEW (route: /) ================= -->
+<section class="view view-live on" id="v-live" aria-label="Live scan">
+  <header class="chrome">
+    <div class="label">Case NO. <span class="case-no">1138</span> · The Appraisal Job</div>
+    <div class="meta">Reel 1 &nbsp;·&nbsp; <span id="fr">FR 00:00:00:00</span> &nbsp;·&nbsp;
+      <span class="line-live"><span class="rec">●</span> REC</span><span class="line-dead">○ LINE DEAD</span></div>
+  </header>
+
+  <main class="live-grid">
+    <div class="film">
+      <div class="film-band top"></div>
+      <div class="feed" id="feed">
+        <div class="frame-box" id="frame-box">
+          <div class="fake-room"></div>                                 <!-- demo only -->
+          <canvas id="frame" class="feed-img" hidden></canvas>          <!-- production: <img id="frame" class="feed-img" alt=""> -->
+          <div id="markers"></div>
+        </div>
+        <video id="cam" autoplay muted playsinline hidden></video>     <!-- demo only -->
+        <div class="cut"></div>
+        <span class="reg tl"></span><span class="reg tr"></span>
+        <span class="reg bl"></span><span class="reg br"></span>
+        <div class="slate" role="status">
+          <div class="leader"><span class="leader-n">8</span></div>
+          <div class="slate-title">Footage Lost</div>
+          <div class="meta slate-meta">Roll A · Cam 01 · reconnecting...</div>
+        </div>
+      </div>
+      <div class="film-band bot">
+        <div class="film-label">Roll A · Cam 01 · Room 3</div>
+      </div>
+    </div>
+
+    <aside class="live-side">
+      <div>
+        <div class="label">Estimated Take</div>
+        <div class="odo" id="odo"></div>
+      </div>
+      <div class="count-row meta">
+        <span>Items: <b id="count">0</b></span>
+        <span><span class="est" style="margin:0">est.</span> is a guess</span>
+      </div>
+      <div data-motion-status></div>
+      <div class="label">Exhibit Log · Live</div>
+      <div class="log" id="log" aria-hidden="true"></div>
+      <div class="sr-only" id="log-sr" role="log" aria-live="polite"></div>
+      <div class="note">the good stuff's never on the first shelf.</div>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <span class="meta">The cap button files the lineup.</span>
+  </footer>
+</section>
+
+<!-- ================= REVEAL VIEW (route: /reveal) ================= -->
+<section class="view view-reveal" id="v-reveal" aria-label="Reveal">
+  <header class="chrome">
+    <div class="label">Case NO. <span class="case-no">1138</span> · Identification Parade</div>
+    <div class="meta">Reel 2 &nbsp;·&nbsp; <span class="line-live"><span class="rec">●</span> REC</span><span class="line-dead">○ LINE DEAD</span></div>
+  </header>
+
+  <h1 class="reveal-title cut" id="reveal-title">The Usual Suspects</h1>
+  <div class="reveal-sub meta" id="reveal-sub"></div>
+
+  <div class="lineup-wall" id="wall">
+    <div class="wall-marks" aria-hidden="true">
+      <span>4'0"</span><span>4'6"</span><span>5'0"</span><span>5'6"</span>
+      <span>6'0"</span><span>6'6"</span><span>7'0"</span>
+    </div>
+    <!-- five slots, filled by Noir.runReveal(); left to right = rank 5 down to rank 1 -->
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div></div>
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div></div>
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div></div>
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div></div>
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div></div>
+  </div>
+
+  <footer class="reveal-foot">
+    <div class="reveal-total">
+      <div class="label">Total take</div>
+      <div class="odo sm" id="odo-total"></div>
+    </div>
+    <div class="stamp" id="stamp-closed" style="--rot:-6deg; opacity:0">Case Closed</div>
+    <div class="file-copy">
+      <div class="qr-mat"><svg id="qr-reveal" width="96" height="96" role="img" aria-label="QR code to the loot manifest"></svg></div>   <!-- production: the server's QR <img> -->
+      <div class="cap meta">Scan this. It's the file.</div>
+    </div>
+  </footer>
+  <div class="sr-only" id="reveal-sr" aria-live="assertive"></div>
+</section>
+
+<!-- ================= MANIFEST VIEW (route: /manifest) ================= -->
+<section class="view view-manifest" id="v-manifest" aria-label="Loot manifest">
+  <div class="desk">
+    <article class="doc">
+      <div class="stamp big" aria-hidden="true">Evidence</div>
+      <div class="stamp small" id="filed">Filed</div>
+      <h1>Loot Manifest</h1>
+      <div class="sub">JOB NO. <span class="case-no">1138</span> · WHAT THE CAMERA PRICED<br>FILED WITH NOBODY AT THE DESK</div>
+      <hr>
+      <div class="rows" id="doc-rows"></div>
+      <div class="total"><span>TOTAL TAKE</span><span class="leaders"></span><span id="doc-total"></span></div>
+      <div class="doc-foot">
+        <div class="fine">PROPERTY OF THE CREW. DO NOT FILE.</div>
+        <div class="file-copy">
+          <div class="qr-mat"><svg id="qr-doc" width="84" height="84" role="img" aria-label="QR code to this manifest"></svg></div>
+          <div class="cap meta">File copy</div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<script src="motion.js"></script>
+<script src="anime.min.js"></script>
+<script src="noir.js"></script>
+<!-- production: <script>Noir.connect('/state.json')</script> and nothing below this line -->
+
+<!-- ================= DEMO DRIVER (fake data through the real runtime) ================= -->
+<div class="keys" id="keys">
+  <b>L</b> walk · <b>R</b> reveal · <b>P</b> manifest · <b>M</b> mute · <b>T</b> title card<br>
+  States: <b>F</b> footage lost · <b>W</b> line dead · <b>U</b> unidentified · <b>B</b> huge take<br>
+  <b>3</b> short lineup · <b>0</b> empty lineup · <b>L</b> after <b>R</b>: the end<br>
+  <b>S</b> sound <span id="snd">off</span> · <b>?</b> hide
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+
+/* same shape the rig sends in /state.json items (bbox already in %) */
+const LOOT = [
+  {item:'VINTAGE ROLEX',        value_usd:4200, estimated:false, bbox:{l:12,t:20,w:26,h:36}},
+  {item:'LEICA M3 RANGEFINDER', value_usd:1850, estimated:false, bbox:{l:56,t:32,w:20,h:30}},
+  {item:'FIRST-ED. HEMINGWAY',  value_usd:950,  estimated:false, bbox:{l:32,t:50,w:22,h:26}},
+  {item:'SILK SMOKING JACKET',  value_usd:420,  estimated:true,  bbox:{l:72,t:16,w:16,h:40}},
+  {item:'BRASS DESK LAMP',      value_usd:180,  estimated:false, bbox:{l:14,t:58,w:20,h:24}},
+];
+const HUGE = {item:'DIAMOND RIVIÈRE NECKLACE, 18K WHITE GOLD, APPRAISER\'S CASE',
+              value_usd:1275000, estimated:true, bbox:{l:40,t:24,w:24,h:30}};
+const numbered = list => list.map((it, i) => ({...it, source: 'offline', n: i + 1}));
+
+/* kit.html embeds this page with a #state to preview each screen; previews run at speed */
+const preview = location.hash.slice(1);
+const pace = preview ? .02 : 1;
+if(preview) for(const t of ['--dur-type-char', '--beat-mark', '--beat-count'])
+  document.documentElement.style.setProperty(t, '1ms');
+
+/* one fake scan: the pending line, the "LLM call", then the exhibit */
+let walkRun = 0;
+async function scan(src, {unidentified = false, run = walkRun} = {}){
+  const n = Noir.found.length + 1;
+  const line = Noir.pending(n);
+  await Noir.sleep(700 * pace);
+  if(run !== walkRun) return;
+  if(unidentified) return Noir.voidExhibit(line);
+  await Noir.showExhibit({...src, source: 'offline', n}, line);
+}
+async function walk(){
+  const run = ++walkRun;
+  await Noir.newCase();                        // after a reveal this plays THE END first
+  if(run !== walkRun) return;
+  $('#cam').play().catch(() => {});
+  await Noir.sleep(900 * pace);
+  for(const it of LOOT){
+    if(run !== walkRun) return;
+    await scan(it, {run}); await Noir.sleep(1600 * pace);
+  }
+  if(run !== walkRun) return;
+  if(!preview) Noir.armIdle();              // previews hold their state
+}
+
+/* stills every 2.5 s, like /frame.jpg; each one is a hard cut */
+setInterval(() => {
+  const v = $('#cam'), c = $('#frame');
+  if(v.videoWidth && !$('#feed').classList.contains('lost')){
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext('2d').drawImage(v, 0, 0);
+  }
+  Noir.cutFeed();
+}, 2500);
+
+/* webcam if there is one, otherwise the fake room */
+navigator.mediaDevices?.getUserMedia?.({video: true}).then(s => {
+  const v = $('#cam'); v.srcObject = s;
+  v.onloadedmetadata = () => {
+    $('#frame-box').style.setProperty('--ar', `${v.videoWidth}/${v.videoHeight}`);
+    $('#frame').hidden = false; $('.fake-room').style.display = 'none';
+  };
+}).catch(() => {});
+
+/* fake QR (visual stand-in; the real app uses the server's QR image) */
+function makeQR(svg){
+  const N = 21, cell = svg.width.baseVal.value / N;
+  let seed = 1138; const rnd = () => (seed = (seed*1103515245+12345) & 0x7fffffff) / 0x7fffffff;
+  const inFinder = (x,y) => (x<7&&y<7) || (x>=N-7&&y<7) || (x<7&&y>=N-7);
+  let rects = `<rect width="100%" height="100%" fill="#efe9db"/>`;
+  const finder = (ox,oy) => `<rect x="${ox*cell}" y="${oy*cell}" width="${7*cell}" height="${7*cell}" fill="#0f0e0c"/><rect x="${(ox+1)*cell}" y="${(oy+1)*cell}" width="${5*cell}" height="${5*cell}" fill="#efe9db"/><rect x="${(ox+2)*cell}" y="${(oy+2)*cell}" width="${3*cell}" height="${3*cell}" fill="#0f0e0c"/>`;
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++)
+    if(!inFinder(x,y) && rnd() < .45)
+      rects += `<rect x="${x*cell}" y="${y*cell}" width="${cell+.4}" height="${cell+.4}" fill="#0f0e0c"/>`;
+  svg.setAttribute('viewBox', `0 0 ${svg.width.baseVal.value} ${svg.height.baseVal.value}`);
+  svg.innerHTML = rects + finder(0,0) + finder(N-7,0) + finder(0,N-7);
+}
+makeQR($('#qr-reveal')); makeQR($('#qr-doc'));
+Noir.buildManifest(numbered(LOOT));
+
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if(['r', '3', '0', 'm', 't'].includes(k)) walkRun++;
+  if(k === 'l') walk();
+  if(k === 'r') Noir.runReveal(Noir.found.length ? Noir.found : numbered(LOOT));
+  if(k === '3') Noir.runReveal(numbered(LOOT.slice(0, 3)));
+  if(k === '0') Noir.runReveal([]);
+  if(k === 'p'){ Noir.clearLater(); Noir.exitIdle(); Noir.show('v-manifest'); }
+  if(k === 't'){ Noir.clearLater(); Noir.show('v-live'); Noir.enterIdle(); }
+  if(k === 'f') Noir.setFeed($('#feed').classList.contains('lost') ? 'ok' : 'lost');
+  if(k === 'w') Noir.setOffline(!document.body.classList.contains('offline'));
+  if(k === 'u' || k === 'b'){ Noir.show('v-live'); scan(k === 'b' ? HUGE : null, {unidentified: k === 'u'}); }
+  if(k === 's') $('#snd').textContent = Noir.sfx.toggle() ? 'on' : 'off';
+  if(k === '?') $('#keys').classList.toggle('off');
+});
+setTimeout(() => $('#keys').classList.add('off'), 9000);   // hint fades; ? brings it back
+
+if(!preview) Noir.reelStart();               // production: Noir.connect() does this itself
+if(preview){
+  $('#keys').classList.add('off');
+  if(preview === 'manifest') Noir.show('v-manifest'), Noir.exitIdle();
+  if(preview === 'reveal') Noir.runReveal(numbered(LOOT));
+  if(['live', 'lost', 'dead'].includes(preview)) walk().then(() => {
+    if(preview === 'lost') Noir.setFeed('lost');
+    if(preview === 'dead') Noir.setOffline(true);
+  });
+}
+</script>
+</body>
+</html>

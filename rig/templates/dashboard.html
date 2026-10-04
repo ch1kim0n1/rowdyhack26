@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Appraisal Job</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230f0e0c'/%3E%3Crect x='6' y='3' width='20' height='26' fill='%23efe9db'/%3E%3Cg fill='%230f0e0c'%3E%3Crect x='8' y='5' width='3' height='3'/%3E%3Crect x='8' y='11' width='3' height='3'/%3E%3Crect x='8' y='17' width='3' height='3'/%3E%3Crect x='8' y='23' width='3' height='3'/%3E%3Crect x='21' y='5' width='3' height='3'/%3E%3Crect x='21' y='11' width='3' height='3'/%3E%3Crect x='21' y='17' width='3' height='3'/%3E%3Crect x='21' y='23' width='3' height='3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="stylesheet" href="/noir.css">
+<link rel="stylesheet" href="/vault.css">
+<link rel="stylesheet" href="/operations.css">
+<link rel="stylesheet" href="/motion.css">
+<meta name="case-nonce" content="{{ case_nonce }}">
+</head>
+<body class="vault-theme projector">
+<div class="vault-wallpaper" aria-hidden="true"></div>
+
+<nav class="operation-tools" aria-label="Case navigation">
+  <span class="label operation-channel">The Appraisal Job</span>
+  <div class="operation-links">
+    <a href="/premiere">Premiere</a>
+    <a href="/desk">Dispatch</a>
+    <a href="/manifest">Case file</a>
+  </div>
+  <button type="button" id="sound-toggle" aria-pressed="false">Sound (M)</button>
+  <button type="button" class="operation-motion" data-vault-motion aria-pressed="false">Pause motion</button>
+  <a class="close-x" href="/premiere" data-close-page aria-label="Close the projector" title="Close"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg></a>
+</nav>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="noir-grade">
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+        <feFuncG type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+        <feFuncB type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+      </feComponentTransfer>
+    </filter>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/>
+    </filter>
+    <filter id="stamp-rough" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="flicker" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div id="scratch" aria-hidden="true"></div>
+<div class="curtain" id="curtain" aria-hidden="true"></div>
+
+<div class="titlecard" aria-hidden="true">
+  <div class="vault-stage vault-idle-stage">
+    <div class="vault-scene">
+      <img src="/brand/appraisal-job-wallpaper.webp" alt="" width="1536" height="1024">
+      <i class="vault-aura" aria-hidden="true"></i>
+    </div>
+  </div>
+  <div class="tc-body sr-only">
+    <div class="meta">A RowdyHacks XII Picture</div>
+    <div class="tc-title cut">The<br>Appraisal<br>Job</div>
+    <div class="meta tc-credit" id="tc-credit">CASE NO. {{ '%04d'|format(case_no) }}</div>
+  </div>
+  <div class="meta tc-cta">Any key or click to begin.</div>
+</div>
+
+<!-- Pick the job from the title card. Outside .titlecard (aria-hidden) so it stays reachable. -->
+<nav class="job-pick" aria-label="Choose the job">
+  <button type="button" class="job-btn" data-job="appraisal">
+    <span class="job-name">Appraisal</span>
+    <span class="job-line">Scan anything. Price everything. No limits.</span>
+  </button>
+  <button type="button" class="job-btn" data-job="mastermind">
+    <span class="job-name">Mastermind</span>
+    <span class="job-line">Set the bag, the clock, the job. Get the haul.</span>
+  </button>
+</nav>
+
+<section class="view view-live on" id="v-live" aria-label="Live scan">
+  <header class="chrome">
+    <h1 class="label">Case NO. <span class="case-no">{{ '%04d'|format(case_no) }}</span> · The Appraisal Job
+      <button type="button" class="mode-chip" id="mode-chip" aria-haspopup="dialog" title="Change the job (P)">Appraisal</button></h1>
+    <div class="meta">Reel 1 &nbsp;·&nbsp; <span id="fr">FR 00:00:00:00</span> &nbsp;·&nbsp;
+      <span class="line-live"><span class="rec">●</span> REC</span><span class="line-dead">○ LINE DEAD</span></div>
+  </header>
+
+  <main class="live-grid">
+    <div class="film">
+      <div class="film-band top"></div>
+      <div class="feed" id="feed">
+        <div class="frame-box" id="frame-box">
+          <img id="frame" class="feed-img" alt="Live camera evidence feed">
+          <div id="markers"></div>
+          <div class="feed-hud" aria-hidden="true">
+            <span class="hud-tl"><span class="hud-rec">REC</span><span class="hud-tc" id="hud-tc">00:00:00:00</span></span>
+            <span class="hud-bl" id="hud-clock"></span>
+          </div>
+        </div>
+        <div class="dispatch" aria-hidden="true">DISPATCH <span class="bars"><i></i><i></i><i></i><i></i></span></div>
+        <div class="cut"></div>
+        <div class="signal-noise" aria-hidden="true"></div>
+        <span class="scout-status" id="scout-status">SCOUT OFFLINE</span>
+        <span class="reg tl"></span><span class="reg tr"></span>
+        <span class="reg bl"></span><span class="reg br"></span>
+        <div class="slate" role="status">
+          <div class="slate-title">LINE DEAD</div>
+          <div class="meta slate-meta">camera lost · reconnecting...</div>
+        </div>
+      </div>
+      <div class="film-band bot">
+        <div class="film-label">Roll A · Cam 01 · Room 3</div>
+      </div>
+    </div>
+
+    <aside class="live-side">
+      <div>
+        <div class="label">Estimated Take</div>
+        <div class="odo" id="odo"></div>
+      </div>
+      <section class="plan-panel" id="plan-panel" aria-label="The plan" hidden>
+        <div class="plan-head"><span class="label">The Plan</span><span class="meta" id="plan-level"></span></div>
+        <div class="plan-bag"><span class="plan-amt" id="plan-value">$0</span><span class="meta">in the bag</span></div>
+        <div class="gauge" id="g-weight"><span class="meta g-k">Bag</span><span class="g-bar"><i></i></span><span class="meta g-txt"></span></div>
+        <div class="gauge" id="g-time"><span class="meta g-k">Clock</span><span class="g-bar"><i></i></span><span class="meta g-txt"></span></div>
+        <div class="plan-next meta" id="plan-next" aria-live="polite"></div>
+      </section>
+      <div class="count-row">
+        <span class="stat"><b id="count">0</b><span class="label">Items</span></span>
+        <span class="meta"><span class="est" style="margin:0">est.</span> is a guess</span>
+      </div>
+      <div data-motion-status></div>
+      <div class="label">Case File</div>
+      <div class="log-wrap">
+        <div class="log" id="log" tabindex="0" role="region" aria-label="Scan log"></div>
+        <button type="button" class="jump-live" id="jump-live" hidden>JUMP TO LIVE</button>
+      </div>
+      <div class="sr-only" id="log-sr" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <div class="note">the good stuff's never on the first shelf.</div>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <div class="ticker" aria-hidden="true"><span class="belt"><span>AWAITING TARGETS · SCENE STABLE ·</span></span></div>
+    <span class="meta">Stop files the lineup. Hit it again to close the case.</span>
+    <button type="button" class="rig-stop">Stop</button>
+  </footer>
+</section>
+
+<section class="view view-reveal" id="v-reveal" aria-label="Reveal">
+  <header class="chrome">
+    <div class="label">Case NO. <span class="case-no">{{ '%04d'|format(case_no) }}</span> · Identification Parade</div>
+    <div class="meta">Reel 2 &nbsp;·&nbsp; <span class="line-live"><span class="rec">●</span> REC</span><span class="line-dead">○ LINE DEAD</span></div>
+  </header>
+
+  <h1 class="reveal-title cut" id="reveal-title">The Usual Suspects</h1>
+  <div class="reveal-sub meta" id="reveal-sub"></div>
+
+  <div class="lineup-wall" id="wall">
+    <div class="wall-marks" aria-hidden="true">
+      <span>4'0"</span><span>4'6"</span><span>5'0"</span><span>5'6"</span>
+      <span>6'0"</span><span>6'6"</span><span>7'0"</span>
+    </div>
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div><div class="why"></div></div>
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div><div class="why"></div></div>
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div><div class="why"></div></div>
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div><div class="why"></div></div>
+    <div class="suspect"><div class="photo"><div class="placard"></div></div><div class="name"></div><div class="price"></div><div class="why"></div></div>
+  </div>
+
+  <footer class="reveal-foot">
+    <div class="reveal-total">
+      <div class="label">Total take</div>
+      <div class="odo sm" id="odo-total"></div>
+      <div class="meta plan-take" id="plan-take" hidden></div>
+    </div>
+    <div class="stamp" id="stamp-closed" style="--rot:-6deg; opacity:0">FILED</div>
+    <div class="file-copy">
+      <div class="qr-mat"><img src="/qr.png" width="96" height="96" alt="QR code to the loot manifest"></div>
+      <div class="cap meta">Scan this. It's the file.</div>
+      <a class="cap meta" href="/manifest">Open the manifest</a>
+      <a class="cap meta report-link" id="report-link" href="/manifest" hidden>Defender Report</a>
+    </div>
+    <button type="button" id="skip-reveal">Skip to FILED</button>
+    <button type="button" class="rig-stop">Stop</button>
+  </footer>
+  <div class="sr-only" id="reveal-sr" aria-live="assertive"></div>
+</section>
+
+<!-- Mastermind job sheet: the crew's bag, clock, and job size. -->
+<dialog class="job-sheet" id="job-sheet" aria-labelledby="job-title">
+  <form id="job-form" novalidate>
+    <div class="js-stamp" aria-hidden="true">Confidential</div>
+    <h2 id="job-title">The Plan</h2>
+    <div class="js-sub">Case No. <span class="case-no">{{ case_no }}</span> · Mastermind mode</div>
+    <fieldset>
+      <legend>The bag</legend>
+      <div class="presets" role="group" aria-label="Bag presets">
+        <button type="button" data-set="bag_lb" data-val="10">Daypack · 10 lb</button>
+        <button type="button" data-set="bag_lb" data-val="25">Duffel · 25 lb</button>
+        <button type="button" data-set="bag_lb" data-val="50">Hockey bag · 50 lb</button>
+      </div>
+      <label class="num">Holds <input type="number" name="bag_lb" min="1" max="200" step="0.5" value="25" required> lb</label>
+    </fieldset>
+    <fieldset>
+      <legend>The clock</legend>
+      <div class="presets" role="group" aria-label="Time presets">
+        <button type="button" data-set="time_s" data-val="30">30 sec</button>
+        <button type="button" data-set="time_s" data-val="60">1 min</button>
+        <button type="button" data-set="time_s" data-val="120">2 min</button>
+        <button type="button" data-set="time_s" data-val="300">5 min</button>
+      </div>
+      <label class="num">In and out in <input type="number" name="time_s" min="10" max="1800" step="5" value="60" required> seconds</label>
+    </fieldset>
+    <fieldset>
+      <legend>The job</legend>
+      <label class="size"><input type="radio" name="level" value="small" checked>
+        <span><b>Small job</b><span class="size-line">Quiet. A tight risk budget, nothing that draws a second look.</span></span></label>
+      <label class="size"><input type="radio" name="level" value="big">
+        <span><b>Big score</b><span class="size-line">Loud. Anything that fits the bag and the clock.</span></span></label>
+    </fieldset>
+    <p class="js-err" id="job-err" role="alert" hidden></p>
+    <div class="js-actions">
+      <button type="submit" class="js-go">Run the job</button>
+      <button type="button" class="js-alt" data-job="appraisal">Appraisal, no plan</button>
+      <button type="button" class="js-alt" data-close>Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/anime.min.js"></script>
+<script src="/motion.js"></script>
+<script src="/noir.js"></script>
+<script src="/vault.js"></script>
+<script>
+  Noir.setCase({{ case_no }});
+  Noir.connect('/state.json');
+  Noir.drive('/api/drive');
+</script>
+</body>
+</html>

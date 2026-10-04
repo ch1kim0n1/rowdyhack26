@@ -1,0 +1,22 @@
+# ~/.asoundrc — only needed if `arecord -l` lists the USB mic but
+# `python -m rig.listen` records silence or "device busy" on Pi OS Lite.
+# Copy to ~/.asoundrc, set card/device from `arecord -l` output, reboot or
+# reload ALSA. If the mic works out of the box, ignore this file entirely.
+
+pcm.!default {
+    type asym
+    capture.pcm "mic"
+    playback.pcm "speaker"
+}
+
+pcm.mic {
+    type hw
+    card 1        # <-- card number from `arecord -l` (USB mic)
+    device 0
+}
+
+pcm.speaker {
+    type hw
+    card 0        # <-- onboard/HDMI or USB speaker card from `aplay -l`
+    device 0
+}

@@ -1,0 +1,232 @@
+/* ============================================================
+   The dispatch desk: the crew's console. A desk, not a dashboard:
+   the take, the ledger, the three posts on the line, and the button.
+   Built on noir.css. Paper for the ledger, carbon for the posts.
+   ============================================================ */
+html, body { height: auto; }
+body.dispatch { min-height: 100vh; font-size: 15px; background: radial-gradient(ellipse 90% 70% at 45% 30%, var(--carbon), var(--ink) 70%); }
+.dispatch a { color: inherit; }
+
+.desk-chrome { align-items: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 20; background: rgba(15,14,12,.94); }
+.desk-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; min-height: 40px; }
+.desk-brand .brand-mark { height: 28px; width: auto; }
+.desk-nav { display: flex; gap: 22px; }
+.desk-nav a { text-decoration: none; padding: 10px 0; border-bottom: 1px solid transparent; transition: color var(--dur-hover) var(--ez-film), border-color var(--dur-hover) var(--ez-film); }
+.desk-nav a:hover { color: var(--paper); border-bottom-color: var(--stamp-lit); }
+
+.desk-grid {
+  display: grid;
+  /* twelve columns: the take 4, the ledger 5, the crew 3; every column opens on the same header bar */
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-5) var(--sp-7);
+  max-width: 1680px; margin: 0 auto;
+  align-items: start;
+}
+.panel { display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+/* Desktop: the take runs down the left; the ledger and the hat share the top; the wrist
+   and the rover sit underneath them in the same columns, so every column ends at about the same
+   line and the desk fits one screen. The crew panel spans the right two-thirds as a
+   subgrid (it keeps its heading and its three posts together for screen readers) and
+   lays the ledger's column over its empty cell. */
+.desk-grid { grid-template-rows: auto 1fr auto; }   /* a taller take column adds its slack below the wrist and rover, not above */
+.take-panel { grid-column: 1 / span 4; grid-row: 1 / span 2; }
+.ledger-panel { grid-column: 5 / span 5; grid-row: 1; }
+.crew-panel {
+  grid-column: 5 / -1; grid-row: 1 / span 2;
+  display: grid; grid-template-columns: subgrid; grid-template-rows: subgrid;
+  gap: normal; pointer-events: none;            /* normal = the desk's own gaps; the ledger shows through the empty cell */
+}
+.crew-panel > * { pointer-events: auto; }
+.crew-top { grid-column: 6 / -1; grid-row: 1; display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+#post-wrist { grid-column: 1 / span 5; grid-row: 2; align-self: start; }   /* under the ledger, same width */
+#post-rover { grid-column: 6 / -1; grid-row: 2; align-self: start; }        /* under the hat, same width */
+#post-wrist .watch { padding-inline: 24%; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.panel-head a { text-decoration: none; }
+.panel-head a:hover { color: var(--paper); text-decoration-color: var(--stamp-lit); }
+.fine { font-family: var(--f-typed); font-size: 14px; line-height: 1.45; color: var(--ash); }
+
+/* ---------- the take: the one paper slip on the desk, so it reads first ---------- */
+.take-slip {
+  position: relative;
+  display: grid; gap: var(--sp-3);
+  padding: 22px 22px 16px;
+  background: linear-gradient(180deg, rgba(0,0,0,.04), transparent 12%), #ece4d2 url("/assets/textures/paper.jpg") center / cover;
+  background-blend-mode: normal, multiply;
+  color: var(--ink);
+  box-shadow: 0 14px 34px rgba(0,0,0,.55), 0 2px 3px rgba(0,0,0,.35);
+  rotate: -.4deg;
+}
+.take-slip::before { content: ""; position: absolute; top: -8px; left: 50%; width: 52px; height: 16px; translate: -50% 0; rotate: 2deg; background: rgba(216,212,199,.6); }
+.take-slip .odo { font-size: calc(clamp(72px, 7.4vw, 124px) * var(--odo-k, 1)); color: var(--ink); }
+.take-slip .odo :is(.odo-sep, .odo-cur, .est) { color: var(--paper-ink-2); }
+.take-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; border-top: var(--rule) solid var(--paper-rule); padding-top: var(--sp-2); }
+.take-row b { font-family: var(--f-display); font-weight: 400; font-size: 48px; line-height: .8; color: var(--ink); }
+.take-row .label { color: var(--paper-ink-3); }
+#walk-state { text-align: right; color: var(--paper-ink-2); font-family: var(--f-typed); font-size: 14px; letter-spacing: 0; text-transform: none; }
+.feed-print { position: relative; background: #f1ece0; padding: 8px 8px 8px; box-shadow: 0 12px 28px rgba(0,0,0,.5); rotate: -.6deg; }
+.feed-print img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #000; filter: grayscale(1) contrast(1.28) brightness(.92) url(#noir-grade); }
+.feed-slate { position: absolute; inset: 8px; display: none; place-items: center; background: var(--carbon); font-family: var(--f-display); font-size: 40px; letter-spacing: .06em; text-transform: uppercase; color: var(--paper); }
+.feed-print.lost .feed-slate { display: grid; }
+.big-btn {
+  min-height: 64px; padding: 0 20px;
+  border: 2px solid var(--paper); background: transparent; color: var(--paper);
+  font-family: var(--f-display); font-size: 32px; letter-spacing: .08em; text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--dur-hover) var(--ez-film), color var(--dur-hover) var(--ez-film), translate var(--dur-hover) var(--ez-settle);
+}
+.big-btn:hover { background: var(--paper); color: var(--ink); translate: 0 -2px; }
+.big-btn:active { translate: 0 1px; }
+.big-btn[disabled] { opacity: .5; cursor: progress; }
+
+/* ---------- the ledger: typed on paper ---------- */
+.ledger {
+  list-style: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.035), transparent 8%), var(--paper);
+  color: var(--ink);
+  padding: 30px 26px 26px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.6);
+  font-family: var(--f-typed); font-size: 15px;
+  min-height: 300px;
+  position: relative;
+}
+.ledger::before { content: ""; position: absolute; top: -8px; left: 50%; width: 48px; height: 15px; translate: -50% 0; rotate: -2deg; background: rgba(216,212,199,.5); }
+.ledger li { display: grid; grid-template-columns: 34px 46px minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 8px 0; border-bottom: 1px dotted var(--paper-rule); animation: rise var(--dur-fade) var(--ez-settle) both; }
+.ledger li.ledger-empty { display: block; color: var(--paper-ink-3); border: 0; }
+.ledger .n { font-family: var(--f-type); font-size: 12px; letter-spacing: .12em; color: var(--paper-ink-3); }
+.ledger .mug { width: 46px; aspect-ratio: 3 / 4; object-fit: cover; background: var(--carbon); filter: grayscale(1) contrast(1.2); }
+.ledger .what { min-width: 0; }
+.ledger .name { display: block; font-family: var(--f-display); font-size: 24px; line-height: 1; letter-spacing: .02em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ledger .why { display: block; margin-top: 4px; font-family: var(--f-type); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--paper-ink-3); }
+.ledger .amt { font-family: var(--f-display); font-size: 28px; line-height: 1; text-align: right; }
+.ledger .amt .est, .ledger .tag { font-family: var(--f-typed); font-size: 12px; color: var(--paper-ink-3); margin-left: 4px; letter-spacing: .06em; }
+.ledger .total { grid-template-columns: 1fr auto; border-bottom: 0; border-top: 3px double var(--ink); margin-top: 8px; padding-top: 12px; font-size: 16px; letter-spacing: .1em; }
+
+/* ---------- the crew: three posts on the line ---------- */
+.post { background: var(--carbon); border: var(--rule) solid var(--smoke); padding: 16px; display: grid; gap: 12px; }
+.post header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; }   /* a long chip drops under the name instead of widening the post */
+.post h3 { font-family: var(--f-display); font-weight: 400; font-size: 30px; line-height: 1; letter-spacing: .04em; text-transform: uppercase; }
+/* status, readable across the room: filled = on the job, outlined = waiting, red = dark */
+.state {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 9px 4px;
+  border: var(--rule) solid var(--smoke);
+  font-family: var(--f-type); font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ash); white-space: nowrap;
+}
+.state::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.state[data-state="ok"] { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+.state[data-state="ok"]::before { background: var(--stamp); animation: rec 2s steps(1, end) infinite; }
+.state[data-state="down"] { border-color: var(--stamp-lit); color: var(--stamp-lit); }
+.state[data-state="down"]::before { background: transparent; box-shadow: inset 0 0 0 1.5px currentColor; }
+.readout { display: grid; grid-template-columns: 70px 1fr; gap: 6px 12px; font-family: var(--f-typed); font-size: 15px; }
+.readout dt { font-weight: 700; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ash); padding-top: 2px; }
+.readout dd { color: var(--paper); overflow-wrap: anywhere; }
+.switch-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.switch { display: inline-flex; border: var(--rule) solid var(--bone); }
+.switch button { min-height: 40px; padding: 0 14px; border: 0; background: transparent; color: var(--ash); font-family: var(--f-typed); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background var(--dur-hover) var(--ez-film), color var(--dur-hover) var(--ez-film); }
+.switch button[aria-checked="true"] { background: var(--paper); color: var(--ink); }
+.switch button:hover:not([aria-checked="true"]) { color: var(--paper); }
+/* the wrist preview, worn: a case and bezel over a stitched strap */
+.watch { position: relative; display: grid; padding: 6px 13%; }
+.watch::before {          /* the strap runs across, behind the case */
+  content: ""; position: absolute; inset: 24% 0;
+  border-radius: 7px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 9px, rgba(255,255,255,.035) 9px 10px),
+    linear-gradient(180deg, #25262b, #15161a);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), inset 0 -2px 0 rgba(0,0,0,.6);
+}
+.watch::after {           /* stitching along both edges */
+  content: ""; position: absolute; inset: calc(24% + 6px) 6px; pointer-events: none;
+  border-block: 1px dashed rgba(217,215,208,.28);
+}
+.wrist-oled {
+  position: relative; z-index: 1;
+  width: 100%; height: auto; image-rendering: pixelated;
+  border: 10px solid #1c1d21; border-radius: 16px; background: #040404;
+  box-shadow: 0 0 0 1px #3d3e44, 0 0 0 3px #0a0a0b, 0 12px 26px rgba(0,0,0,.65);
+}
+.pad { display: grid; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(2, 56px); gap: 8px; justify-content: center; }
+.pad button { border: var(--rule) solid var(--bone); background: transparent; color: var(--paper); font-family: var(--f-display); font-size: 26px; cursor: pointer; touch-action: none; user-select: none; transition: background var(--dur-hover) var(--ez-film), color var(--dur-hover) var(--ez-film), border-color var(--dur-hover) var(--ez-film), translate var(--dur-hover) var(--ez-settle); }
+.pad button:hover { border-color: var(--paper); translate: 0 -2px; }
+.pad button.held, .pad button:active { background: var(--paper); color: var(--ink); translate: 0 1px; }
+.pad .up { grid-column: 2; grid-row: 1; } .pad .lt { grid-column: 1; grid-row: 2; }
+.pad .dn { grid-column: 2; grid-row: 2; } .pad .rt { grid-column: 3; grid-row: 2; }
+#drive-note { text-align: center; }
+
+/* ---------- the plan on the ledger (Mastermind) ---------- */
+.plan-line { font-family: var(--f-typed); font-size: 13px; color: var(--paper); border-left: 3px solid var(--stamp-lit); padding: 4px 10px; }
+.plan-line[hidden] { display: none; }
+.ledger .plan-tag { display: inline-block; margin-top: 4px; font-family: var(--f-type); font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--paper-ink-3); }
+.ledger .plan-tag.bag { color: var(--stamp); }
+.ledger li.leave .name { text-decoration: line-through; text-decoration-color: var(--paper-rule); }
+.ledger .acts { grid-column: 3 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
+.ledger .acts button {
+  font: 11px var(--f-type); letter-spacing: .1em; text-transform: uppercase;
+  min-height: 30px; padding: 0 10px; background: transparent; color: var(--ink);
+  border: 1px solid var(--paper-rule); cursor: pointer;
+}
+.ledger .acts button:hover { border-color: var(--ink); }
+.ledger .acts button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.ledger .acts .act-note { font-family: var(--f-typed); font-size: 12px; color: var(--stamp); align-self: center; }
+
+/* ---------- the radio ---------- */
+.radio-panel { grid-column: 1 / -1; }
+.radio-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: var(--sp-5); align-items: start; }
+.radio-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.radio-form input {
+  flex: 1 1 260px; min-height: 44px; padding: 0 12px;
+  font: 16px var(--f-typed); color: var(--paper); background: rgba(0,0,0,.35);
+  border: 1px solid var(--bone);
+}
+.radio-form input::placeholder { color: var(--ash); }
+.radio-form button, .radio-hints button {
+  min-height: 44px; padding: 0 16px; cursor: pointer;
+  font: 700 12px var(--f-type); letter-spacing: .16em; text-transform: uppercase;
+  background: var(--paper); color: var(--ink); border: 1px solid var(--paper);
+}
+.radio-form #radio-mic { background: transparent; color: var(--paper); }
+.radio-form button:hover { background: var(--stamp-lit); border-color: var(--stamp-lit); color: var(--ink); }
+.radio-form button[disabled] { opacity: .5; cursor: progress; }
+.radio-hints { display: flex; flex-wrap: wrap; gap: 6px; }
+.radio-hints button { min-height: 32px; padding: 0 10px; font-weight: 400; letter-spacing: .08em; background: transparent; color: var(--bone); border-color: var(--smoke); }
+.radio-hints button:hover { color: var(--paper); border-color: var(--bone); }
+.radio-log, .narrator-log { list-style: none; display: grid; gap: 10px; max-height: 360px; overflow: auto; }
+.radio-log li { display: grid; gap: 4px; padding: 10px 12px; border-left: 2px solid var(--smoke); background: rgba(0,0,0,.25); }
+.radio-log li[data-state="done"] { border-left-color: var(--paper); }
+.radio-log li[data-state="clarify"], .radio-log li[data-state="unsupported"] { border-left-color: var(--bone); }
+.radio-log li[data-state="failed"], .radio-log li[data-state="cancelled"], .radio-log li[data-state="expired"] { border-left-color: var(--stamp-lit); }
+.radio-log .who { font-size: 10.5px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ash); }
+.radio-log .you { font-family: var(--f-typed); color: var(--bone); }
+.radio-log .reply { font-family: var(--f-typed); font-size: 15px; color: var(--paper); line-height: 1.4; }
+.radio-log .err { font-family: var(--f-typed); font-size: 13px; color: var(--stamp-lit); }
+.radio-log .job-meta { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ash); }
+.narrator-log li { font-family: var(--f-typed); font-size: 14px; color: var(--paper); display: grid; gap: 2px; }
+.narrator-log li .job-meta { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ash); }
+.narrator-log li[data-state="dropped"], .narrator-log li[data-state="expired"],
+.narrator-log li[data-state="superseded"], .narrator-log li[data-state="cancelled"] { color: var(--ash); text-decoration: line-through; }
+@media (max-width: 1180px) { .radio-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* the stamp lands when the lineup is filed */
+.desk-stamp { position: fixed; right: 6vw; bottom: 8vh; z-index: 30; font-size: 52px; --rot: -7deg; transform: rotate(-7deg); opacity: 0; pointer-events: none; }
+.desk-stamp.enter { opacity: .95; }
+
+@media (max-width: 1180px) {
+  .desk-grid { grid-template-rows: none; }
+  .take-panel, .ledger-panel { grid-column: span 6; grid-row: auto; }
+  .crew-panel { grid-column: 1 / -1; grid-row: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto; gap: var(--sp-4); pointer-events: auto; }
+  .crew-top { display: contents; }
+  .crew-panel h2 { grid-column: 1 / -1; }
+  #post-wrist, #post-rover { grid-column: auto; grid-row: auto; }
+}
+@media (max-width: 760px) {
+  .desk-grid, .crew-panel { grid-template-columns: minmax(0, 1fr); padding-inline: 16px; }
+  .desk-grid > .panel { grid-column: 1 / -1; }
+  .crew-panel { padding-inline: 0; }
+  .desk-nav { display: none; }
+  .ledger { padding: 26px 16px 20px; }
+  .ledger li { grid-template-columns: 26px 40px minmax(0, 1fr) auto; gap: 4px 8px; }
+  .desk-stamp { font-size: 34px; right: 16px; bottom: 16px; }
+}

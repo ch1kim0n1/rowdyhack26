@@ -1,0 +1,19 @@
+[Unit]
+Description=Heist kiosk dashboard (local monitor, no laptop needed)
+After=heist.service graphical.target
+Wants=heist.service
+
+[Service]
+User=pi
+# cage = wayland kiosk compositor; chromium in --kiosk on the local dashboard.
+# The monitor+keyboard path for a dead venue network.
+# Boot race: chromium would otherwise load before flask binds and sit on an
+# error page — wait for the hub's /health first (no cap; a dead hub means a
+# dead kiosk anyway, and Restart=always re-arms after reboot).
+ExecStartPre=/bin/sh -c 'until curl -sf -o /dev/null http://localhost:5000/health; do sleep 1; done'
+ExecStart=/usr/bin/cage -- /usr/bin/chromium --kiosk --noerrdialogs --disable-infobars --incognito http://localhost:5000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical.target

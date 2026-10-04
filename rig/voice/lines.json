@@ -1,0 +1,307 @@
+{
+  "version": 1,
+  "format": "WAV, 16-bit PCM, mono, 22050 Hz; silence trimmed; loudness normalized to -20 dBFS RMS with a -1 dBFS peak ceiling",
+  "voice": "Dispatch: dry, tired, professional. Short sentences. Never says an object was taken, never claims to measure risk, never invents a countdown.",
+  "events": {
+    "case_started": {
+      "priority": 20,
+      "scope": "case",
+      "cooldown_s": 0,
+      "expire_s": 12,
+      "kind": "sentence",
+      "when": "the crew picks the job on the title card",
+      "variants": [
+        {
+          "id": "a",
+          "text": "All right. Eyes open. Let's see what this room is hiding.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 3.71s"
+        },
+        {
+          "id": "b",
+          "text": "Clock's running. Walk it slow.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.02s"
+        }
+      ]
+    },
+    "first_exhibit": {
+      "priority": 25,
+      "scope": "case",
+      "cooldown_s": 0,
+      "expire_s": 12,
+      "kind": "intro",
+      "when": "the first exhibit of the case is filed; the item and price follow",
+      "variants": [
+        {
+          "id": "a",
+          "text": "First exhibit filed.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 1.51s"
+        },
+        {
+          "id": "b",
+          "text": "We're on the board.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 0.85s"
+        }
+      ]
+    },
+    "top5_entry": {
+      "priority": 30,
+      "scope": "exhibit",
+      "cooldown_s": 4,
+      "expire_s": 10,
+      "kind": "intro",
+      "when": "a newly filed exhibit enters the price-ranked top five; the item and price follow",
+      "variants": [
+        {
+          "id": "a",
+          "text": "That's worth a second look.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 1.53s"
+        },
+        {
+          "id": "b",
+          "text": "Top five.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 0.74s"
+        },
+        {
+          "id": "c",
+          "text": "Now that's interesting.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 1.20s"
+        }
+      ]
+    },
+    "value_milestone": {
+      "priority": 20,
+      "scope": "threshold",
+      "cooldown_s": 6,
+      "expire_s": 15,
+      "kind": "sentence",
+      "when": "the running take crosses a NARRATOR_MILESTONES threshold upward",
+      "variants": [
+        {
+          "id": "a",
+          "text": "The ledger's starting to look interesting.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.08s"
+        },
+        {
+          "id": "b",
+          "text": "That's real money now.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 1.35s"
+        },
+        {
+          "id": "c",
+          "text": "Take's climbing. Stay quiet.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.08s"
+        }
+      ]
+    },
+    "rover_confirmed": {
+      "priority": 25,
+      "scope": "exhibit",
+      "cooldown_s": 6,
+      "expire_s": 10,
+      "kind": "sentence",
+      "requires": "fusion",
+      "when": "a second source confirms the same exhibit (needs #29 sensor fusion; off until it ships)",
+      "variants": [
+        {
+          "id": "a",
+          "text": "Two sets of eyes. Same exhibit.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.31s"
+        }
+      ]
+    },
+    "camera_lost": {
+      "priority": 50,
+      "scope": "global",
+      "cooldown_s": 10,
+      "expire_s": 8,
+      "kind": "sentence",
+      "coalesce": "camera",
+      "when": "the camera stays down past NARRATOR_CAMERA_DEBOUNCE seconds",
+      "variants": [
+        {
+          "id": "a",
+          "text": "Lost the picture. Stand by.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.05s"
+        },
+        {
+          "id": "b",
+          "text": "Camera's dark. Hold your position.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.28s"
+        }
+      ]
+    },
+    "camera_restored": {
+      "priority": 45,
+      "scope": "global",
+      "cooldown_s": 0,
+      "expire_s": 8,
+      "kind": "sentence",
+      "coalesce": "camera",
+      "when": "the camera comes back after a loss that was announced",
+      "variants": [
+        {
+          "id": "a",
+          "text": "Picture's back. Keep your eyes open.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.32s"
+        }
+      ]
+    },
+    "radio_busy": {
+      "priority": 60,
+      "scope": "global",
+      "cooldown_s": 8,
+      "expire_s": 6,
+      "kind": "sentence",
+      "when": "a radio call arrives while dispatch is still on another",
+      "variants": [
+        {
+          "id": "a",
+          "text": "One at a time. Dispatch is listening.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.44s"
+        }
+      ]
+    },
+    "radio_unavailable": {
+      "priority": 60,
+      "scope": "global",
+      "cooldown_s": 5,
+      "expire_s": 8,
+      "kind": "sentence",
+      "when": "the radio can't hear: no key, no mic, or a transcription that came back empty",
+      "variants": [
+        {
+          "id": "no_key",
+          "tag": "no_key",
+          "text": "Radio's dead. No key on this rig.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.22s"
+        },
+        {
+          "id": "mic_dead",
+          "tag": "mic_dead",
+          "text": "Mic's dead. Can't hear you.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 1.87s"
+        },
+        {
+          "id": "static",
+          "tag": "static",
+          "text": "Static. Say that again.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 1.82s"
+        }
+      ]
+    },
+    "radio_reply": {
+      "priority": 80,
+      "scope": "global",
+      "cooldown_s": 0,
+      "expire_s": 30,
+      "kind": "intro",
+      "when": "dispatch answers a radio call; the grounded answer follows",
+      "variants": [
+        {
+          "id": "a",
+          "text": "Dispatch.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 0.78s"
+        }
+      ]
+    },
+    "plan_revised": {
+      "priority": 40,
+      "scope": "global",
+      "cooldown_s": 3,
+      "expire_s": 10,
+      "kind": "sentence",
+      "coalesce": "plan",
+      "requires": "planner",
+      "when": "a Mastermind plan swaps an exhibit out or its settings change",
+      "variants": [
+        {
+          "id": "a",
+          "text": "Change of plan. Check the new lineup.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.32s"
+        },
+        {
+          "id": "b",
+          "text": "New plan. Eyes on the board.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 1.86s"
+        }
+      ]
+    },
+    "no_feasible_plan": {
+      "priority": 40,
+      "scope": "case",
+      "cooldown_s": 0,
+      "expire_s": 10,
+      "kind": "sentence",
+      "requires": "planner",
+      "when": "a Mastermind job has loot on the board but nothing fits the bag, clock, and job",
+      "variants": [
+        {
+          "id": "a",
+          "text": "Nothing fits this brief. Give me more time or more room.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 3.47s"
+        }
+      ]
+    },
+    "scenario_time_low": {
+      "priority": 35,
+      "scope": "threshold",
+      "cooldown_s": 0,
+      "expire_s": 10,
+      "kind": "sentence",
+      "requires": "planner",
+      "when": "the plan's grab time crosses 80 percent of the job's clock (planned time, not a countdown)",
+      "variants": [
+        {
+          "id": "a",
+          "text": "That plan eats most of the clock. Check your next move.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 3.26s"
+        }
+      ]
+    },
+    "reveal": {
+      "priority": 90,
+      "scope": "case",
+      "cooldown_s": 0,
+      "expire_s": 30,
+      "kind": "sentence",
+      "when": "the lineup is filed with at least one exhibit",
+      "variants": [
+        {
+          "id": "a",
+          "text": "Scan complete. Here's the take.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.13s"
+        }
+      ]
+    },
+    "empty_reveal": {
+      "priority": 90,
+      "scope": "case",
+      "cooldown_s": 0,
+      "expire_s": 30,
+      "kind": "sentence",
+      "when": "the lineup is filed with an empty ledger",
+      "variants": [
+        {
+          "id": "a",
+          "text": "Empty ledger. We're closing this one clean.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.64s"
+        }
+      ]
+    },
+    "case_closed": {
+      "priority": 70,
+      "scope": "case",
+      "cooldown_s": 0,
+      "expire_s": 20,
+      "kind": "sentence",
+      "when": "the crew closes a revealed case",
+      "variants": [
+        {
+          "id": "a",
+          "text": "Case closed. Ready for the next job.",
+          "provenance": "macOS say, voice Daniel, rate 165; generated 2026-10-02; 2.50s"
+        }
+      ]
+    }
+  }
+}

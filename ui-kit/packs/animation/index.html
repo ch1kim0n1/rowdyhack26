@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animation Pack</title>
+<link rel="stylesheet" href="../../noir.css">
+<style>
+  body { height: auto; padding: 32px 36px 60px; }
+  h1 { font-family: var(--f-display); font-size: 56px; letter-spacing: .03em; text-transform: uppercase; }
+  p.lede { color: var(--bone); max-width: 70ch; margin: 6px 0 26px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
+  figure { border: 1px solid var(--smoke); }
+  video { display: block; width: 100%; background: var(--black); }
+  figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; }
+  figcaption a { color: var(--ash); }
+</style>
+</head>
+<body>
+<h1>Animation pack</h1>
+<p class="lede">Every clip, looping. Click a clip to restart it. Files sit next to this page as MP4 and GIF; exact values are in motion-spec.md.</p>
+<div class="grid" id="g"></div>
+<script>
+const CLIPS = [
+  ['reel-start', 'PICTURE START and the Academy leader'], ['title-card', 'One cycle of the title card'],
+  ['scan-beat', 'One exhibit: examining, typed, marked, counted'], ['reveal', 'Cue mark, freeze, dissolve, lineup, CASE CLOSED'],
+  ['the-end', 'The card that closes a run'], ['footage-lost', 'Camera lost slate'], ['line-dead', 'Rig unreachable slate'],
+  ['stamp-slam', 'Stamp and desk thud'], ['odometer-roll', 'The take rolling up'], ['typewriter-line', 'One ledger line typing'],
+  ['marker-in', 'Evidence marker with the top-five pulse'], ['hard-cut', 'Bone flash on a new still'], ['film-texture', 'Grain, flicker, vignette, gate hair'],
+];
+document.getElementById('g').innerHTML = CLIPS.map(([n, d]) => `<figure>
+  <video src="${n}.mp4" autoplay loop muted playsinline onclick="this.currentTime=0;this.play()"></video>
+  <figcaption><span class="label">${n}</span><span class="meta" style="text-transform:none;letter-spacing:.04em">${d} · <a href="${n}.gif">gif</a></span></figcaption>
+</figure>`).join('');
+</script>
+</body>
+</html>

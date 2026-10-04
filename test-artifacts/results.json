@@ -1,0 +1,18 @@
+{
+  "checks": [
+    "Cold open skips instantly and does not replay",
+    "Polls stay responsive through 65 rapid exhibits; log caps at 60",
+    "Marker bbox updates reuse nodes and preserve entrance animations",
+    "Odometer rolls upward, fits $999,999, and leaves equal values still",
+    "Dashboard live axe scan has zero serious/critical WCAG violations",
+    "A stalled request goes LINE DEAD after two seconds, then recovers without layout shift",
+    "Camera loss and scout timeout have separate reasons",
+    "Reveal can skip to FILED and reconstruct after a reload",
+    "Full reveal ends within eight seconds and returns the manifest link",
+    "Mute persists through reload; keyboard controls respect focused buttons",
+    "Reduced motion makes title, typing and reveal immediate",
+    "Vault UI stays intact; loading feedback and both motion controls share one preference",
+    "Letter manifest fits one sheet for 0–15 long-name exhibits"
+  ],
+  "errors": []
+}

@@ -1,0 +1,16 @@
+# Pi-only deps. cv2 comes from apt's python3-opencv (install_pi.sh), not pip:
+# the opencv-python wheel is ~90MB against a slow SD card.
+flask>=3.0,<4
+numpy>=1.24,<2  # apt python3-opencv is built for numpy 1.x
+openai>=2,<3
+anthropic>=0.40,<1
+rapidfuzz>=3,<4
+pillow>=10,<13
+qrcode>=7.4,<9
+pyttsx3>=2.9,<3
+python-dotenv>=1,<2
+gpiozero>=2,<3
+luma.oled>=3.13,<4
+evdev>=1.6,<2   # USB keyboard fallback when stdin isn't a tty
+# python-escpos  # optional: only if RIG_PRINTER=1 with a USB POS printer attached
+waitress>=3,<4

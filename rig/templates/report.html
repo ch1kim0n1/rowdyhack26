@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+{% if mode == "final" %}<title>Defender Report · Case {{ doc.case_no }}</title>{% else %}<title>Defender Report</title>{% endif %}
+<link rel="stylesheet" href="/report.css">
+</head>
+<body>
+<main class="sheet">
+
+{% if mode == "locked" %}
+  <header class="head">
+    <div class="kicker">Defender Report</div>
+    <h1>Restricted</h1>
+  </header>
+  <p class="lede">This report is for the owner. Scan its QR code, or enter the operator token.</p>
+  {% if wrong %}<p class="alert" role="alert">That token did not match.</p>{% endif %}
+  <form class="unlock" method="post" action="/report/{{ doc.report_id }}/unlock">
+    <label for="token">Operator token</label>
+    <input id="token" name="token" type="password" autocomplete="off" required>
+    <button type="submit">Open report</button>
+  </form>
+
+{% elif mode == "expired" %}
+  <header class="head">
+    <div class="kicker">Defender Report · Case {{ doc.case_no }}</div>
+    <h1>Expired</h1>
+  </header>
+  <p class="lede">Filed {{ when(doc.finalized_at) }}. Expired {{ when(doc.expired_at) }}: {{ doc.reason }}.</p>
+  <p>The evidence and figures were deleted under the retention policy. The live case was never affected.</p>
+
+{% else %}
+  <header class="head">
+    <div class="kicker">Defender Report · Case {{ doc.case_no }}</div>
+    <h1>What the camera saw, and what it would cost you</h1>
+    <div class="meta">Filed {{ when(doc.finalized_at) }} · Report {{ doc.report_id }} ·
+      {% if v.mode == "mastermind" %}Mastermind mode: {{ doc.plan_settings.bag_lb }} lb bag, {{ doc.plan_settings.time_s }}s{% else %}Appraisal mode{% endif %}</div>
+  </header>
+
+  {% if v.fixture %}
+  <p class="alert fixture" role="note"><strong>Demo data.</strong> Exhibits tagged FIXTURE come from the offline
+  catalog or the scripted walk. They are not real observations and their prices are not real appraisals.</p>
+  {% endif %}
+
+  <section class="stats" aria-label="Summary">
+    <div class="stat"><div class="k">Observed inventory</div><div class="v">{{ doc["items"]|length }}</div></div>
+    <div class="stat"><div class="k">Nominal appraisal</div><div class="v">{{ money(doc.take) }}</div></div>
+    <div class="stat"><div class="k">Identified by</div>
+      <div class="s">{% for s in doc.provenance.sources %}{{ source_label(s) }}{% if not loop.last %}; {% endif %}{% else %}none{% endfor %}</div></div>
+    <div class="stat"><div class="k">Priced by</div>
+      <div class="s">{% for s in doc.provenance.price_sources %}{{ price_label(s) }}{% if not loop.last %}; {% endif %}{% else %}none{% endfor %}</div></div>
+  </section>
+  <p class="fine">Observed inventory means what the camera saw and priced during this case. It is not a complete
+  audit of the room.</p>
+
+  <section>
+    <h2><span>1</span> Evidence</h2>
+    {% if not doc["items"] %}<p class="empty">No exhibits were filed in this case.</p>{% endif %}
+    <div class="exhibits">
+      {% for it in doc["items"] %}
+      <article class="exhibit">
+        {% if it.evidence %}
+        <img src="/report/{{ doc.report_id }}/evidence/{{ it.n }}.jpg{{ q }}" alt="Evidence still for exhibit {{ it.n }}: {{ it.item }}" loading="lazy">
+        {% else %}
+        <div class="nostill" role="img" aria-label="No still on file">No still on file</div>
+        {% endif %}
+        <div class="body">
+          <div class="no">Exhibit {{ '%02d' % it.n }}{% if it.source in ("offline", "script") %} <span class="tag">Fixture</span>{% endif %}{% if it.origin == "rover" %} <span class="tag dim">Rover</span>{% endif %}</div>
+          <h3>{{ it.item }}</h3>
+          {% if it.desc %}<div class="desc">{{ it.desc }}</div>{% endif %}
+          <div class="price">{{ money(it.value_usd) }}{% if it.estimated %} <span class="est">estimate</span>{% endif %}</div>
+        </div>
+        <dl>
+            <dt>Identified by</dt><dd>{{ source_label(it.source) }}</dd>
+            <dt>Priced by</dt><dd>{{ price_label(it.price_source) }}</dd>
+            {% if it.why %}<dt>Pricing note</dt><dd>{{ it.why }}</dd>{% endif %}
+            <dt>Weight</dt><dd>{{ "%g"|format(it.weight_lb) }} lb ({{ it.weight_source }})</dd>
+            <dt>Model inputs</dt><dd>{{ it.grab_seconds }}s to take · {{ it.risk_points }} risk; {{ it.attr_source }}</dd>
+        </dl>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2><span>2</span> Modeled exposure</h2>
+    <p class="assume"><strong>Simulation, not a loss prediction.</strong> Each scenario asks which observed exhibits a
+    crew could carry off under a fixed budget: a <b>{{ "%g"|format(doc.assumptions.bag_lb) }} lb bag</b> and a
+    risk cap of <b>{{ doc.assumptions.risk_points }} points</b>, with the time shown.{% if v.mode == "mastermind" %}
+    The first card is the plan this crew set in Mastermind mode.{% endif %} Weights are the vision model's estimate or
+    a category default, and times and risk are category defaults, as listed per exhibit: estimates, not
+    measurements. Objective: {{ doc.assumptions.objective }}. Solver: {{ v.algorithm|join(", ") }}.</p>
+    <div class="scenarios">
+      {% for s in v.scenarios %}
+      <article class="scenario{% if s.kind == 'crew' %} crew{% endif %}">
+        <div class="sh"><span class="secs">{{ s.label }}</span>
+          <span class="tot">{{ money(s.base.totals.value_usd) }}</span></div>
+        <div class="caps">{{ "%g"|format(s.base.totals.weight_lb) }}/{{ "%g"|format(s.constraints.bag_lb) }} lb ·
+          {{ s.base.totals.grab_seconds }}/{{ s.constraints.time_s }}s ·
+          {{ s.base.totals.risk_points }}/{{ s.constraints.risk_points }} risk</div>
+        {% if s.whatif %}
+        <div class="whatif-line">Owner what-if: <b>{{ money(s.whatif.totals.value_usd) }}</b>
+          ({% if s.delta_usd <= 0 %}{{ money(-s.delta_usd) }} less{% else %}{{ money(s.delta_usd) }} more{% endif %} exposed)</div>
+        {% endif %}
+        <h4>Taken</h4>
+        {% if s.base.selected %}
+        <ul class="taken">{% for n in s.base.selected %}{% set it = by_n[n] %}
+          <li><span>{{ it.item }}</span><span>{{ money(it.value_usd) }}</span></li>{% endfor %}</ul>
+        {% else %}
+        <p class="empty">Nothing fits this budget. The modeled exposure is $0.</p>
+        {% endif %}
+        {% set left = s.base.excluded|rejectattr("reason", "in", ["not_loot", "no_value"])|list %}
+        {% if left %}
+        <h4>Left behind</h4>
+        <ul class="left">{% for ex in left[:5] %}{% set it = by_n[ex.n] %}
+          <li><b>{{ it.item }}</b> ({{ money(it.value_usd) }}): {{ ex.text }}</li>{% endfor %}
+          {% if left|length > 5 %}<li class="more">and {{ left|length - 5 }} more</li>{% endif %}</ul>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2><span>3</span> Most exposed</h2>
+    {% if v.ranking %}
+    <p class="fine">Ranked by appraisal value among exhibits the planner takes in at least one scenario,
+    because the objective maximizes appraisal value. "From" is the shortest scenario that takes it.</p>
+    <table class="rank">
+      <thead><tr><th>#</th><th>Exhibit</th><th>Value</th><th>From</th></tr></thead>
+      <tbody>{% for r in v.ranking %}
+        <tr><td>{{ loop.index }}</td><td>{{ r.item }}</td><td>{{ money(r.value_usd) }}{% if r.estimated %} <span class="est">est.</span>{% endif %}</td><td>{{ r.first_seconds }}s</td></tr>
+      {% endfor %}</tbody>
+    </table>
+    {% else %}
+    <p class="empty">No exhibit fits any scenario.</p>
+    {% endif %}
+  </section>
+
+  <section class="whatif-form">
+    <h2><span>4</span> Owner what-if</h2>
+    <p class="fine">Mark exhibits as secured, or as moved out of the display area the camera saw, and re-run the same
+    scenarios. This changes the comparison on this page only. The evidence above is not edited.</p>
+    <form method="get" action="/report/{{ doc.report_id }}">
+      {% if k %}<input type="hidden" name="k" value="{{ k }}">{% endif %}
+      <table class="whatif">
+        <thead><tr><th>Exhibit</th><th>Secured</th><th>Moved</th></tr></thead>
+        <tbody>{% for it in doc["items"] %}
+          <tr><td>{{ it.item }} <span class="dim">{{ money(it.value_usd) }}</span></td>
+            <td><input type="checkbox" name="secure" value="{{ it.n }}" aria-label="Mark {{ it.item }} secured" {% if it.n in v.secured %}checked{% endif %}></td>
+            <td><input type="checkbox" name="move" value="{{ it.n }}" aria-label="Mark {{ it.item }} moved" {% if it.n in v.moved %}checked{% endif %}></td></tr>
+        {% endfor %}</tbody>
+      </table>
+      <div class="actions">
+        <button type="submit">Re-run scenarios</button>
+        {% if v.owner_whatif %}<a href="/report/{{ doc.report_id }}{{ q }}">Clear what-if</a>{% endif %}
+      </div>
+    </form>
+  </section>
+  {% if v.owner_whatif %}
+  <section>
+    <h3>Comparison</h3>
+    <table class="rank">
+      <thead><tr><th>Scenario</th><th>As observed</th><th>With what-if</th><th>Change</th></tr></thead>
+      <tbody>{% for s in v.scenarios %}
+        <tr><td>{{ s.seconds }}s</td><td>{{ money(s.base.totals.value_usd) }}</td><td>{{ money(s.whatif.totals.value_usd) }}</td>
+          <td>{% if s.delta_usd < 0 %}−{{ money(-s.delta_usd) }}{% elif s.delta_usd > 0 %}+{{ money(s.delta_usd) }}{% else %}no change{% endif %}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  <section>
+    <h2><span>5</span> Recommendations</h2>
+    {% if v.recommendations %}
+    <ol class="recs">{% for r in v.recommendations %}
+      <li><b>{{ r.item }}</b><ul>{% for line in r.lines %}<li>{{ line }}</li>{% endfor %}</ul></li>
+    {% endfor %}</ol>
+    {% else %}
+    <p class="empty">Nothing observed fits a modeled haul, so there is nothing specific to recommend.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2><span>6</span> Known and unknown</h2>
+    {% if v.owner_whatif %}
+    <h4>Owner-stated (what-if, not verified)</h4>
+    <ul>{% for f in v.owner_whatif %}<li>{{ f.item }}: {{ f.fact }}</li>{% endfor %}</ul>
+    {% endif %}
+    <h4>Not established by this scan</h4>
+    <ul>{% for u in v.unknowns %}<li>{{ u }}</li>{% endfor %}</ul>
+  </section>
+
+  <footer class="foot">
+    <div class="qr"><img src="/report/{{ doc.report_id }}/qr.png{{ q }}" width="104" height="104" alt="QR code linking to this report">
+      <div class="fine">Open on a phone. The link is read-only.</div></div>
+    <nav class="links">
+      <button type="button" onclick="window.print()">Print</button>
+      <a href="/report/{{ doc.report_id }}.json{{ q }}">JSON</a>
+      <a href="/manifest">Loot manifest</a>
+    </nav>
+  </footer>
+{% endif %}
+
+</main>
+</body>
+</html>

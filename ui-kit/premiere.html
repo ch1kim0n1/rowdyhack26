@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Appraisal Job</title>
+<meta name="description" content="An AI-assisted physical red-team field kit for authorized asset reconnaissance. A hat, a wrist unit and a rover share one evidence ledger and a ranked debrief.">
+<meta name="theme-color" content="#0d0e12">
+<meta property="og:title" content="The Appraisal Job">
+<meta property="og:description" content="Authorized physical red-team reconnaissance. Document visible assets, estimate their value, and debrief from one shared case file.">
+<meta property="og:image" content="brand/appraisal-job-wallpaper.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230f0e0c'/%3E%3Crect x='6' y='3' width='20' height='26' fill='%23efe9db'/%3E%3Cg fill='%230f0e0c'%3E%3Crect x='8' y='5' width='3' height='3'/%3E%3Crect x='8' y='11' width='3' height='3'/%3E%3Crect x='8' y='17' width='3' height='3'/%3E%3Crect x='8' y='23' width='3' height='3'/%3E%3Crect x='21' y='5' width='3' height='3'/%3E%3Crect x='21' y='11' width='3' height='3'/%3E%3Crect x='21' y='17' width='3' height='3'/%3E%3Crect x='21' y='23' width='3' height='3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preload" href="brand/appraisal-job-hero-wide.webp" as="image" type="image/webp" media="(min-aspect-ratio: 4/3)">
+<link rel="stylesheet" href="noir.css">
+<link rel="stylesheet" href="vault.css">
+<link rel="stylesheet" href="premiere.css">
+<link rel="stylesheet" href="premiere-portal.css">
+<link rel="stylesheet" href="premiere-title-particles.css">
+<script>
+/* The title sequence (intro.js) is decided before first paint: once per session,
+   not for reduced or paused motion or a deep link. ?intro always plays it. */
+(() => {
+  try {
+    const forced = new URLSearchParams(location.search).has('intro');
+    const seen = sessionStorage.getItem('appraisal-intro') === 'seen';
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches
+      || localStorage.getItem('appraisal-motion') === 'paused';
+    if (forced || (!seen && !still && !location.hash)) document.documentElement.classList.add('intro-on');
+  } catch { /* no storage, no title sequence */ }
+})();
+</script>
+<script src="intro.js" defer></script>
+</head>
+<body class="premiere vault-theme">
+<div class="intro" aria-hidden="true"><canvas></canvas></div>
+<button type="button" class="btn quiet intro-skip">Skip intro</button>
+<div class="vault-wallpaper" aria-hidden="true"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="noir-grade">
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+        <feFuncG type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+        <feFuncB type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+      </feComponentTransfer>
+    </filter>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/>
+    </filter>
+    <filter id="stamp-rough" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="flicker" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div id="scratch" aria-hidden="true"></div>
+
+<a class="skip" href="#film">Skip to the film</a>
+
+<header class="marquee" id="marquee">
+  <a class="brand" href="#top" aria-label="The Appraisal Job, back to the top">
+    <img class="brand-mark" src="brand/noir-clock-emblem.webp" alt="" width="40" height="40">
+    <span class="brand-word">The Appraisal Job</span>
+  </a>
+  <nav class="marquee-nav" aria-label="Sections">
+    <a href="#film">The Film</a>
+    <a href="#crew">The Crew</a>
+    <a href="#method">The Method</a>
+    <a href="#paperwork">The Paperwork</a>
+  </nav>
+  <div class="marquee-tools">
+    <button type="button" class="motion-control" data-vault-motion aria-pressed="false">Pause motion</button>
+    <a class="btn primary" href="/desk">Enter dispatch <span aria-hidden="true">↗</span></a>
+  </div>
+</header>
+
+<main>
+
+<!-- ===================== the title card ===================== -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <h1 class="sr-only" id="hero-title">The Appraisal Job</h1>
+  <div class="hero-portal-pin">
+  <div class="vault-stage" data-vault-stage>
+    <div class="vault-scene">
+      <picture class="vault-picture">
+        <source media="(max-aspect-ratio: 4/3)" srcset="brand/appraisal-job-wallpaper.webp">
+        <img class="vault-art" src="brand/appraisal-job-hero-wide.webp" width="1916" height="821" fetchpriority="high" alt="The Appraisal Job. Four crew members stand before an open vault, a diamond suspended in crimson light. 24 hours. One crew.">
+      </picture>
+      <i class="vault-aura" aria-hidden="true"></i>
+      <div class="vault-dust" aria-hidden="true">
+        <i style="--x:59%;--y:65%;--i:0"></i><i style="--x:65%;--y:53%;--i:1"></i>
+        <i style="--x:72%;--y:72%;--i:2"></i><i style="--x:63%;--y:37%;--i:3"></i>
+        <i style="--x:55%;--y:81%;--i:4"></i><i style="--x:75%;--y:46%;--i:5"></i>
+        <i style="--x:69%;--y:86%;--i:6"></i><i style="--x:60%;--y:59%;--i:7"></i>
+      </div>
+    </div>
+  </div>
+  <div class="hero-brief wrap">
+    <div><span class="label">Authorized Physical Red-Team Reconnaissance</span><p>Observe. Document.<br>Debrief the room.</p></div>
+    <p class="brief-copy">A camera on a cap. A scout in the approved area.<br>Every observation, one shared evidence ledger.</p>
+    <div class="brief-actions"><a class="btn primary" href="/">Open the live case <span aria-hidden="true">↗</span></a><a class="brief-film" href="#film">Watch the operation <span aria-hidden="true">↓</span></a></div>
+  </div>
+  <div class="mission-strip"><span>01 / Identify</span><span>02 / Appraise</span><span>03 / File the take</span><span class="meta tc-credit" id="tc-credit">Case No. 1138</span></div>
+  </div>
+</section>
+
+<!-- ===================== the film, scrubbed by the scroll ===================== -->
+<section class="reel" id="film" aria-label="The film">
+  <div class="reel-stage">
+    <div class="perfs l" aria-hidden="true"></div>
+    <div class="perfs r" aria-hidden="true"></div>
+    <div class="reel-top">
+      <div class="label reel-chapter" aria-live="polite">Reel 1 · Picture Start</div>
+      <button type="button" class="btn quiet sound-toggle" aria-pressed="false">Sound off</button>
+      <div class="meta reel-counter" aria-hidden="true">FR 00:00:00:00 · 0000 FT</div>
+    </div>
+    <div class="gate">
+      <video class="reel-video" muted playsinline preload="none" poster="media/film-poster.jpg" aria-label="The Appraisal Job, the film. Scrolling plays it."></video>
+      <div class="gate-loading" aria-live="polite">
+        <div class="label">Threading the projector</div>
+        <div class="gate-meter"><i></i></div>
+      </div>
+    </div>
+    <p class="reel-sub" aria-live="polite"></p>
+    <ol class="reel-strip" aria-label="Chapters">
+      <li style="--at:0"><a href="#film" data-t="0">Leader</a></li>
+      <li style="--at:.129"><a href="#film" data-t="2.7">The Walk</a></li>
+      <li style="--at:.493"><a href="#film" data-t="10.3">The Screen</a></li>
+      <li class="low" style="--at:.584"><a href="#film" data-t="12.2">Cue</a></li>
+      <li style="--at:.644"><a href="#film" data-t="13.45">The Lineup</a></li>
+      <li style="--at:.896"><a href="#film" data-t="18.7">The End</a></li>
+      <span class="reel-fill" aria-hidden="true"></span>
+    </ol>
+  </div>
+</section>
+
+<!-- ===================== the crew ===================== -->
+<section class="crew" id="crew" aria-labelledby="crew-title">
+  <div class="wrap">
+    <header class="section-head">
+      <div class="label">Exhibit A</div>
+      <h2 class="section-title cut" id="crew-title">The Crew</h2>
+      <p class="section-lede">Three specialists. One authorized assessment. The hat identifies, the rover scouts, and the wrist keeps the asset tally close.</p>
+    </header>
+
+    <div class="dossiers">
+      <article class="dossier" style="--tilt:-1.1deg">
+        <div class="dossier-head"><span>Personnel file</span><span>No. 01</span></div>
+        <figure class="print">
+          <img src="media/frame-walk.jpg" alt="The cap's view of the desk: an evidence marker frames a wristwatch, and the ledger types its price." loading="lazy">
+          <figcaption>What the cap sees</figcaption>
+        </figure>
+        <h3 class="dossier-name">The Hat</h3>
+        <dl class="dossier-file">
+          <dt>Alias</dt><dd>The hub</dd>
+          <dt>Role</dt><dd>Walks the room. Looks, prices, keeps the ledger and runs the projector.</dd>
+          <dt>Equipment</dt><dd>A camera on the brim, a reveal button, and a direct line to dispatch.</dd>
+          <dt>Habits</dt><dd>Says a find out loud when it makes the top five.</dd>
+        </dl>
+        <div class="stamp ink" style="--rot:-7deg">Known associate</div>
+      </article>
+
+      <article class="dossier" style="--tilt:.8deg">
+        <div class="dossier-head"><span>Personnel file</span><span>No. 02</span></div>
+        <figure class="print oled-print">
+          <canvas class="wrist-oled" width="512" height="256" role="img" aria-label="The wrist unit's screen: case 1138, a take of 9,920 dollars, six items, and the top five finds with their prices."></canvas>
+          <figcaption>What the wrist shows</figcaption>
+        </figure>
+        <h3 class="dossier-name">The Wrist</h3>
+        <dl class="dossier-file">
+          <dt>Alias</dt><dd>The tally</dd>
+          <dt>Role</dt><dd>Keeps the top-five assets and their summed estimated value on the assessor's wrist.</dd>
+          <dt>Equipment</dt><dd>A compact wrist display, updated throughout the operation.</dd>
+          <dt>Habits</dt><dd>Says FLED once the lineup is filed. Says LINE DEAD when the hub goes quiet.</dd>
+        </dl>
+        <div class="stamp ink" style="--rot:5deg">Known associate</div>
+      </article>
+
+      <article class="dossier" style="--tilt:-.5deg">
+        <div class="dossier-head"><span>Personnel file</span><span>No. 03</span></div>
+        <figure class="print">
+          <img src="media/still-rover.jpg" alt="Floor level, under a headlamp: the rug, the desk legs and the blinds, the way the rover sees the room." loading="lazy">
+          <figcaption>What the rover sees</figcaption>
+        </figure>
+        <h3 class="dossier-name">The Rover</h3>
+        <dl class="dossier-file">
+          <dt>Alias</dt><dd>The advance man</dd>
+          <dt>Role</dt><dd>Scouts the approved assessment area and files its observations with the hub.</dd>
+          <dt>Equipment</dt><dd>A mobile camera, two wheels, and controls at the dispatch desk.</dd>
+          <dt>Habits</dt><dd>Holds up to fifty finds when the Wi-Fi blinks, then files them all.</dd>
+        </dl>
+        <div class="stamp ink" style="--rot:-4deg">Known associate</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== how a look flows ===================== -->
+<section class="method" id="method" aria-labelledby="method-title">
+  <div class="wrap">
+    <header class="section-head">
+      <div class="label">Exhibit B</div>
+      <h2 class="section-title cut" id="method-title">How a look flows</h2>
+      <p class="section-lede">Turn an authorized walkthrough into a documented asset debrief. Every price carries its source; value ranks assets for review, not proven security risk. Visibility alone does not prove an asset is unsecured.</p>
+    </header>
+
+    <div class="method-grid">
+      <div class="board" aria-hidden="true">
+        <figure class="print board-print on" data-step="0"><img src="media/still-desk.jpg" alt="" loading="lazy"><figcaption>01 · The gate</figcaption></figure>
+        <figure class="print board-print" data-step="1"><img src="media/frame-walk.jpg" alt="" loading="lazy"><figcaption>02 · The look</figcaption></figure>
+        <figure class="print board-print mug-board" data-step="2"><img src="media/mug-3.jpg" alt="" loading="lazy"><figcaption>03 · The appraisal</figcaption><span class="board-tag">"Vintage Rolex" · $4,200</span></figure>
+        <figure class="print board-print" data-step="3"><img src="media/frame-ledger.jpg" alt="" loading="lazy"><figcaption>04 · The ledger</figcaption></figure>
+        <figure class="print board-print oled-print" data-step="4"><canvas class="wrist-oled" width="512" height="256"></canvas><figcaption>05 · The callout</figcaption></figure>
+        <figure class="print board-print" data-step="5"><img src="media/frame-lineup.jpg" alt="" loading="lazy"><figcaption>06 · The reveal</figcaption></figure>
+      </div>
+
+      <ol class="procedure">
+        <li class="step" data-step="0">
+          <span class="step-n">01</span>
+          <h3 class="step-name">The gate</h3>
+          <p>The camera waits for a new view. A flicker or a passing hand does not count. A different shelf does.</p>
+        </li>
+        <li class="step" data-step="1">
+          <span class="step-n">02</span>
+          <h3 class="step-name">The look</h3>
+          <p>The hat identifies the object and marks its place in the room. Each find gets a name and a category. An offline catalog keeps the demo going when the connection drops.</p>
+        </li>
+        <li class="step" data-step="2">
+          <span class="step-n">03</span>
+          <h3 class="step-name">The appraisal</h3>
+          <p>Sold listings come first, then a model’s quote, then a visual estimate. Every price tells you where it came from. Estimates are marked clearly.</p>
+        </li>
+        <li class="step" data-step="3">
+          <span class="step-n">04</span>
+          <h3 class="step-name">The ledger</h3>
+          <p>One shared ledger keeps the crew in sync and filters out repeat finds. Each entry records who spotted it, its value, and the evidence behind the appraisal.</p>
+        </li>
+        <li class="step" data-step="4">
+          <span class="step-n">05</span>
+          <h3 class="step-name">The callout</h3>
+          <p>When a find makes the top five, the speaker reads it out and its marker flashes on the projector. The wrist picks up the new top five on its next poll.</p>
+        </li>
+        <li class="step" data-step="5">
+          <span class="step-n">06</span>
+          <h3 class="step-name">The reveal</h3>
+          <p>The button on the cap freezes the frame and opens the debrief: the five highest-value observed assets, a total, one stamp. The QR opens the case file on a phone. Press it again and the next assessment opens.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== the paperwork ===================== -->
+<section class="paperwork" id="paperwork" aria-labelledby="paperwork-title">
+  <div class="wrap">
+    <header class="section-head">
+      <div class="label">Exhibit C</div>
+      <h2 class="section-title cut" id="paperwork-title">The Paperwork</h2>
+      <p class="section-lede">Four screens for an authorized assessment. “Take” means summed estimated asset value; “Loot Manifest” is the noir label for the asset case file. Offline and scripted results are demo data, not observed findings. Open any screen while the hub is running.</p>
+    </header>
+
+    <div class="prints">
+      <figure class="print" style="--tilt:-1.4deg">
+        <img src="media/frame-screen.jpg" alt="The live screen: the footage in a film strip, the estimated take and the typed case file." loading="lazy">
+        <figcaption><span>I. The walk, on the projector</span><a href="/">Open</a></figcaption>
+      </figure>
+      <figure class="print" style="--tilt:1deg">
+        <img src="media/frame-lineup.jpg" alt="The lineup: five suspects, the total take and a Case Closed stamp." loading="lazy">
+        <figcaption><span>II. The lineup, rank five to one</span><a href="/reveal">Open</a></figcaption>
+      </figure>
+      <figure class="print" style="--tilt:.7deg">
+        <img src="shots/manifest-phone.png" alt="The loot manifest on a phone: typed rows, a total and two stamps." loading="lazy">
+        <figcaption><span>III. The case file, on a phone</span><a href="/manifest">Open</a></figcaption>
+      </figure>
+      <figure class="print" style="--tilt:-.9deg">
+        <img src="media/desk.jpg" alt="The dispatch desk: the take, the crew's status, the lineup button and the rover's wheels." loading="lazy">
+        <figcaption><span>IV. The dispatch desk, for the crew</span><a href="/desk">Open</a></figcaption>
+      </figure>
+    </div>
+
+    <div class="priors" aria-label="Priors">
+      <div class="prior"><b>01</b><span class="label">Shared ledger</span><span class="prior-note">Every find. The whole crew.</span></div>
+      <div class="prior"><b>3</b><span class="label">Devices</span><span class="prior-note">Hat, wrist and rover. One ledger.</span></div>
+      <div class="prior"><b>3</b><span class="label">Price sources</span><span class="prior-note">Every number carries a why.</span></div>
+      <div class="prior"><b>05</b><span class="label">Prime suspects</span><span class="prior-note">The most valuable finds, ranked.</span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== closing credits ===================== -->
+<footer class="credits" aria-label="Credits">
+  <div class="wrap credits-roll">
+    <div class="meta">A RowdyHacks XII Picture</div>
+    <dl class="credit-list">
+      <dt>Starring</dt><dd>Whatever's on the shelves</dd>
+      <dt>Appraisals by</dt><dd>The optic surveillance unit</dd>
+      <dt>Prices from</dt><dd>Sold comps, a model's quote, or the camera's own guess</dd>
+      <dt>Wardrobe</dt><dd>One structured baseball cap</dd>
+      <dt>Set</dt><dd>Behind the vault. After hours.</dd>
+      <dt>Type</dt><dd>League Gothic, Special Elite, Courier Prime, Caveat</dd>
+    </dl>
+    <div class="end-title cut credits-end">The End</div>
+    <div class="meta">Case No. 1138 · Closed</div>
+    <nav class="credits-nav" aria-label="Open the rig">
+      <a class="btn" href="/">The live screen</a>
+      <a class="btn quiet" href="/manifest">The case file</a>
+      <a class="btn quiet" href="/desk">The dispatch desk</a>
+      <a class="btn quiet" href="/kit">The design kit</a>
+      <a class="btn quiet" href="https://github.com/ch1kim0n1/rowdyhack26-precode">The code</a>
+    </nav>
+    <p class="fine">For authorized assessments only. Asset values are estimates, not a security-risk score.</p>
+  </div>
+</footer>
+
+<script src="noir.js"></script>
+<script src="wrist-oled.js"></script>
+<script src="vault.js"></script>
+<script src="premiere-portal.js"></script>
+<script src="premiere-title-particles.js"></script>
+<script src="premiere.js"></script>
+</body>
+</html>

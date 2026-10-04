@@ -1,0 +1,76 @@
+/* The Appraisal Job: the same vault, from the premiere to the dispatch desk. */
+/* No rubber-band stretch past either end of the page: it pulls the content away
+   and shows the fixed wallpaper behind it. */
+html:has(body.vault-theme), body.vault-theme { overscroll-behavior-y: none; }
+body.vault-theme {
+  --ink: #0d0e12;
+  --carbon: #1a1d24;
+  --paper: #f2f0e9;
+  --bone: #d9d7d0;
+  --ash: #aaa9a6;
+  --smoke: #55565d;
+  --stamp: #a52d32;
+  --stamp-lit: #e57476;
+  background: var(--ink);
+  isolation: isolate;
+}
+.vault-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(13,14,18,.98), rgba(13,14,18,.88) 48%, rgba(13,14,18,.76)),
+    url('brand/appraisal-job-wallpaper.webp') 70% center / cover no-repeat;
+  /* The poster's lettering fills its left third. Behind content it only fights the
+     headlines, so the wallpaper keeps the vault and crew and drops the type. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 38%, #000 68%);
+          mask-image: linear-gradient(90deg, transparent 38%, #000 68%);
+}
+.vault-wallpaper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 75% 48%, rgba(157,35,44,.12), transparent 45%);
+  animation: vault-breathe 9s ease-in-out infinite alternate;
+}
+.vault-stage { position: relative; overflow: hidden; isolation: isolate; }
+.vault-scene { position: relative; width: 100%; transform: translate(var(--vault-x, 0px), var(--vault-y, 0px)); transition: transform 1.2s ease-out; }
+.vault-art { display: block; width: 100%; height: auto; animation: vault-dolly 24s ease-in-out infinite alternate; transform-origin: 67% 49%; }
+.vault-aura {
+  position: absolute; left: 53%; top: 14%; width: 27%; height: 67%;
+  pointer-events: none; border-radius: 50%; mix-blend-mode: screen;
+  background: radial-gradient(ellipse, rgba(239,75,63,.19), rgba(192,42,36,.05) 45%, transparent 69%);
+  animation: vault-breathe 7s ease-in-out infinite alternate;
+}
+.vault-dust { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.vault-dust i {
+  position: absolute; left: var(--x); top: var(--y); width: 2px; height: 2px;
+  background: #efdbcc; border-radius: 50%; opacity: 0;
+  animation: vault-dust calc(11s + var(--i) * 1.8s) linear infinite;
+  animation-delay: calc(var(--i) * -2.3s);
+}
+.motion-control {
+  min-height: 44px; padding: 0 13px; border: 1px solid #515157;
+  color: var(--bone); background: rgba(13,14,18,.7); cursor: pointer;
+  font: 11px var(--f-type); letter-spacing: .08em; text-transform: uppercase;
+}
+.motion-control { transition: background var(--dur-hover) var(--ez-film), color var(--dur-hover) var(--ez-film), translate var(--dur-hover) var(--ez-settle); }
+.motion-control:hover { background: var(--paper); border-color: var(--paper); color: var(--ink); translate: 0 -2px; }
+.motion-control[aria-pressed='true'] { border-color: var(--paper); color: var(--paper); }
+.vault-theme:is(.motion-paused, .vault-suspended) :is(.vault-art, .vault-aura, .vault-dust i, .grain, .flicker),
+.vault-theme:is(.motion-paused, .vault-suspended) .vault-wallpaper::after { animation-play-state: paused !important; }
+.vault-theme.motion-paused :is(#scratch, .dust) { visibility: hidden; }
+.motion-paused .vault-scene { transform: none; transition: none; }
+@keyframes vault-dolly { from { transform: scale(1); } to { transform: scale(1.016); } }
+@keyframes vault-breathe { from { opacity: .25; } to { opacity: .9; } }
+@keyframes vault-dust {
+  0% { opacity: 0; transform: translate(0, 16px); }
+  15%, 70% { opacity: .42; }
+  100% { opacity: 0; transform: translate(-22px, -80px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vault-art, .vault-aura, .vault-dust i, .vault-wallpaper::after { animation: none !important; }
+  .vault-scene { transform: none !important; transition: none; }
+  .vault-dust { display: none; }
+}
+@media print { .vault-wallpaper, .vault-aura, .vault-dust, [data-vault-motion] { display: none !important; } }

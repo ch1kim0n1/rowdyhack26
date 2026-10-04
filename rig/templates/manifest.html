@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loot Manifest · Case {{ '%04d'|format(case_no) }}</title>
+<link rel="stylesheet" href="/noir.css">
+</head>
+<body>
+<a class="close-x close-fixed" href="/premiere" aria-label="Close the manifest" title="Close"
+   onclick="if(history.length > 1 &amp;&amp; document.referrer.startsWith(location.origin)){ history.back(); return false; }"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg></a>
+<section class="view view-manifest on" aria-label="Loot manifest">
+  <div class="desk">
+    <div class="doc-sheet">
+    <article class="doc">
+      <div class="confidential" aria-hidden="true">CONFIDENTIAL</div>
+      <div class="stamp small">{{ filed }}</div>
+      <header class="doc-band">CASE FILE · EVIDENCE REGISTER</header>
+      <h1>Loot Manifest</h1>
+      <div class="sub">CASE NO. {{ '%04d'|format(case_no) }} · WHAT THE CAMERA PRICED<br>FILED WITH NOBODY AT THE DESK</div>
+      <hr>
+      <div class="rows">
+        {% for row in rows %}
+        <div class="doc-exhibit">
+          <div class="row"><span><span class="exhibit-index">{{ '%02d'|format(loop.index) }}</span> "{{ row.item }}"{% if row.category == "badge" %} <span class="est">cloned</span>{% endif %}{% if row.origin == "rover" %} <span class="est">rover</span>{% endif %}{% if plan %} <span class="est plan-mark{% if row.n in bagged %} bag{% endif %}">{{ "in the bag" if row.n in bagged else "left" }}</span>{% endif %}</span><span class="leaders"></span><span class="amt">{{ money(row.value_usd) }}{% if row.estimated %} <span class="est">est.</span>{% endif %}</span></div>
+          {% if row.why %}<div class="why">{{ row.why }}</div>{% endif %}
+          <span class="redaction" aria-hidden="true"></span>
+        </div>
+        {% else %}
+        <div class="row"><span>NO EXHIBITS RECOVERED</span></div>
+        {% endfor %}
+      </div>
+      <div class="total"><span>TOTAL TAKE</span><span class="leaders"></span><span>{{ total }}</span></div>
+      {% if plan %}
+      <div class="total plan-total"><span>MASTERMIND HAUL</span><span class="leaders"></span><span>{{ money(plan.totals.value_usd) }}</span></div>
+      <div class="why">{{ plan.level.label }} · {{ "%g"|format(plan.totals.weight_lb) }} of {{ "%g"|format(plan.settings.bag_lb) }} lb · {{ plan.totals.grab_seconds }} of {{ plan.settings.time_s }}s</div>
+      {% endif %}
+      {% if report_id %}
+      <div class="report-link"><a href="/report/{{ report_id }}">Defender Report</a>: the owner's view, with evidence, modeled exposure, and what-ifs</div>
+      {% elif report_error %}
+      <div class="report-link err" role="alert">Defender Report not filed: {{ report_error }}. The case stays open; the next button press retries.</div>
+      {% endif %}
+      <div class="signature">Filed by <span>________________________</span> &nbsp; Crew signature</div>
+      <div class="doc-foot">
+        <div class="fine">PROPERTY OF THE CREW. DO NOT FILE.</div>
+        <div class="file-copy">
+          <div class="qr-mat"><img src="/qr.png" width="84" height="84" alt="QR code to this manifest"></div>
+          <div class="cap meta">File copy</div>
+        </div>
+      </div>
+    </article>
+    </div>
+  </div>
+</section>
+</body>
+</html>

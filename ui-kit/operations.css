@@ -1,0 +1,386 @@
+/* The working screens share the vault's ink, paper and quiet geometry.
+   Hardware controls and live data keep the same markup and runtime. */
+.vault-theme.projector,
+body.dispatch.vault-theme {
+  --ash: #aaa99f;
+  --operation-rule: rgba(239, 233, 219, .2);
+  --operation-surface: rgba(12, 13, 14, .87);
+  background: #0b0c0d;
+}
+
+/* `.dispatch` is also the live feed's radio chip in noir.css. The page
+   must not inherit that chip's hidden, absolutely positioned layout. */
+body.dispatch.vault-theme {
+  display: block;
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  z-index: auto;
+  padding: 0;
+  border: 0;
+  letter-spacing: normal;
+  font-family: var(--f-type);
+  font-size: 15px;
+  min-height: 100dvh;
+}
+
+.operation-tools {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 96;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 var(--sp-5);
+  background: rgba(10, 11, 12, .96);
+  border-bottom: 1px solid var(--operation-rule);
+}
+.operation-channel { color: var(--paper); }
+.operation-links { display: flex; align-items: center; gap: 24px; }
+.operation-links a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--bone);
+  font-family: var(--f-type);
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-underline-offset: 6px;
+}
+.operation-links a:hover { color: var(--paper); text-decoration: underline; text-decoration-color: var(--stamp-lit); }
+.operation-motion,
+.operation-tools #sound-toggle {
+  flex: none;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid var(--operation-rule);
+  background: transparent;
+  color: var(--bone);
+  font: 12px/1.2 var(--f-type);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--dur-hover) var(--ez-film), color var(--dur-hover) var(--ez-film), translate var(--dur-hover) var(--ez-settle);
+}
+.operation-tools #sound-toggle { margin-left: auto; }
+.operation-motion:hover,
+.operation-tools #sound-toggle:hover,
+.operation-motion[aria-pressed="true"],
+.operation-tools #sound-toggle[aria-pressed="true"] {
+  background: var(--paper);
+  border-color: var(--paper);
+  color: var(--ink);
+}
+.operation-motion:hover, .operation-tools #sound-toggle:hover { translate: 0 -2px; }
+.vault-theme.projector :focus-visible,
+body.dispatch.vault-theme :focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: 4px;
+}
+
+/* Leave the entire poster in the gate. Letterboxing is deliberate:
+   the title, crew, vault and registration marks must stay in frame. */
+.projector .titlecard {
+  inset: 52px 0 0;
+  background: #090a0b;
+}
+.projector .vault-idle-stage {
+  position: absolute;
+  inset: 0 0 48px;
+  display: grid;
+  place-items: center;
+}
+.projector .vault-idle-stage .vault-scene {
+  width: min(100%, calc((100dvh - 100px) * 1.5));
+  aspect-ratio: 3 / 2;
+  max-height: 100%;
+}
+.projector .vault-idle-stage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.projector .titlecard .tc-body.sr-only {
+  display: block;
+  inset: auto;
+  width: 1px;
+  height: 1px;
+  animation: none;
+}
+.projector .tc-cta {
+  bottom: 16px;
+  padding-inline: 20px;
+  font-size: 11px;
+  letter-spacing: .14em;
+  animation: none;
+}
+
+.projector .view { padding-top: 52px; }
+.projector .chrome {
+  align-items: center;
+  background: rgba(10, 11, 12, .77);
+  border-color: var(--operation-rule);
+  gap: 12px 24px;
+}
+.projector .chrome .label { color: var(--bone); }
+.projector .chrome .meta { color: var(--ash); }
+.projector .live-side {
+  background: var(--operation-surface);
+  border: 1px solid var(--operation-rule);
+  padding: clamp(16px, 1.6vw, 28px);
+}
+.projector .live-side > .label { padding-bottom: 8px; border-bottom: 1px solid var(--operation-rule); }
+.projector .live-side .count-row { border-color: var(--operation-rule); }
+.projector .live-side .note { color: var(--ash); }
+.projector .foot,
+.projector .reveal-foot {
+  background: rgba(10, 11, 12, .87);
+  border-color: var(--operation-rule);
+}
+.projector .foot { align-items: center; }
+.projector .rig-stop { min-width: 72px; min-height: 40px; }
+.projector .ticker { background: rgba(10, 11, 12, .85); }
+.projector .reveal-title { text-shadow: 0 2px 20px #000; }
+.projector .lineup-wall {
+  background:
+    repeating-linear-gradient(0deg, rgba(216, 212, 199, .12) 0 1px, transparent 1px calc(48 * var(--u))),
+    linear-gradient(0deg, rgba(24, 25, 26, .95), rgba(9, 10, 11, .86));
+  border-color: var(--operation-rule);
+}
+
+/* The dispatch desk keeps its paper ledger; surrounding instruments
+   sit on readable charcoal panels over the same artwork. */
+.dispatch.vault-theme .desk-chrome {
+  background: rgba(10, 11, 12, .96);
+  border-color: var(--operation-rule);
+  padding-block: 10px;
+  gap: 8px 24px;
+}
+.dispatch.vault-theme .desk-brand .brand-mark { width: 40px; height: 40px; object-fit: contain; }
+.dispatch.vault-theme .desk-tools { display: flex; align-items: center; gap: 18px; }
+.dispatch.vault-theme .desk-grid { gap: clamp(20px, 2.5vw, 36px); }
+.dispatch.vault-theme .take-panel > .label { color: var(--bone); }
+.dispatch.vault-theme .post {
+  background: var(--operation-surface);
+  border-color: var(--operation-rule);
+}
+.dispatch.vault-theme .take-panel > .label,
+.dispatch.vault-theme .crew-panel .crew-top > .label,
+.dispatch.vault-theme .crew-panel > .label,
+.dispatch.vault-theme .ledger-panel > .panel-head {
+  min-height: 26px;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--operation-rule);
+}
+.dispatch.vault-theme .ledger-panel .panel-head a { color: var(--bone); text-decoration: underline; text-underline-offset: 4px; }
+.dispatch.vault-theme .big-btn { background: var(--paper); color: var(--ink); }
+.dispatch.vault-theme .big-btn:hover { background: transparent; color: var(--paper); }
+.dispatch.vault-theme .feed-print { rotate: 0deg; padding: 5px; }
+.dispatch.vault-theme .feed-slate { inset: 5px; }
+.dispatch.vault-theme .ledger { box-shadow: 0 12px 36px rgba(0, 0, 0, .35); }
+.dispatch.vault-theme .desk-nav a { display: inline-flex; align-items: center; min-height: 44px; }
+
+@media (max-width: 1180px) {
+  .dispatch.vault-theme .desk-tools { margin-left: auto; }
+  .dispatch.vault-theme .crew-panel { align-items: start; }
+}
+@media (max-width: 820px) {
+  .operation-channel { display: none; }
+  body.projector:has(.view-live.on, .view-reveal.on) { overflow: auto; }
+  body.projector.vault-theme.idle { overflow: hidden; }
+  .projector .view { height: auto; min-height: 100dvh; overflow: visible; }
+  .projector .chrome { flex-wrap: wrap; }
+  .projector .live-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .projector .film { min-height: 280px; }
+  .projector .feed { min-height: 240px; aspect-ratio: 4 / 3; }
+  .projector .live-side { min-height: 380px; }
+  .projector .live-side .odo { font-size: clamp(64px, 14vw, 112px); }
+  .projector .log-wrap { min-height: 180px; max-height: 300px; }
+  .projector .foot { gap: 12px; }
+  .projector .lineup-wall {
+    container-type: normal;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 24px 18px;
+    padding: 22px 28px 28px 18px;
+  }
+  .projector .suspect { width: 100%; min-width: 0; }
+  .projector .reveal-foot { flex-wrap: wrap; gap: 24px; }
+  .projector .wall-marks { right: 4px; }
+  .projector .wall-marks span { font-size: 8px; }
+}
+@media (max-width: 760px) {
+  .dispatch.vault-theme .desk-nav { display: flex; flex-wrap: wrap; gap: 20px; order: 3; width: 100%; }
+  .dispatch.vault-theme .desk-tools { width: 100%; margin-left: 0; justify-content: space-between; }
+  .dispatch.vault-theme .desk-chrome { position: relative; }
+  .dispatch.vault-theme .desk-grid { padding-top: 24px; }
+  .dispatch.vault-theme .crew-panel { padding-inline: 0; }
+}
+@media (max-width: 480px) {
+  .operation-tools { gap: 8px; padding-inline: 12px; }
+  .operation-links { gap: 14px; }
+  .operation-links a { letter-spacing: .06em; }
+  .operation-motion { padding-inline: 7px; letter-spacing: .02em; }
+  .projector .live-grid { padding-inline: 12px; }
+  .projector .chrome { padding-inline: 16px; }
+  .projector .foot { padding-inline: 16px; }
+  .projector .foot > .meta { font-size: 10px; }
+  .projector .tc-cta { font-size: 10px; line-height: 1.6; }
+  .dispatch.vault-theme .panel-head { flex-wrap: wrap; }
+}
+
+@media print {
+  .operation-tools, .operation-motion, .vault-wallpaper { display: none !important; }
+}
+
+/* ============================================================
+   Visual pass: the live screens read from the back of the room.
+   ============================================================ */
+
+/* One floor for small type, and a short scale: 12 labels, 13-14 notes,
+   17 data, then names and the display sizes. */
+.vault-theme.projector,
+body.dispatch.vault-theme {
+  --fs-label: calc(12.5 * var(--u));
+  --fs-meta:  calc(12.5 * var(--u));
+  --fs-cap:   calc(13 * var(--u));
+  --fs-tag:   calc(12 * var(--u));
+  --fs-data:  calc(17 * var(--u));
+  --fs-price: calc(16 * var(--u));
+}
+.projector .scout-status { font-size: 12px; letter-spacing: .14em; padding: 5px 8px; }
+.projector .evidence-marker .tag, .projector .evidence-marker .cap { font-size: 13px; letter-spacing: .06em; }
+.projector .evidence-marker .cap { max-width: 44ch; letter-spacing: .03em; }
+.projector .log-line .ex-k[data-mark]::after { font-size: calc(11 * var(--u)); }
+.projector :is(#skip-reveal, #jump-live) { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+
+/* Atmosphere at half strength: the footage and the numbers are the sharpest
+   things in the room. The title card keeps its flicker. */
+.vault-theme.projector .grain, body.dispatch.vault-theme .grain { opacity: .025; }
+.vault-theme.projector .vignette, body.dispatch.vault-theme .vignette { opacity: .55; }
+.vault-theme.projector:not(.idle) .flicker { display: none; }
+.vault-theme.projector .vault-wallpaper, body.dispatch.vault-theme .vault-wallpaper { opacity: .55; }
+
+/* The feed, as evidence footage: a camera HUD on the picture, bigger
+   registration marks, and corner brackets on every exhibit. */
+.feed-hud {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  font-family: var(--f-type); font-weight: 700; font-size: calc(12 * var(--u));
+  letter-spacing: .16em; text-transform: uppercase; color: var(--paper);
+  text-shadow: 0 1px 2px #000, 0 0 6px rgba(0,0,0,.7);
+}
+.feed-hud > span { position: absolute; display: inline-flex; align-items: center; gap: .6em; }
+.feed-hud .hud-tl { top: calc(14 * var(--u)); left: calc(16 * var(--u)); }
+.feed-hud .hud-bl { bottom: calc(14 * var(--u)); left: calc(16 * var(--u)); color: var(--bone); font-weight: 400; }
+.feed-hud .hud-rec { color: #e23b36; }
+.feed-hud .hud-rec::before {
+  content: ""; width: .8em; height: .8em; margin-right: .45em; border-radius: 50%;
+  display: inline-block; vertical-align: -.05em; background: currentColor;
+  box-shadow: 0 0 8px rgba(226,59,54,.8);
+  animation: rec 2s steps(1, end) infinite;
+}
+.feed-hud .hud-tc { font-variant-numeric: tabular-nums; }
+.feed.lost .feed-hud { visibility: hidden; }
+.projector .feed .reg {
+  width: calc(26 * var(--u)); height: calc(26 * var(--u));
+  border-width: 2px; border-color: rgba(239,233,219,.7);
+}
+.evidence-outline rect { stroke-opacity: .35; }
+.evidence-outline .eo-corners {
+  fill: none; stroke: var(--stamp-lit); stroke-width: 3; stroke-linecap: square;
+  rotate: var(--tilt); transform-origin: center; animation: evidence-in 220ms ease-out both;
+}
+.evidence-marker .tag { border-color: var(--stamp-lit); }
+
+/* The take, underlined in red ink; the line flashes when the number moves. */
+.projector .live-side .odo,
+.dispatch .take-slip .odo {
+  padding-bottom: calc(8 * var(--u));
+  border-bottom: 3px solid var(--stamp-lit);
+}
+.dispatch .take-slip .odo { border-bottom-color: var(--stamp); }
+.odo.bump { animation: odo-bump 900ms var(--ez-settle); }
+@keyframes odo-bump {
+  0%   { border-bottom-color: currentColor; filter: drop-shadow(0 0 14px rgba(217,96,79,.55)); }
+  100% { filter: none; }
+}
+
+/* Every button answers the same way: invert, and lift. */
+.projector :is(#skip-reveal, #jump-live) {
+  transition: background var(--dur-hover) var(--ez-film), color var(--dur-hover) var(--ez-film), translate var(--dur-hover) var(--ez-settle);
+}
+.projector :is(#skip-reveal, #jump-live):hover { background: var(--paper); color: var(--ink); translate: 0 -2px; }
+.dispatch.vault-theme .ledger-panel .panel-head a:hover { color: var(--paper); text-decoration-color: var(--stamp-lit); }
+
+@media (prefers-reduced-motion: reduce) {
+  .odo.bump, .feed-hud .hud-rec::before { animation: none; }
+}
+
+/* ---------- the live view fits the screen, flush top to bottom ---------- */
+/* The case file takes whatever height is left in the column and scrolls inside it,
+   instead of pushing the column past the footer. */
+.projector .live-side > * { flex: none; }
+.projector .live-side .log-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.projector .live-side .log { flex: 1 1 auto; min-height: 0; }
+/* The ticker gets its own band at the top of the footer, not a strip laid over the picture. */
+.projector .foot { flex-wrap: wrap; align-items: center; row-gap: var(--sp-3); padding-top: 0; }
+.projector .foot .ticker {
+  position: relative; bottom: auto;
+  flex: 0 0 calc(100% + 2 * var(--sp-5));
+  margin: 0 calc(-1 * var(--sp-5));
+  padding: calc(7 * var(--u)) 0;
+  border-bottom: 1px solid var(--operation-rule);
+  opacity: 1; color: var(--ash);
+}
+
+/* ---------- the title card: the whole poster between the letterbox bars ----------
+   The bars are 8vh each. The two job doors sit just above the bottom bar, and the
+   poster fits the space between the top bar and the doors, never under either. */
+.projector { --pick-h: 120px; --pick-gap: 14px; }
+.projector .vault-idle-stage { inset: 8vh 0 calc(8vh + var(--pick-gap) * 2 + var(--pick-h)); }
+.projector .vault-idle-stage .vault-scene {
+  width: min(100%, calc((100dvh - 52px - 16vh - var(--pick-gap) * 2 - var(--pick-h)) * 1.5));
+}
+.projector .job-pick { bottom: calc(8vh + var(--pick-gap)); align-items: stretch; }
+.projector .job-btn { min-height: var(--pick-h); align-content: center; }
+.projector .tc-cta, body.idle.projector .tc-cta { z-index: 3; bottom: calc(4vh - .6em); }
+@media (max-width: 520px) {
+  .projector { --pick-h: 96px; }
+  .projector .job-pick { gap: var(--pick-gap); }
+  .projector .vault-idle-stage { inset: 8vh 0 calc(8vh + var(--pick-gap) * 3 + var(--pick-h) * 2); }
+  .projector .vault-idle-stage .vault-scene {
+    width: min(100%, calc((100dvh - 52px - 16vh - var(--pick-gap) * 3 - var(--pick-h) * 2) * 1.5));
+  }
+}
+
+/* ---------- the lineup fits the screen ----------
+   The footer is one row, as tall as the QR; the title shrinks on short screens; and
+   each suspect's text column is a fixed share of the wall's width, so names and
+   prices always have room. Only the photo shrinks with the wall's height. */
+.projector .reveal-title { font-size: min(var(--fs-view), 9vh); line-height: .95; padding-top: var(--sp-3); }
+.projector .reveal-foot { align-items: center; padding-block: var(--sp-3); }
+.projector #v-reveal .file-copy {
+  display: grid; grid-template-columns: auto auto; align-items: center;
+  column-gap: var(--sp-3); row-gap: 2px; text-align: left;
+}
+.projector .file-copy .qr-mat { grid-row: 1 / span 4; }
+.projector .file-copy .qr-mat img { width: calc(80 * var(--u)); }
+.projector .file-copy .cap { margin-top: 0; }
+.projector .suspect {
+  --text-h: calc(var(--sp-3) + 2 * var(--fs-item) + 2.4 * var(--fs-price) + 4px + 15px + 2px);
+  width: 17%;
+  display: flex; flex-direction: column; align-items: center;
+}
+.projector .suspect .photo { width: min(100%, max(56px, calc((100cqh - var(--text-h)) * .75))); }
+.projector .suspect :is(.name, .price, .why) { width: 100%; }
+.projector .suspect .placard { letter-spacing: .1em; }
+.projector .suspect .why { font-size: 12px; letter-spacing: .06em; }
+.projector .reveal-total .odo.sm { font-size: calc(min(var(--fs-total), 11vh) * var(--odo-k, 1)); }

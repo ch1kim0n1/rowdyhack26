@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case File Design Board</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230f0e0c'/%3E%3Crect x='6' y='3' width='20' height='26' fill='%23efe9db'/%3E%3Cg fill='%230f0e0c'%3E%3Crect x='8' y='5' width='3' height='3'/%3E%3Crect x='8' y='11' width='3' height='3'/%3E%3Crect x='8' y='17' width='3' height='3'/%3E%3Crect x='8' y='23' width='3' height='3'/%3E%3Crect x='21' y='5' width='3' height='3'/%3E%3Crect x='21' y='11' width='3' height='3'/%3E%3Crect x='21' y='17' width='3' height='3'/%3E%3Crect x='21' y='23' width='3' height='3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="stylesheet" href="noir.css">
+<style>
+  /* The judges' board is itself a prop: a dossier on a desk, not a slide.
+     Paper, typing, taped prints, two stamps. Built from the kit's own pieces. */
+  body {
+    min-height: 100vh;
+    background: radial-gradient(ellipse 90% 70% at 45% 35%, var(--carbon), var(--ink) 75%);
+  }
+  .desk-board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 48px;
+    padding: 44px 48px 56px;
+    align-items: start;
+  }
+
+  /* the memo: typed on paper stock */
+  .memo {
+    position: relative;
+    background: linear-gradient(180deg, rgba(0,0,0,.035), transparent 10%), var(--paper);
+    color: var(--ink);
+    font-family: var(--f-typed);
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 46px 42px 38px;
+    transform: rotate(-.6deg);
+    box-shadow: 0 18px 50px rgba(0,0,0,.6);
+  }
+  .memo::before, .memo::after { content: ""; position: absolute; top: -9px; width: 44px; height: 15px; background: rgba(216,212,199,.5); }
+  .memo::before { left: 30px; transform: rotate(-4deg); }
+  .memo::after { right: 30px; transform: rotate(5deg); }
+  .memo .head { display: grid; grid-template-columns: 70px 1fr; row-gap: 2px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+  .memo .head span:nth-child(odd) { color: var(--paper-ink-3); }
+  .memo hr { border: 0; border-top: 1px solid var(--ink); margin: 16px 0 18px; }
+  .memo .premise { font-family: var(--f-display); font-size: clamp(34px, 3.3vw, 50px); line-height: .92; letter-spacing: .02em; margin: 4px 0 18px; }
+  .memo p + p { margin-top: 12px; }
+  .memo ol { margin: 10px 0 0 24px; }
+  .memo ol li { padding-left: 4px; margin-top: 7px; }
+  .memo .sig { margin-top: 22px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .memo .sig .note { color: var(--paper-ink-2); transform: rotate(-3deg); font-size: 22px; }
+  .ink-stamp { position: absolute; border-color: var(--stamp); color: var(--stamp); opacity: .78; mix-blend-mode: multiply; }
+
+  /* reference strip on the memo: stock swatches and type, typed labels */
+  .chips { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 10px; }
+  .chips i { display: block; aspect-ratio: 2 / 1; border: 1px solid rgba(15,14,12,.25); }
+  .faces { margin-top: 12px; font-size: 13px; }
+  .faces div { display: flex; align-items: baseline; gap: 12px; border-top: 1px dotted var(--paper-rule); padding: 6px 0; }
+  .faces b { font-weight: 400; min-width: 116px; color: var(--paper-ink-3); letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
+
+  /* the prints: screenshots as photographs taped to the desk */
+  .prints { display: grid; grid-template-columns: 1fr 1fr; gap: 34px 30px; }
+  .print { position: relative; background: #f4f0e6; padding: 10px 10px 34px; box-shadow: 0 12px 30px rgba(0,0,0,.55); }
+  .print img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; filter: grayscale(1) contrast(1.05); }
+  .print .before { width: 100%; aspect-ratio: 16 / 10; }
+  .print .cap { position: absolute; left: 12px; right: 12px; bottom: 9px; font-family: var(--f-typed); font-size: 12px; color: var(--paper-ink-2); letter-spacing: .04em; }
+  .print::before { content: ""; position: absolute; top: -8px; left: 50%; width: 52px; height: 16px; background: rgba(216,212,199,.45); translate: -50% 0; rotate: -2deg; }
+  .print:nth-child(1) { rotate: -1.6deg; } .print:nth-child(2) { rotate: 1.2deg; }
+  .print:nth-child(3) { rotate: .8deg; }   .print:nth-child(4) { rotate: -1deg; }
+  .print:nth-child(5) { rotate: 1.4deg; }  .print:nth-child(6) { rotate: -.8deg; }
+  /* over a dark photograph the ink has to be the lit one; multiply would turn it black */
+  .print .stamp { position: absolute; right: 8%; bottom: 24%; font-size: 30px; opacity: .92; }
+
+  /* "before": the build guide's original direction, rendered faithfully */
+  .before { background: #0a0a0a; font-family: ui-monospace, Consolas, monospace; color: #ddd; display: grid; grid-template-columns: 1.5fr 1fr; gap: 8px; padding: 10px; filter: none !important; }
+  .before .cam { background: #1c1c1c; position: relative; border-radius: 6px; }
+  .before .bb { position: absolute; border: 1.5px solid #d4a017; }
+  .before .bb b { position: absolute; bottom: 100%; left: -1px; background: #d4a017; color: #000; font: 700 8px ui-monospace, monospace; padding: 1px 3px; white-space: nowrap; }
+  .before .side { display: flex; flex-direction: column; gap: 6px; font-size: 9px; }
+  .before .tot { font-size: 24px; color: #d4a017; font-weight: 700; }
+  .before .row { display: flex; justify-content: space-between; background: #161616; padding: 5px 6px; border-radius: 4px; }
+
+  @media (max-width: 1100px) {
+    .desk-board { grid-template-columns: 1fr; padding: 28px 16px 48px; gap: 36px; }
+  }
+  @media (max-width: 560px) {
+    .prints { grid-template-columns: 1fr; }
+    .memo { padding: 34px 20px 28px; }
+    .chips { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="stamp-rough" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
+</defs></svg>
+
+<main class="desk-board">
+
+  <article class="memo">
+    <div class="stamp ink-stamp" style="top:30px; right:34px; transform:rotate(7deg); font-size:22px">Design Brief</div>
+    <div class="head">
+      <span>To</span><span>The judges</span>
+      <span>From</span><span>The crew</span>
+      <span>Re</span><span>Case No. 1138, The Appraisal Job</span>
+    </div>
+    <hr>
+    <h1 class="premise cut">A camera on a cap prices whatever is in the room.</h1>
+    <p>The screen is the paperwork. Each find is an exhibit. The price is an appraisal. The top five is a lineup. The page you scan is a stamped case file.</p>
+    <p>One rule. If it would not sit in a 1950s police station, or on 1950s film, it is not on screen.</p>
+    <ol>
+      <li>The camera sends a still every couple of seconds. Each one lands as a hard cut.</li>
+      <li>While the model thinks, the ledger types EXAMINING EXHIBIT 07. A pause should look like work.</li>
+      <li>A guessed price says est. on every screen.</li>
+      <li>Failures stay in the film. Footage lost. Line dead. A vacant slot. Case unsolved.</li>
+      <li>Academy leader at the start. A cue mark before the reveal. The End when the case closes.</li>
+      <li>Red is stamp ink. Everything else is black, white, and the greys between.</li>
+    </ol>
+    <hr>
+    <div class="chips" aria-label="Palette: black, ink, carbon, smoke, ash, bone, paper, stamp">
+      <i style="background:var(--black)"></i><i style="background:var(--ink)"></i><i style="background:var(--carbon)"></i><i style="background:var(--smoke)"></i>
+      <i style="background:var(--ash)"></i><i style="background:var(--bone)"></i><i style="background:var(--paper)"></i><i style="background:var(--stamp)"></i>
+    </div>
+    <div class="faces">
+      <div><b>League Gothic</b><span style="font-family:var(--f-display); font-size:26px; line-height:1; text-transform:uppercase">The usual suspects</span></div>
+      <div><b>Special Elite</b><span>EXHIBIT 07: "LEICA M3" ...... $1,850.00</span></div>
+      <div><b>Courier Prime</b><span style="font-family:var(--f-type); font-weight:700; letter-spacing:.18em; font-size:12px">ESTIMATED TAKE</span></div>
+    </div>
+    <div class="sig">
+      <span class="note">the good stuff's never on the first shelf.</span>
+      <span style="font-size:12px; color:var(--paper-ink-3)">Filed 09/26/2026</span>
+    </div>
+  </article>
+
+  <section class="prints" aria-label="Screens">
+    <figure class="print"><img src="shots/title.png" alt="The title card: The Appraisal Job, in cut-paper letters"><figcaption class="cap">I. Title card, when nobody is walking</figcaption></figure>
+    <figure class="print"><img src="shots/live.png" alt="The live walk: footage, evidence markers, and a typed ledger"><figcaption class="cap">II. The walk. Footage, the take, the ledger</figcaption></figure>
+    <figure class="print"><img src="shots/reveal.png" alt="The reveal: five suspects in a lineup and a Case Closed stamp"><figcaption class="cap">III. The lineup, rank five to rank one</figcaption></figure>
+    <figure class="print"><img src="shots/manifest-phone.png" alt="The case file on a phone"><figcaption class="cap">IV. The case file, on a phone</figcaption></figure>
+    <figure class="print">
+      <div class="before" aria-label="The default direction: a dark dashboard with gold boxes">
+        <div class="cam">
+          <div class="bb" style="left:12%;top:24%;width:30%;height:34%"><b>ROLEX $4200</b></div>
+          <div class="bb" style="left:55%;top:40%;width:26%;height:30%"><b>LEICA $1850</b></div>
+        </div>
+        <div class="side"><div>TOTAL</div><div class="tot">$7,600</div>
+          <div class="row"><span>Rolex</span><span>$4200</span></div><div class="row"><span>Leica M3</span><span>$1850</span></div><div class="row"><span>Hemingway</span><span>$950</span></div>
+        </div>
+      </div>
+      <div class="stamp" style="transform:rotate(-8deg)">Rejected</div>
+      <figcaption class="cap">Before: gold boxes on a dark dashboard</figcaption>
+    </figure>
+    <figure class="print"><img src="shots/live.png" alt="The same data as a case file"><div class="stamp" style="transform:rotate(6deg)">Approved</div><figcaption class="cap">After: the same data, filed</figcaption></figure>
+  </section>
+
+</main>
+<script src="noir.js"></script>
+</body>
+</html>

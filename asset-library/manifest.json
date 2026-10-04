@@ -1,0 +1,1147 @@
+{
+  "assets": [
+    {
+      "path": "music/Covert Affair.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Covert%20Affair.mp3",
+      "title": "Covert Affair",
+      "author": "Kevin MacLeod",
+      "license": "CC BY 4.0",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100795",
+      "quality": "original",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "codec_type": "audio"
+          }
+        ],
+        "format": {
+          "duration": "194.194300"
+        }
+      },
+      "status": "downloaded",
+      "bytes": 7769896,
+      "sha256": "279be47ea7880460be1393d66a83bcc7bee18e10d73537420098e4e1b1c0646f"
+    },
+    {
+      "path": "music/Bass Walker.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bass%20Walker.mp3",
+      "title": "Bass Walker",
+      "author": "Kevin MacLeod",
+      "license": "CC BY 4.0",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200071",
+      "quality": "original",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "codec_type": "audio"
+          }
+        ],
+        "format": {
+          "duration": "161.544000"
+        }
+      },
+      "status": "downloaded",
+      "bytes": 6463882,
+      "sha256": "094332b56f4bdd5446b17cbc87a40610518c3aec787c7e289ac6ef4e3eb3e817"
+    },
+    {
+      "path": "music/Night on the Docks.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Night%20on%20the%20Docks.mp3",
+      "title": "Night on the Docks - Piano",
+      "author": "Kevin MacLeod",
+      "license": "CC BY 4.0",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100135",
+      "quality": "original",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "codec_type": "audio"
+          },
+          {
+            "codec_name": "mjpeg",
+            "codec_type": "video"
+          }
+        ],
+        "format": {
+          "duration": "174.080000"
+        }
+      },
+      "status": "downloaded",
+      "bytes": 5973492,
+      "sha256": "d0c9319fe0e7e055f073ac81f52b56563bc151af823f7578374922788cf0e438"
+    },
+    {
+      "path": "music/Spy Glass.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Spy%20Glass.mp3",
+      "title": "Spy Glass",
+      "author": "Kevin MacLeod",
+      "license": "CC BY 4.0",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500058",
+      "quality": "original",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "codec_type": "audio"
+          }
+        ],
+        "format": {
+          "duration": "226.977969"
+        }
+      },
+      "status": "downloaded",
+      "bytes": 7265543,
+      "sha256": "e790c5ceb0b64eed48d83ee3aa458daebc246d751bf7cf12c87231faadb5f6f1"
+    },
+    {
+      "path": "sfx/freesound/camera-shutter_hq-preview.mp3",
+      "download_url": "https://cdn.freesound.org/previews/338/338219_5450487-hq.mp3",
+      "title": "Camera shutter analogue film SLR 1/4 02",
+      "author": "cabled_mess",
+      "license": "CC0 1.0",
+      "source_url": "https://freesound.org/people/cabled_mess/sounds/338219/",
+      "quality": "HQ MP3 preview; original WAV requires Freesound login",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "side_data_list": [
+              {}
+            ]
+          }
+        ],
+        "format": {
+          "duration": "0.629813"
+        }
+      },
+      "status": "downloaded",
+      "bytes": 13680,
+      "sha256": "cee1410ac9259ba6c080d469b1fc8c57d7e373e94245295874d28e90a047a642"
+    },
+    {
+      "path": "sfx/freesound/paper-shuffle-and-slide_hq-preview.mp3",
+      "download_url": "https://cdn.freesound.org/previews/842/842492_6652872-hq.mp3",
+      "title": "Paper Shuffle and Slide noises",
+      "author": "khenshom",
+      "license": "CC0 1.0",
+      "source_url": "https://freesound.org/people/khenshom/sounds/842492/",
+      "quality": "HQ MP3 preview; original WAV requires Freesound login",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "side_data_list": [
+              {}
+            ]
+          }
+        ],
+        "format": {
+          "duration": "42.771625"
+        }
+      },
+      "status": "downloaded",
+      "bytes": 1031808,
+      "sha256": "ad9efb49aa1e261ff9e7a1c5cf12a4c6c400481bba79cf261a8b9fef29adc7eb"
+    },
+    {
+      "path": "sfx/freesound/stamp_hq-preview.mp3",
+      "download_url": "https://cdn.freesound.org/previews/362/362624_3165091-hq.mp3",
+      "title": "Stamp",
+      "author": "kermite607",
+      "license": "CC0 1.0",
+      "source_url": "https://freesound.org/people/kermite607/sounds/362624/",
+      "quality": "HQ MP3 preview; original WAV requires Freesound login",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "side_data_list": [
+              {}
+            ]
+          }
+        ],
+        "format": {
+          "duration": "0.582042"
+        }
+      },
+      "status": "downloaded",
+      "bytes": 17088,
+      "sha256": "daaad886f71a57dca4b097550c1ecb4cc99d4fe3d7dd383841091c000cd6ab26"
+    },
+    {
+      "path": "sfx/freesound/end-radio-transmission_hq-preview.mp3",
+      "download_url": "https://cdn.freesound.org/previews/47/47646_545448-hq.mp3",
+      "title": "End radio transmission",
+      "author": "ReadeOnly",
+      "license": "CC0 1.0",
+      "source_url": "https://freesound.org/people/ReadeOnly/sounds/47646/",
+      "quality": "HQ MP3 preview; original WAV requires Freesound login",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "side_data_list": [
+              {}
+            ]
+          }
+        ],
+        "format": {
+          "duration": "0.365941"
+        }
+      },
+      "status": "downloaded",
+      "bytes": 10229,
+      "sha256": "ff2b82f85ff80133fcb49f2520b4340f14efe4099ffa48451fa8d46cd87a4757"
+    },
+    {
+      "path": "sfx/freesound/perusing-binder_hq-preview.mp3",
+      "download_url": "https://cdn.freesound.org/previews/168/168009_2597829-hq.mp3",
+      "title": "Perusing Binder",
+      "author": "gmarchisio",
+      "license": "CC0 1.0",
+      "source_url": "https://freesound.org/people/gmarchisio/sounds/168009/",
+      "quality": "HQ MP3 preview; original WAV requires Freesound login",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "side_data_list": [
+              {}
+            ]
+          }
+        ],
+        "format": {
+          "duration": "7.181293"
+        }
+      },
+      "status": "downloaded",
+      "bytes": 163283,
+      "sha256": "b2cbe21314a0210a318950ea4ebdd1e0f48b39d2f0c4d2707579ff3ca7837ff8"
+    },
+    {
+      "path": "archives/kenney_interface-sounds.zip",
+      "download_url": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+      "title": "Interface Sounds",
+      "author": "Kenney",
+      "license": "CC0 1.0",
+      "source_url": "https://kenney.nl/assets/interface-sounds",
+      "quality": "original",
+      "extracted_path": "sfx/kenney/interface-sounds",
+      "archive_files": [
+        "License.txt",
+        "Patreon.url",
+        "Audio/back_001.ogg",
+        "Audio/back_002.ogg",
+        "Audio/back_003.ogg",
+        "Audio/back_004.ogg",
+        "Audio/bong_001.ogg",
+        "Audio/click_001.ogg",
+        "Audio/click_002.ogg",
+        "Audio/click_003.ogg",
+        "Audio/click_004.ogg",
+        "Audio/click_005.ogg",
+        "Audio/close_001.ogg",
+        "Audio/close_002.ogg",
+        "Audio/close_003.ogg",
+        "Audio/close_004.ogg",
+        "Audio/confirmation_001.ogg",
+        "Audio/confirmation_002.ogg",
+        "Audio/confirmation_003.ogg",
+        "Audio/confirmation_004.ogg",
+        "Audio/drop_001.ogg",
+        "Audio/drop_002.ogg",
+        "Audio/drop_003.ogg",
+        "Audio/drop_004.ogg",
+        "Audio/error_001.ogg",
+        "Audio/error_002.ogg",
+        "Audio/error_003.ogg",
+        "Audio/error_004.ogg",
+        "Audio/error_005.ogg",
+        "Audio/error_006.ogg",
+        "Audio/error_007.ogg",
+        "Audio/error_008.ogg",
+        "Audio/glass_001.ogg",
+        "Audio/glass_002.ogg",
+        "Audio/glass_003.ogg",
+        "Audio/glass_004.ogg",
+        "Audio/glass_005.ogg",
+        "Audio/glass_006.ogg",
+        "Audio/glitch_001.ogg",
+        "Audio/glitch_002.ogg",
+        "Audio/glitch_003.ogg",
+        "Audio/glitch_004.ogg",
+        "Audio/maximize_001.ogg",
+        "Audio/maximize_002.ogg",
+        "Audio/maximize_003.ogg",
+        "Audio/maximize_004.ogg",
+        "Audio/maximize_005.ogg",
+        "Audio/maximize_006.ogg",
+        "Audio/maximize_007.ogg",
+        "Audio/maximize_008.ogg",
+        "Audio/maximize_009.ogg",
+        "Audio/minimize_001.ogg",
+        "Audio/minimize_002.ogg",
+        "Audio/minimize_003.ogg",
+        "Audio/minimize_004.ogg",
+        "Audio/minimize_005.ogg",
+        "Audio/minimize_006.ogg",
+        "Audio/minimize_007.ogg",
+        "Audio/minimize_008.ogg",
+        "Audio/minimize_009.ogg",
+        "Audio/open_001.ogg",
+        "Audio/open_002.ogg",
+        "Audio/open_003.ogg",
+        "Audio/open_004.ogg",
+        "Audio/pluck_001.ogg",
+        "Audio/pluck_002.ogg",
+        "Audio/question_001.ogg",
+        "Audio/question_002.ogg",
+        "Audio/question_003.ogg",
+        "Audio/question_004.ogg",
+        "Audio/scratch_001.ogg",
+        "Audio/scratch_002.ogg",
+        "Audio/scratch_003.ogg",
+        "Audio/scratch_004.ogg",
+        "Audio/scratch_005.ogg",
+        "Audio/scroll_001.ogg",
+        "Audio/scroll_002.ogg",
+        "Audio/scroll_003.ogg",
+        "Audio/scroll_004.ogg",
+        "Audio/scroll_005.ogg",
+        "Audio/select_001.ogg",
+        "Audio/select_002.ogg",
+        "Audio/select_003.ogg",
+        "Audio/select_004.ogg",
+        "Audio/select_005.ogg",
+        "Audio/select_006.ogg",
+        "Audio/select_007.ogg",
+        "Audio/select_008.ogg",
+        "Audio/switch_001.ogg",
+        "Audio/switch_002.ogg",
+        "Audio/switch_003.ogg",
+        "Audio/switch_004.ogg",
+        "Audio/switch_005.ogg",
+        "Audio/switch_006.ogg",
+        "Audio/switch_007.ogg",
+        "Audio/tick_001.ogg",
+        "Audio/tick_002.ogg",
+        "Audio/tick_004.ogg",
+        "Audio/toggle_001.ogg",
+        "Audio/toggle_002.ogg",
+        "Audio/toggle_003.ogg",
+        "Audio/toggle_004.ogg",
+        "Kenney.url"
+      ],
+      "status": "downloaded",
+      "bytes": 834536,
+      "sha256": "f2193d072726d6758a5f7871b2dcc54dcce0d5c35c6f0a62f92549b327c81232"
+    },
+    {
+      "path": "archives/kenney_casino-audio.zip",
+      "download_url": "https://kenney.nl/media/pages/assets/casino-audio/2472606a04-1721639069/kenney_casino-audio.zip",
+      "title": "Casino Audio",
+      "author": "Kenney",
+      "license": "CC0 1.0",
+      "source_url": "https://kenney.nl/assets/casino-audio",
+      "quality": "original",
+      "extracted_path": "sfx/kenney/casino-audio",
+      "archive_files": [
+        "Preview.ogg",
+        "Visit Kenney.url",
+        "Visit Patreon.url",
+        "Audio/card-fan-1.ogg",
+        "Audio/card-fan-2.ogg",
+        "Audio/card-place-1.ogg",
+        "Audio/card-place-2.ogg",
+        "Audio/card-place-3.ogg",
+        "Audio/card-place-4.ogg",
+        "Audio/card-shove-1.ogg",
+        "Audio/card-shove-2.ogg",
+        "Audio/card-shove-3.ogg",
+        "Audio/card-shove-4.ogg",
+        "Audio/card-shuffle.ogg",
+        "Audio/card-slide-1.ogg",
+        "Audio/card-slide-2.ogg",
+        "Audio/card-slide-3.ogg",
+        "Audio/card-slide-4.ogg",
+        "Audio/card-slide-5.ogg",
+        "Audio/card-slide-6.ogg",
+        "Audio/card-slide-7.ogg",
+        "Audio/card-slide-8.ogg",
+        "Audio/cards-pack-open-1.ogg",
+        "Audio/cards-pack-open-2.ogg",
+        "Audio/cards-pack-take-out-1.ogg",
+        "Audio/cards-pack-take-out-2.ogg",
+        "Audio/chip-lay-1.ogg",
+        "Audio/chip-lay-2.ogg",
+        "Audio/chip-lay-3.ogg",
+        "Audio/chips-collide-1.ogg",
+        "Audio/chips-collide-2.ogg",
+        "Audio/chips-collide-3.ogg",
+        "Audio/chips-collide-4.ogg",
+        "Audio/chips-handle-1.ogg",
+        "Audio/chips-handle-2.ogg",
+        "Audio/chips-handle-3.ogg",
+        "Audio/chips-handle-4.ogg",
+        "Audio/chips-handle-5.ogg",
+        "Audio/chips-handle-6.ogg",
+        "Audio/chips-stack-1.ogg",
+        "Audio/chips-stack-2.ogg",
+        "Audio/chips-stack-3.ogg",
+        "Audio/chips-stack-4.ogg",
+        "Audio/chips-stack-5.ogg",
+        "Audio/chips-stack-6.ogg",
+        "Audio/dice-grab-1.ogg",
+        "Audio/dice-grab-2.ogg",
+        "Audio/dice-shake-1.ogg",
+        "Audio/dice-shake-2.ogg",
+        "Audio/dice-shake-3.ogg",
+        "Audio/dice-throw-1.ogg",
+        "Audio/dice-throw-2.ogg",
+        "Audio/dice-throw-3.ogg",
+        "Audio/die-throw-1.ogg",
+        "Audio/die-throw-2.ogg",
+        "Audio/die-throw-3.ogg",
+        "Audio/die-throw-4.ogg",
+        "License.txt"
+      ],
+      "status": "downloaded",
+      "bytes": 876839,
+      "sha256": "f36250766ac5bc378c13708ddf12a23a8e54a3251f8d482c7536e51b5dbafa18"
+    },
+    {
+      "path": "components/game-icons/spy-white.svg",
+      "download_url": "https://game-icons.net/icons/ffffff/transparent/1x1/delapouite/spy.svg",
+      "title": "Spy",
+      "author": "Delapouite",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/delapouite/spy.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 3822,
+      "sha256": "c1d728f1302aa548ef08019700caf923a2968a674cfb63ede915a9dbb8d46415"
+    },
+    {
+      "path": "components/game-icons/spy-white.png",
+      "download_url": "https://game-icons.net/icons/ffffff/transparent/1x1/delapouite/spy.png",
+      "title": "Spy",
+      "author": "Delapouite",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/delapouite/spy.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 8506,
+      "sha256": "29d58b14700eb83b5c015c823971c4ef42320bf0b55dcee077e4474e41006e12"
+    },
+    {
+      "path": "components/game-icons/spy-black.svg",
+      "download_url": "https://game-icons.net/icons/000000/transparent/1x1/delapouite/spy.svg",
+      "title": "Spy",
+      "author": "Delapouite",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/delapouite/spy.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 3822,
+      "sha256": "d332e0c78eeef49651b37c23d767a5b0537add3318fc2f9b6f931bc16f192500"
+    },
+    {
+      "path": "components/game-icons/spy-black.png",
+      "download_url": "https://game-icons.net/icons/000000/transparent/1x1/delapouite/spy.png",
+      "title": "Spy",
+      "author": "Delapouite",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/delapouite/spy.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 8506,
+      "sha256": "5ec4fbd9ce7f295587abf048d517d21657ae5b4d39540c3b73cb8a6bbf7a5f3b"
+    },
+    {
+      "path": "components/game-icons/briefcase-white.svg",
+      "download_url": "https://game-icons.net/icons/ffffff/transparent/1x1/delapouite/briefcase.svg",
+      "title": "Briefcase",
+      "author": "Delapouite",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/delapouite/briefcase.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 999,
+      "sha256": "513b2100430cc7c778c46b5a7377ffd2f87505d0a287a15129e84d1e1c659b91"
+    },
+    {
+      "path": "components/game-icons/briefcase-white.png",
+      "download_url": "https://game-icons.net/icons/ffffff/transparent/1x1/delapouite/briefcase.png",
+      "title": "Briefcase",
+      "author": "Delapouite",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/delapouite/briefcase.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 2904,
+      "sha256": "7e1c8f2bd64190617695cbd24b24ed49b1746fe2597052feacf4b4e9ab0b7d6c"
+    },
+    {
+      "path": "components/game-icons/briefcase-black.svg",
+      "download_url": "https://game-icons.net/icons/000000/transparent/1x1/delapouite/briefcase.svg",
+      "title": "Briefcase",
+      "author": "Delapouite",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/delapouite/briefcase.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 999,
+      "sha256": "d50d2a07b006c5cae337290c345969ad01b8e1eec4e1c258d8a9c58d998f9884"
+    },
+    {
+      "path": "components/game-icons/briefcase-black.png",
+      "download_url": "https://game-icons.net/icons/000000/transparent/1x1/delapouite/briefcase.png",
+      "title": "Briefcase",
+      "author": "Delapouite",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/delapouite/briefcase.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 2904,
+      "sha256": "2d570a6abbf385f215e962dd3bd8e91d3f1b110a18356b72bc72994c4ac3425a"
+    },
+    {
+      "path": "components/game-icons/pocket-watch-white.svg",
+      "download_url": "https://game-icons.net/icons/ffffff/transparent/1x1/skoll/pocket-watch.svg",
+      "title": "Pocket Watch",
+      "author": "Skoll",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/skoll/pocket-watch.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 3571,
+      "sha256": "b70d98a7da324df6b36b6ee47b300b6cdaeced9f567a96709bcc6452172b9c23"
+    },
+    {
+      "path": "components/game-icons/pocket-watch-white.png",
+      "download_url": "https://game-icons.net/icons/ffffff/transparent/1x1/skoll/pocket-watch.png",
+      "title": "Pocket Watch",
+      "author": "Skoll",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/skoll/pocket-watch.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 10801,
+      "sha256": "77cb5adbb81642b1ab6ae115fa3a858ef2c1d61ff3637728ae627785d6a64fd4"
+    },
+    {
+      "path": "components/game-icons/pocket-watch-black.svg",
+      "download_url": "https://game-icons.net/icons/000000/transparent/1x1/skoll/pocket-watch.svg",
+      "title": "Pocket Watch",
+      "author": "Skoll",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/skoll/pocket-watch.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 3571,
+      "sha256": "ed2578dd4210b72dcace6d86b27244da1582f18224dded20aee64b4cc167ee66"
+    },
+    {
+      "path": "components/game-icons/pocket-watch-black.png",
+      "download_url": "https://game-icons.net/icons/000000/transparent/1x1/skoll/pocket-watch.png",
+      "title": "Pocket Watch",
+      "author": "Skoll",
+      "license": "CC BY 3.0",
+      "source_url": "https://game-icons.net/1x1/skoll/pocket-watch.html",
+      "quality": "transparent color variant provided by source",
+      "status": "downloaded",
+      "bytes": 10801,
+      "sha256": "3ec435f1652b21be1d61fcaa467d071dbd7a26e6b7e57a0ab829eb93c9bc50f2"
+    },
+    {
+      "path": "licenses/CC-BY-4.0.html",
+      "download_url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "title": "CC-BY-4.0.html",
+      "author": "License publisher",
+      "license": "license text",
+      "source_url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "quality": "original",
+      "status": "downloaded",
+      "bytes": 48742,
+      "sha256": "58230517b7895aa219ff46a6ed63e67057a1582fb9ea054b16728a8c13525650"
+    },
+    {
+      "path": "licenses/CC-BY-3.0.html",
+      "download_url": "https://creativecommons.org/licenses/by/3.0/legalcode",
+      "title": "CC-BY-3.0.html",
+      "author": "License publisher",
+      "license": "license text",
+      "source_url": "https://creativecommons.org/licenses/by/3.0/legalcode",
+      "quality": "original",
+      "status": "downloaded",
+      "bytes": 51105,
+      "sha256": "967a3670bcbfdc50614e71062b18effed899007a0e364541328ebdb863520132"
+    },
+    {
+      "path": "licenses/CC0-1.0.html",
+      "download_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "title": "CC0-1.0.html",
+      "author": "License publisher",
+      "license": "license text",
+      "source_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "quality": "original",
+      "status": "downloaded",
+      "bytes": 32223,
+      "sha256": "b43732f4c1463b087cf10d4daf8d8766514b2bf8f21bc5ef50905f95be227726"
+    },
+    {
+      "path": "licenses/IBM-Plex-Mono-OFL.txt",
+      "download_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexmono/OFL.txt",
+      "title": "IBM-Plex-Mono-OFL.txt",
+      "author": "License publisher",
+      "license": "license text",
+      "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexmono/OFL.txt",
+      "quality": "original",
+      "status": "downloaded",
+      "bytes": 4456,
+      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da"
+    },
+    {
+      "path": "licenses/Playfair-Display-OFL.txt",
+      "download_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/OFL.txt",
+      "title": "Playfair-Display-OFL.txt",
+      "author": "License publisher",
+      "license": "license text",
+      "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/OFL.txt",
+      "quality": "original",
+      "status": "downloaded",
+      "bytes": 4449,
+      "sha256": "566be814f8e96e93dfa16101331557eb6b5467e9e03f627c0910fe93ca12300e"
+    },
+    {
+      "path": "sfx/existing-noir/projector.ogg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/assets/sfx/projector.ogg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 2063013,
+      "sha256": "d4ffa8f93dd3a9502183c71d644928377e4b4da2bca9aab1526f240ef7590626"
+    },
+    {
+      "path": "sfx/existing-noir/radio-static.wav",
+      "status": "copied-existing",
+      "source_path": "ui-kit/assets/sfx/radio-static.wav",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 49518,
+      "sha256": "d82e33680d4a29e6b50d1fecf61b1b1826653ae68e708bdb99f8423ff70c7b91"
+    },
+    {
+      "path": "sfx/existing-noir/stamp.ogg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/assets/sfx/stamp.ogg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 343976,
+      "sha256": "4fe972c1347daa1853cb7234a3a7cb922e7489ffabe89a7d0f3db365e10f1468"
+    },
+    {
+      "path": "sfx/existing-noir/typewriter-ding.wav",
+      "status": "copied-existing",
+      "source_path": "ui-kit/assets/sfx/typewriter-ding.wav",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 154464,
+      "sha256": "7e86d269c13cff5d8651718b39da728e612f22e58187780d6b098f9329d713eb"
+    },
+    {
+      "path": "sfx/existing-noir/typewriter.ogg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/assets/sfx/typewriter.ogg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 398063,
+      "sha256": "cc4a9660c09f3ba86c46ffab11f40aaf38cf5bf858176397a471699dc8cdf33b"
+    },
+    {
+      "path": "textures/existing-noir/dark-paper.jpg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/assets/textures/dark-paper.jpg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 77632,
+      "sha256": "daf555f447dda4b05ef8f8dfe2cf4bc3d1e5e602c73633cd6a440672b2256042"
+    },
+    {
+      "path": "textures/existing-noir/paper.jpg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/assets/textures/paper.jpg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 169019,
+      "sha256": "b3707f36ac464dcf751affbea3e265b6b1d43bef2cc6810a47ef457f3147b237"
+    },
+    {
+      "path": "components/existing-noir/svg/cue-mark.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/cue-mark.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 154,
+      "sha256": "256173dde3d55201befb05b6c7cbc8a726b452021adc6d3493f6a945ebc976ba"
+    },
+    {
+      "path": "components/existing-noir/svg/favicon.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/favicon.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 520,
+      "sha256": "f254e6ae35caf2b9f48277eab98281552475c3ea94eea1d4b752797040c5ed4e"
+    },
+    {
+      "path": "components/existing-noir/svg/leader-frame.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/leader-frame.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 332,
+      "sha256": "d01b7dcf380688a76f1b90d590ed2fec943e49f83845fe4db8f75b5ce7272dca"
+    },
+    {
+      "path": "components/existing-noir/svg/marker-frame.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/marker-frame.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 528,
+      "sha256": "62267b64d12dc33587e56fd6ab83b9b97810ca2b6acb56d6341aa32a3197976f"
+    },
+    {
+      "path": "components/existing-noir/svg/registration-mark.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/registration-mark.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 164,
+      "sha256": "87d49771541c8e0fb7c5445dc5133a445f3e800ec5da82bd7f26770724c799f1"
+    },
+    {
+      "path": "components/existing-noir/svg/sprocket-strip.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/sprocket-strip.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 775,
+      "sha256": "7dcb38348e7848c86ec57662760fdd7adc10fc304eb8bc446ed485be6f7c9aed"
+    },
+    {
+      "path": "components/existing-noir/svg/stamp-case-closed.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/stamp-case-closed.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 660,
+      "sha256": "76b4ee4810d02597b88afc744363ca0d9ebdd7b1a42f471bce304222e7c0ead4"
+    },
+    {
+      "path": "components/existing-noir/svg/stamp-case-unsolved.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/stamp-case-unsolved.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 662,
+      "sha256": "b2f0a66d27abe182112d285a346cd9f50d37b57663e4b4e4620d465f6e59bf6a"
+    },
+    {
+      "path": "components/existing-noir/svg/stamp-evidence.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/stamp-evidence.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 659,
+      "sha256": "e149c274cab949840203c16e78bdc2ba15c0380ce05b9be955f0dc901095d861"
+    },
+    {
+      "path": "components/existing-noir/svg/stamp-filed.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/stamp-filed.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 663,
+      "sha256": "db35e8abc7d9eb3e66844b339f3da643f499cd18b3c1174225776561d43dfefd"
+    },
+    {
+      "path": "components/existing-noir/svg/title-card-bars.svg",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/svg/title-card-bars.svg",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 536,
+      "sha256": "68d1060105f9735b1fa3fee28e45cf1984a7424c4a5adc9880cd8d88cd62650a"
+    },
+    {
+      "path": "components/existing-noir/png/cover-live-1920x1080.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/cover-live-1920x1080.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 858652,
+      "sha256": "fedab09b7c7109fcc70b0d5223b223aaf717908e15c06861c0110d43b4e97af5"
+    },
+    {
+      "path": "components/existing-noir/png/cover-reveal-1920x1080.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/cover-reveal-1920x1080.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 362054,
+      "sha256": "fbcacf0fc1b7fef91f31066774d04730053358c0c128922415248b83915302ab"
+    },
+    {
+      "path": "components/existing-noir/png/cover-title-1500x1000.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/cover-title-1500x1000.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 148045,
+      "sha256": "c3ef8f99cb4ad3c56ca4ddaee69cb72f6ce316358194f8f85396078c8ff810a4"
+    },
+    {
+      "path": "components/existing-noir/png/cover-title-1920x1080.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/cover-title-1920x1080.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 191314,
+      "sha256": "2e544c48677cd3def5c86afa5556ece39a814bc4f43c437e468c8f74ad0f2418"
+    },
+    {
+      "path": "components/existing-noir/png/cue-mark.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/cue-mark.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 2352,
+      "sha256": "f95d28b3382a4b51474a66f5e506107ff7b710d67eeb6682e276487d786b881a"
+    },
+    {
+      "path": "components/existing-noir/png/film-band-bottom.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/film-band-bottom.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 11445,
+      "sha256": "993398295c62c5b22ff2aa929395b0f7285e2aa65e6fa133f350ea54240dc89f"
+    },
+    {
+      "path": "components/existing-noir/png/film-band-top.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/film-band-top.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 9507,
+      "sha256": "969dcf44c406eed5391226a445bd32e6d8881d8ad2bd69bdd648e2c609408925"
+    },
+    {
+      "path": "components/existing-noir/png/grain-tile.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/grain-tile.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 228825,
+      "sha256": "cb0cc5843a7289af0834f3fc0c6b0ef20e6d632d07d3d689658dd91f312541da"
+    },
+    {
+      "path": "components/existing-noir/png/leader-3.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/leader-3.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 53769,
+      "sha256": "a4cdc035c5fb2ba1cdf6af0080fdc9f9d96308760121cb20e1c8496a46d6d7d5"
+    },
+    {
+      "path": "components/existing-noir/png/leader-4.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/leader-4.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 51331,
+      "sha256": "7ab2f8b89908da17a9d58d3569677fabe9aaa78ed75d0310a9dd8412e042f10a"
+    },
+    {
+      "path": "components/existing-noir/png/leader-5.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/leader-5.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 52103,
+      "sha256": "0267e6525d673983beb7d3225fe32f50416adf06804c5340f4a79ff5bd792c72"
+    },
+    {
+      "path": "components/existing-noir/png/leader-7.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/leader-7.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 51417,
+      "sha256": "a3639954c2bd7d98ef3109adc84cc1ff51a685469e144743ca0c3a2d2bc76c41"
+    },
+    {
+      "path": "components/existing-noir/png/leader-8.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/leader-8.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 53697,
+      "sha256": "6bde5fc16ab5476bf39c8658f0a644e2aab91874c58323ad6fdb09a12c3ef935"
+    },
+    {
+      "path": "components/existing-noir/png/leader-six.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/leader-six.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 58568,
+      "sha256": "da0ead3d6e76189b3a4fd8b402fcceb2b54bc00e44d48cc32c491ad1afc784a3"
+    },
+    {
+      "path": "components/existing-noir/png/marker-top5.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/marker-top5.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 13037,
+      "sha256": "987ab172c7728f7b1a83c53428da2d17d77c8ecad076e3228a6e74fb8c5b4f9c"
+    },
+    {
+      "path": "components/existing-noir/png/marker.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/marker.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 13070,
+      "sha256": "7049eb5f7c5548e9403536a8deaf358d03c4301850b5e4c2edd39ab72b1b46c8"
+    },
+    {
+      "path": "components/existing-noir/png/oled-preview.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/oled-preview.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 3972,
+      "sha256": "57904081e491bb0ec0bf4c284063ce2209bc276b2301420e968b8d0b272234ea"
+    },
+    {
+      "path": "components/existing-noir/png/picture-start.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/picture-start.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 30026,
+      "sha256": "1452015e637e3dda32f8db638aef4f486711c57605e58c3d17e98249e6130de2"
+    },
+    {
+      "path": "components/existing-noir/png/placard.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/placard.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 26243,
+      "sha256": "65beca6b68c11e21fd148cc4433bdbb619d58f6d82dc06691862b7df86f253bd"
+    },
+    {
+      "path": "components/existing-noir/png/sheet-components.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/sheet-components.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 1242451,
+      "sha256": "04cd8f095263b5f89c980052828a138280f58aa321f3d140f83bb4c73dc4d1b8"
+    },
+    {
+      "path": "components/existing-noir/png/sheet-palette.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/sheet-palette.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 110911,
+      "sha256": "3a13dc66aa5974515f5194dca902e7043f65d71a9e48c96ad88ea1760f2a0108"
+    },
+    {
+      "path": "components/existing-noir/png/sheet-states.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/sheet-states.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 302689,
+      "sha256": "d73df2926043946451d0d2cd869e166335266c0b6788d9b8c41afc999314c802"
+    },
+    {
+      "path": "components/existing-noir/png/sheet-type.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/sheet-type.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 164689,
+      "sha256": "7bbd10dfe094400d5b59165d782d6b22c74c33b98d8c3738e9fb2293d6393231"
+    },
+    {
+      "path": "components/existing-noir/png/stamp-approved.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/stamp-approved.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 24302,
+      "sha256": "67316609d8e05606eca05b717ac32babaa36e41a362ea14cc0acc7909192c899"
+    },
+    {
+      "path": "components/existing-noir/png/stamp-case-closed.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/stamp-case-closed.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 29077,
+      "sha256": "d9e7ff2e3cf1495edfc7a2921eaf7a342b0d9eab5c1a329d6a6c6dcb55a883d0"
+    },
+    {
+      "path": "components/existing-noir/png/stamp-case-unsolved.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/stamp-case-unsolved.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 33293,
+      "sha256": "fa63f21426c6e4cfaccf2ced9a3aa0644ab3cda50a3b921ca8442263fc568bba"
+    },
+    {
+      "path": "components/existing-noir/png/stamp-evidence-paper.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/stamp-evidence-paper.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 32611,
+      "sha256": "8120abd8d46b5202d55c09c8c7c2f068b7f29422e7d0321301c68eeecb450723"
+    },
+    {
+      "path": "components/existing-noir/png/stamp-filed-paper.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/stamp-filed-paper.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 18317,
+      "sha256": "83ffb8ed48a8a3c05ba33a15ed9de3adbdc0dad26cabbe9a3c8244112435c8d7"
+    },
+    {
+      "path": "components/existing-noir/png/stamp-rejected.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/stamp-rejected.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 23179,
+      "sha256": "b7a9fcb67bdaa362a4061dac2fe33701510b56ab7ed328321f600c792f0a2faa"
+    },
+    {
+      "path": "components/existing-noir/png/the-end-title.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/the-end-title.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 10502,
+      "sha256": "e786674f0acee6a2352c6e2d3540584136559fce41c59bda4c4d13ef9682b8da"
+    },
+    {
+      "path": "components/existing-noir/png/title-lettering.png",
+      "status": "copied-existing",
+      "source_path": "ui-kit/packs/assets/png/title-lettering.png",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 33735,
+      "sha256": "5a9883d0bf7a7172a6bcf43676ddcae0d7884c7235ac74e7207195fee56d55d5"
+    },
+    {
+      "path": "fonts/existing-noir/LeagueGothic-Regular.ttf",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/LeagueGothic-Regular.ttf",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 37364,
+      "sha256": "54b176f16fec5bdbddb66153ce5ffe1def3c35b5e3a00b807b6aca687d2dd832"
+    },
+    {
+      "path": "fonts/existing-noir/README.md",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/README.md",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 1140,
+      "sha256": "038eea3246b60e4b23b2dbe30bf5958b49f7df085a0630db61490f8c134563f2"
+    },
+    {
+      "path": "fonts/existing-noir/caveat-500.woff2",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/caveat-500.woff2",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 50904,
+      "sha256": "edbfb1a768829d4e85127cd327e59faaec9701cb043e96430938f1f66acf009f"
+    },
+    {
+      "path": "fonts/existing-noir/courier-prime-400.woff2",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/courier-prime-400.woff2",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 18640,
+      "sha256": "f09844e1f4fe9e67df2cc77474519e68756d559b4648278b9dd4f03c8ac9c31f"
+    },
+    {
+      "path": "fonts/existing-noir/courier-prime-700.woff2",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/courier-prime-700.woff2",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 19348,
+      "sha256": "5c7ae1cc9aae183453565c836b74a1b988f5f2e52b65098decb909b3930957ec"
+    },
+    {
+      "path": "fonts/existing-noir/ibm-plex-mono-400.ttf",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/ibm-plex-mono-400.ttf",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 135580,
+      "sha256": "6a3412f058c7d8dfd9170c41e85ade48e5156ecb89356110ca57a0a27734af46"
+    },
+    {
+      "path": "fonts/existing-noir/ibm-plex-mono-700.ttf",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/ibm-plex-mono-700.ttf",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 137784,
+      "sha256": "ac27abd6450a64dd94467580a02fe6235156d5b92f2926ebbc8e7489df64e0be"
+    },
+    {
+      "path": "fonts/existing-noir/league-gothic-400.woff2",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/league-gothic-400.woff2",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 10436,
+      "sha256": "44dceee4d918f5928d05ad0711d17e1edd421ce7fd7bed91d05642d8d693a8b1"
+    },
+    {
+      "path": "fonts/existing-noir/licenses/Caveat-OFL.txt",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/licenses/Caveat-OFL.txt",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 4385,
+      "sha256": "1f9d81d094273d82f3898a1ee8b598a717d050ecbf5ff7bede105b704880157b"
+    },
+    {
+      "path": "fonts/existing-noir/licenses/CourierPrime-OFL.txt",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/licenses/CourierPrime-OFL.txt",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 4403,
+      "sha256": "9a755af092b494944c99f471be6fddd19b006a448fefdc4717e4ee0aa09a97b0"
+    },
+    {
+      "path": "fonts/existing-noir/licenses/LeagueGothic-OFL.txt",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/licenses/LeagueGothic-OFL.txt",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 4400,
+      "sha256": "44778c339892f79188c60b7471485dd5af92c59351c7f9629a00fc625c6cae5d"
+    },
+    {
+      "path": "fonts/existing-noir/licenses/SpecialElite-Apache-2.0.txt",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/licenses/SpecialElite-Apache-2.0.txt",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "fonts/existing-noir/playfair-display-var.ttf",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/playfair-display-var.ttf",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 300724,
+      "sha256": "c40f2293766a503bc70cce9e512ef844a4ccb7cbcde792fe2ea31d191917d8d6"
+    },
+    {
+      "path": "fonts/existing-noir/special-elite-400.woff2",
+      "status": "copied-existing",
+      "source_path": "ui-kit/fonts/special-elite-400.woff2",
+      "license": "Inherited project metadata; see CREDITS.md",
+      "bytes": 53296,
+      "sha256": "770493d84cbb753cd0573d0f014550583138f40469d137e310d239593a1949d8"
+    }
+  ]
+}

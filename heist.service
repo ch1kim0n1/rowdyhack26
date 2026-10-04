@@ -1,0 +1,17 @@
+[Unit]
+Description=Heist Loot Scanner Rig Service
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/rowdyhack26-precode
+EnvironmentFile=-/home/pi/rowdyhack26-precode/.env
+ExecStart=/usr/bin/python3 -m rig.app
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

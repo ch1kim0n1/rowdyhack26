@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion rehearsal · The Appraisal Job</title>
+<link rel="stylesheet" href="/noir.css"><link rel="stylesheet" href="/motion.css">
+</head>
+<body class="motion-lab">
+<header class="chrome"><span class="label">The Appraisal Job · Motion rehearsal</span><a href="/desk">Live dispatch desk</a></header>
+<main>
+  <div class="label">UI / UX demonstration · simulated data only</div>
+  <h1>Every state<br>has a purpose.</h1>
+  <p>Rehearse conditional motion without a camera, keys, or hardware. These buttons only change this local preview; they never trigger the rig.</p>
+  <div class="lab-grid">
+    <section aria-label="Status preview">
+      <div data-motion-status></div>
+      <div class="lab-controls" aria-label="Simulate assessment states">
+        <button data-state="empty">Ready / empty</button><button data-state="analyzing">Analyze frame</button>
+        <button data-state="filed">File observation</button><button data-state="offline">Lose connection</button>
+        <button data-state="online">Reconnect</button><button data-state="camera-lost">Lose camera</button>
+        <button data-state="debrief">Debrief</button><button data-state="reset">New case</button>
+      </div>
+      <div class="lab-controls" aria-label="Simulate action responses">
+        <button id="lab-success">Confirmed action</button><button id="lab-error">Failed action</button>
+      </div>
+      <p class="fine" id="lab-summary" role="status">No observations filed yet.</p>
+    </section>
+    <section class="lab-notes" aria-label="Motion design notes">
+      <h2>What to watch</h2>
+      <ul>
+        <li>Frame analysis threads the film and shows elapsed time—not an invented percentage. Leave it running for ten seconds to see the slow-response state.</li>
+        <li>A finding gets one paper notification. Repeated snapshots don't replay it.</li>
+        <li>Connection and camera failures keep existing evidence on screen. Reconnect only announces after a confirmed snapshot.</li>
+        <li>Actions show sending, wait for the response, and only then confirm. Failure restores the control.</li>
+        <li>Use “Motion: full” to reduce motion, or your system's setting, for static status feedback and immediate reveals. Animation pauses in background tabs.</li>
+      </ul>
+      <div class="lab-controls"><a href="/demo.html#live">Full cinematic demo</a><a href="/demo.html#reveal">Debrief choreography</a></div>
+    </section>
+  </div>
+</main>
+<script src="/motion.js"></script><script src="/motion-lab.js"></script>
+</body></html>

@@ -1,0 +1,100 @@
+/* The title card's camera move into the film, and where the mission band waits
+   while it happens. UI-dev owns every other layout. */
+.portal-ready .hero {
+  padding-top: 0;
+  height: calc(var(--portal-pin-height, 100svh) + 200svh);
+  overflow-anchor: none;
+}
+.portal-ready .hero-portal-pin {
+  position: sticky;
+  top: var(--portal-pin-top, 0px);
+  min-height: 100svh;
+  padding-top: var(--marquee-height);
+  background: var(--ink);
+}
+.portal-ready .hero .vault-scene {
+  animation: none;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+body.portal-ready .hero .vault-art {
+  animation: none;
+  translate: none;
+  scale: none;
+}
+.portal-ready .hero .vault-stage::after { animation: none; }
+.portal-ready .reel {
+  margin-top: -100svh;
+  /* Clear only where it overlaps the title card. From there down it is the reel's
+     own black, so the film still closes into black and the next section rises out of it. */
+  background: linear-gradient(to bottom, transparent 100svh, #090a0d 100svh);
+  z-index: 5;
+  pointer-events: none;
+  overflow-anchor: none;
+}
+/* Fixed while approaching, then the original sticky projector at exactly y=0. */
+body.portal-ready .reel-stage {
+  animation: none;
+  clip-path: circle(var(--portal-radius, 0px) at var(--portal-x, 50%) var(--portal-y, 46%));
+  pointer-events: none;
+}
+.portal-ready .reel-stage.is-entering { position: fixed; inset: 0; }
+.portal-ready .reel.is-open, .portal-ready .reel.is-open .reel-stage { pointer-events: auto; }
+/* The film's own top row sits where the marquee is: once the film has the screen, the marquee goes. */
+body.portal-open .marquee:not(:focus-within) { opacity: 0; pointer-events: none; }
+.portal-ready .reel .gate { transform: scale(var(--portal-gate-scale, 1)); }
+.portal-ready .reel :is(.reel-top, .reel-sub, .reel-strip, .perfs) { opacity: var(--portal-ui, 1); }
+/* Retain UI-dev's original iris-out into the crew files. */
+@supports (animation-timeline: view()) {
+  body.portal-ready .reel-stage:not(.is-entering) {
+    animation: reel-iris-out linear forwards;
+    animation-timeline: --reel;
+    animation-range: exit 0% exit 70%;
+  }
+}
+
+/* ---------- the mission band, after the film ----------
+   On a screen the artwork fills, the brief and the mission strip leave the title
+   card (so the camera starts with the first scroll) and are read here instead, on
+   the reel's black. The film closes into that black and the crew's ground fades up
+   out of it, so there is no edge on either side: nothing here draws a line. */
+.mission-later {
+  position: relative;
+  padding-block: clamp(56px, 12vh, 136px) clamp(40px, 8vh, 96px);
+  background: #090a0d;
+}
+.mission-later .hero-brief {
+  background: none; box-shadow: none; clip-path: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.mission-later .mission-strip {
+  border-block: 0; background: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.mission-later .brief-film span { display: inline-block; rotate: 180deg; }   /* the film is above now */
+@supports (animation-timeline: view()) {
+  .mission-later > * {
+    animation: mission-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 5% entry 95%;
+  }
+}
+@keyframes mission-rise { from { opacity: 0; translate: 0 56px; } to { opacity: 1; translate: 0 0; } }
+/* The crew's ground comes up out of that black on a long eased ramp rather than a
+   short straight one: a dissolve, with no place the eye can find an edge. */
+.portal-ready .crew {
+  background: linear-gradient(180deg,
+    #090a0d 0, rgba(9,10,13,.93) 70px, rgba(9,10,13,.78) 150px, rgba(9,10,13,.56) 240px,
+    rgba(9,10,13,.33) 330px, rgba(9,10,13,.15) 420px, rgba(9,10,13,.04) 500px, rgba(9,10,13,0) 560px);
+}
+
+@media print {
+  .mission-later { padding-block: 0; background: none; }
+  .portal-ready .crew { background: none; }
+  .mission-later > * { animation: none; }
+  .portal-ready .hero { height: auto; }
+  .portal-ready .hero-portal-pin { position: static; min-height: 0; }
+  .portal-ready .hero .vault-scene { transform: none !important; }
+  .portal-ready .reel { margin-top: 0; }
+  body.portal-ready .reel-stage { position: relative; clip-path: none; }
+}

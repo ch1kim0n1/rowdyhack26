@@ -1,0 +1,27 @@
+/* The title set in diamonds. One canvas paints the wall back in over the painted
+   lettering; the other draws the letters again in cut stones. Both travel with
+   the vault camera, and hidden they leave the original title as it was. */
+.hero :is(.title-cover, .title-particles) {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  max-width: none;
+  pointer-events: none;
+  opacity: 0;
+}
+.hero .title-cover { transition: opacity 400ms ease-out; }
+/* The stones' light spills a little onto the wall around them. */
+.hero .title-particles { filter: drop-shadow(0 0 4px rgba(196, 220, 255, .38)); }
+
+html.intro-on .hero :is(.title-cover, .title-particles),
+body:is(.motion-paused, .vault-suspended) .hero :is(.title-cover, .title-particles) {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero :is(.title-cover, .title-particles) { visibility: hidden; }
+}
+
+@media print {
+  .hero :is(.title-cover, .title-particles) { display: none; }
+}

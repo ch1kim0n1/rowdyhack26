@@ -1,0 +1,85 @@
+/* Conditional motion stays in-world: film reels, paper arrivals, one ink. */
+:root { --dur-status: 420ms; --dur-file-arrive: 560ms; --dur-processing: 1800ms; }
+.motion-status {
+  position: relative; display: flex; gap: 14px; align-items: center;
+  min-height: 100px; padding: 14px 16px 18px; border: 1px solid var(--smoke);
+  background: var(--carbon); overflow: hidden; flex: none;
+}
+.motion-copy { min-width: 0; flex: 1; }
+.motion-label { font: 24px/1.1 var(--f-display); text-transform: uppercase; letter-spacing: .04em; }
+.motion-detail { font: 12px/1.5 var(--f-typed); color: var(--bone); margin-top: 5px; }
+.motion-meta { display: flex; gap: 8px; justify-content: space-between; margin-top: 9px; font: 9px/1.3 var(--f-type); letter-spacing: .08em; color: var(--ash); }
+.motion-elapsed { white-space: nowrap; }
+.motion-toggle { display: block; margin-top: 4px; min-height: 44px; padding: 4px 0; border: 0; background: transparent; color: var(--bone); text-decoration: underline; text-underline-offset: 4px; font: 10px var(--f-type); cursor: pointer; }
+.motion-toggle:disabled { cursor: default; text-decoration: none; }
+.motion-toggle[hidden] { display: none; }
+.motion-reel { width: 24px; height: 40px; flex: none; display: grid; gap: 4px; overflow: hidden; }
+.motion-reel i { display: block; border: 1px solid var(--bone); height: 10px; }
+.motion-status[data-phase="analyzing"] .motion-reel i,
+.motion-status[data-phase="connecting"] .motion-reel i { animation: reel-thread var(--dur-processing) ease-in-out infinite; }
+.motion-reel i:nth-child(2) { animation-delay: 120ms !important; }
+.motion-reel i:nth-child(3) { animation-delay: 240ms !important; }
+.motion-track { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; overflow: hidden; }
+.motion-track i { display: block; width: 30%; height: 100%; background: var(--bone); opacity: 0; }
+.motion-status[data-busy="true"] .motion-track i { opacity: 1; animation: paper-work 2200ms ease-in-out infinite; }
+.motion-status[data-phase="offline"], .motion-status[data-phase="camera-lost"] { border-style: dashed; }
+.motion-status[data-phase="offline"] .motion-reel, .motion-status[data-phase="camera-lost"] .motion-reel { opacity: .45; }
+.motion-status[data-phase="debrief"] .motion-reel i { background: var(--paper); }
+.motion-status.state-change .motion-label { animation: status-settle var(--dur-status) var(--ez-settle) both; }
+.motion-notice {
+  position: fixed; z-index: 110; bottom: 20px; left: 50%; transform: translateX(-50%);
+  width: min(600px, calc(100vw - 32px)); display: flex; align-items: center;
+  gap: 14px; padding: 8px 8px 8px 18px; border: 1px solid var(--bone);
+  background: var(--paper); color: var(--ink); box-shadow: 0 12px 32px #0008;
+  font: 13px/1.5 var(--f-typed); pointer-events: auto;
+}
+.motion-notice[hidden] { display: none; }
+.motion-notice[data-tone="warning"] { border-left: 4px solid var(--stamp); }
+.motion-notice[data-tone="success"] { border-left: 4px double var(--ink); }
+.motion-notice span { flex: 1; overflow-wrap: anywhere; }
+.motion-notice button { background: none; border: 0; color: inherit; font: 26px var(--f-type); width: 44px; height: 44px; flex: none; cursor: pointer; }
+.motion-notice.arrive { animation: notice-file var(--dur-file-arrive) var(--ez-settle) both; }
+.ledger li { animation: none; }
+.ledger li.filed-now { animation: file-arrive var(--dur-file-arrive) var(--ez-settle) both; }
+.ledger li.filed-now .n { color: var(--ink); font-weight: bold; }
+.action-confirmed { animation: confirm-ink 800ms var(--ez-film) both; }
+button[data-busy="true"] { cursor: progress; opacity: .75; }
+button[data-busy="true"]::after { content: ""; display: inline-block; width: .8em; height: .8em; margin-left: .5em; border: 1px solid currentColor; animation: reel-thread 1600ms ease-in-out infinite; }
+.post.post-changed { animation: status-settle var(--dur-status) var(--ez-settle) both; }
+.motion-suspended *, .motion-suspended *::before, .motion-suspended *::after { animation-play-state: paused !important; }
+@keyframes reel-thread { 0%, 100% { transform: translateY(0); opacity: .4; } 45% { transform: translateY(-3px); opacity: 1; } }
+@keyframes paper-work { 0% { transform: translateX(-110%); } 100% { transform: translateX(440%); } }
+@keyframes status-settle { from { opacity: .45; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes notice-file { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
+@keyframes file-arrive { from { opacity: .25; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes confirm-ink { 30% { box-shadow: inset 0 0 0 2px var(--bone); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .motion-track i { width: 100%; transform: none; }
+  .motion-reel i { opacity: 1; transform: none; }
+  .motion-notice, .motion-status, .filed-now { opacity: 1; translate: none; }
+  .scanline, .iris, .ring { display: none !important; }
+}
+html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+html[data-motion="reduce"] .motion-track i { width: 100%; transform: none; }
+html[data-motion="reduce"] .motion-reel i { opacity: 1; transform: none; }
+html[data-motion="reduce"] :is(.grain, .flicker, #scratch, .dust, .reel-start, .cue, .scanline, .iris, .ring) { display: none !important; }
+html[data-motion="reduce"] .titlecard .tc-body { opacity: 1; }
+.live-side .log-wrap { flex: 1; min-height: 0; display: flex; }
+.live-side .log-wrap .log { min-width: 0; width: 100%; }
+@media print { .motion-status, .motion-notice { display: none; } }
+
+/* The rehearsal page is deliberately separate from the live rig controls. */
+.motion-lab { min-height: 100dvh; height: auto; }
+.motion-lab main { width: min(1040px, calc(100% - 40px)); margin: 40px auto 120px; }
+.motion-lab h1 { font: clamp(48px, 8vw, 96px)/1 var(--f-display); text-transform: uppercase; }
+.motion-lab p { color: var(--bone); max-width: 70ch; }
+.motion-lab .lab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 30px; }
+.motion-lab .lab-controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+.motion-lab button, .motion-lab a { min-height: 44px; padding: 10px 14px; border: 1px solid var(--bone); background: var(--carbon); color: var(--paper); font: 12px var(--f-type); cursor: pointer; }
+.motion-lab .motion-toggle { padding: 4px 0; min-height: 44px; border: none; font-size: 10px; }
+.motion-lab .motion-notice button { background: none; color: var(--ink); border: none; }
+.motion-lab .lab-notes { padding: 20px; border: 1px solid var(--smoke); font: 13px/1.6 var(--f-typed); }
+.motion-lab .lab-notes h2 { font: 28px var(--f-display); color: var(--paper); }
+.motion-lab .lab-notes li { margin: 8px 0 8px 20px; }
+@media (max-width: 700px) { .motion-lab .lab-grid { grid-template-columns: 1fr; } }

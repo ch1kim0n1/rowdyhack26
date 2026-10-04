@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case Index</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230f0e0c'/%3E%3Crect x='6' y='3' width='20' height='26' fill='%23efe9db'/%3E%3Cg fill='%230f0e0c'%3E%3Crect x='8' y='5' width='3' height='3'/%3E%3Crect x='8' y='11' width='3' height='3'/%3E%3Crect x='8' y='17' width='3' height='3'/%3E%3Crect x='8' y='23' width='3' height='3'/%3E%3Crect x='21' y='5' width='3' height='3'/%3E%3Crect x='21' y='11' width='3' height='3'/%3E%3Crect x='21' y='17' width='3' height='3'/%3E%3Crect x='21' y='23' width='3' height='3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="stylesheet" href="noir.css">
+<style>
+  /* Catalog layout only. Everything inside a .stage is the real kit, untouched. */
+  body { height: auto; }
+  .index { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; }
+  nav.toc {
+    position: sticky; top: 0; height: 100vh; overflow: auto;
+    border-right: 1px solid var(--smoke); padding: 24px 18px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  nav.toc .brand { font-family: var(--f-display); font-size: 34px; line-height: .9; letter-spacing: .03em; margin-bottom: 16px; }
+  nav.toc a { color: var(--ash); text-decoration: none; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; padding: 5px 0; }
+  nav.toc a:hover, nav.toc a:focus-visible { color: var(--paper); translate: 4px 0; }
+  nav.toc a { transition: color var(--dur-hover) var(--ez-film), translate var(--dur-hover) var(--ez-settle); }
+  .spec { transition: border-color var(--dur-hover) var(--ez-film); }
+  .spec:hover { border-color: var(--bone); }
+  main.pages { padding: 36px 44px 120px; max-width: 1280px; }
+  section.pg { padding: 36px 0 28px; border-top: 1px solid var(--smoke); }
+  section.pg:first-child { border-top: 0; padding-top: 0; }
+  h2.pg-title { font-family: var(--f-display); font-size: 52px; line-height: .95; letter-spacing: .03em; text-transform: uppercase; margin: 6px 0 14px; }
+  h3.sub { font-family: var(--f-display); font-size: 28px; letter-spacing: .03em; text-transform: uppercase; margin: 26px 0 10px; }
+  p.lede { color: var(--bone); max-width: 72ch; font-size: 15px; line-height: 1.65; margin-bottom: 10px; }
+  p.lede code, td code, li code { font-family: var(--f-type); background: var(--carbon); padding: 1px 5px; color: var(--paper); }
+  ol.steps { color: var(--bone); margin: 10px 0 0 20px; line-height: 1.9; font-size: 15px; }
+
+  .grid { display: grid; gap: 16px; }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  .spec { border: 1px solid var(--smoke); display: flex; flex-direction: column; min-width: 0; }
+  .spec > header { display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--smoke); }
+  .spec .stage { position: relative; padding: 22px; flex: 1; min-height: 90px; display: flex; flex-direction: column; justify-content: center; gap: 12px; overflow: hidden; }
+  .spec .stage.dark { background: var(--ink); }
+  .spec .stage.paper { background: #2a2925; }
+  .spec details { border-top: 1px solid var(--smoke); }
+  .spec summary { cursor: pointer; padding: 8px 12px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ash); list-style: none; }
+  .spec summary::before { content: "+ "; }
+  .spec details[open] summary::before { content: "- "; }
+  .spec pre { margin: 0; padding: 12px; background: var(--black); color: var(--bone); font-size: 12px; line-height: 1.55; overflow: auto; max-height: 280px; white-space: pre; }
+  .btn {
+    font: 700 11px var(--f-type); letter-spacing: .16em; text-transform: uppercase;
+    background: none; color: var(--bone); border: 1px solid var(--smoke); padding: 6px 10px; cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--bone); color: var(--paper); }
+  .btn::before { content: "[ "; } .btn::after { content: " ]"; }
+
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.tbl th { text-align: left; font-weight: 700; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--ash); padding: 8px 10px; border-bottom: 1px solid var(--smoke); }
+  table.tbl td { padding: 9px 10px; border-bottom: 1px solid #2a2925; vertical-align: top; color: var(--bone); }
+  table.tbl td:first-child { color: var(--paper); white-space: nowrap; }
+
+  .swatch { border: 1px solid var(--smoke); }
+  .swatch i { display: block; height: 72px; }
+  .swatch div { padding: 8px 10px; font-size: 11px; line-height: 1.6; }
+  .swatch b { display: block; color: var(--paper); font-size: 12px; letter-spacing: .06em; }
+  .swatch span { color: var(--ash); }
+
+  .typerow { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 18px; align-items: baseline; padding: 14px 0; border-top: 1px solid #2a2925; }
+  .typerow .k { font-size: 11px; line-height: 1.6; color: var(--ash); }
+  .typerow .k b { color: var(--paper); display: block; font-size: 12px; }
+  .typerow .sample { min-width: 0; overflow: hidden; }
+
+  .spacebar { display: flex; align-items: center; gap: 14px; padding: 6px 0; font-size: 12px; color: var(--ash); }
+  .spacebar i { display: block; height: 14px; background: var(--bone); }
+
+  .curve { width: 100%; max-width: 150px; }
+  .play-stage { position: relative; height: 150px; background: var(--ink); border: 1px solid #2a2925; overflow: hidden; display: grid; place-items: center; }
+
+  .fx { display: flex; flex-direction: column; gap: 8px; }
+  .fx b { font-family: var(--f-display); font-size: 22px; letter-spacing: .04em; font-weight: 400; text-transform: uppercase; }
+  .fx span { color: var(--ash); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+  .fx-stage { position: relative; height: 140px; overflow: hidden; background: var(--ink); border: 1px solid var(--smoke); display: grid; place-items: center; }
+  .fx-grain, .fx-flick, .fx-vig { position: absolute; inset: 0; pointer-events: none; }
+  .fx-grain {
+    inset: -24px; opacity: .22;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="160" height="160" filter="url(%23n)"/></svg>');
+    animation: grain-jitter 660ms steps(1, end) infinite;
+  }
+  .fx-flick { background: var(--ink); mix-blend-mode: multiply; animation: flicker 7.3s linear infinite; }
+  .fx-vig { background: radial-gradient(ellipse 80% 70% at 50% 45%, transparent 40%, rgba(0,0,0,.72) 100%); }
+  .hover-row {
+    display: grid;
+    grid-template-columns: auto auto 168px 150px minmax(240px, 1fr);
+    gap: 22px 28px;
+    align-items: end;
+    padding: 28px;
+    background: var(--ink);
+    border: 1px solid var(--smoke);
+  }
+  .hover-row .hint { grid-column: 1 / -1; }
+  .marker-well { position: relative; height: 108px; }
+  .hover-board .fx-stage { height: 200px; }
+  .hover-board .suspect .name { font-size: 18px; }
+  .hover-board .suspect .price { font-size: 22px; }
+  .hover-board .log { max-height: none; }
+  .floor-gate { position: relative; height: 320px; overflow: hidden; background: #050504; border: 1px solid var(--smoke); }
+  .floor-strip { position: relative; display: flex; flex-direction: column; width: 100%; }
+  .floor-frame { height: 320px; flex: none; display: grid; place-items: center; background: var(--ink); position: relative; z-index: 1; padding: 0 48px; }
+  .floor-frame .t { font-family: var(--f-display); font-size: 64px; letter-spacing: .04em; text-transform: uppercase; line-height: .9; text-align: center; }
+  .floor-frame .meta { margin-top: 8px; }
+  .floor-gate .tape-perfs { bottom: auto; height: 1200px; }
+  .floor-actions { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
+
+  .screen { position: relative; aspect-ratio: 16 / 10; border: 1px solid var(--smoke); overflow: hidden; background: var(--ink); }
+  .screen iframe { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; border: 0; transform-origin: 0 0; pointer-events: none; }
+  .screen.phone { aspect-ratio: 390 / 844; max-width: 260px; }
+  .screen.phone iframe { width: 390px; height: 844px; }
+
+  /* local stand-ins for page-level states, so they can sit side by side here */
+  .as-offline .line-live { display: none; } .as-offline .line-dead { display: inline; }
+  .spec .stage.mini-feed { flex: none; height: 240px; }          /* fixed height: flex:1 would override it */
+  .mini-feed .feed { height: 100%; }
+  .spec .stage.mini-wall { flex: none; height: 380px; }
+  .mini-wall .lineup-wall { margin: 0; height: 100%; }
+  .mini-wall .suspect { opacity: 1; width: 15%; }
+  .mini-curtain { position: absolute; inset: 0; background: var(--black); opacity: 0; transition: opacity var(--dur-fadeup) var(--ez-film); }
+  .mini-curtain.on { opacity: 1; transition-duration: var(--dur-dissolve); }
+  .hot-static { background: var(--paper) !important; color: var(--ink) !important; }
+
+  /* projector test card */
+  #testcard { position: fixed; inset: 0; z-index: 200; background: var(--black); display: none; }
+  #testcard.on { display: block; }
+  .wedge { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .wedge div { display: flex; align-items: flex-end; padding: 18px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+  .pluge { display: grid; grid-template-columns: repeat(6, 1fr); height: 22vh; }
+  .pluge div { display: grid; place-items: center; font-size: 12px; letter-spacing: .12em; color: var(--smoke); }
+
+  @media (max-width: 1100px) {
+    .index { grid-template-columns: 1fr; }
+    nav.toc { position: static; height: auto; flex-direction: row; flex-wrap: wrap; gap: 4px 14px; border-right: 0; border-bottom: 1px solid var(--smoke); }
+    nav.toc .brand { width: 100%; }
+    main.pages { padding: 24px 16px 80px; }
+    .g3, .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .index > * { min-width: 0; }
+  p.lede code, td code, li code { overflow-wrap: anywhere; }
+  @media (max-width: 640px) {
+    .g2, .g3, .g4 { grid-template-columns: 1fr; }
+    .typerow { grid-template-columns: 1fr; }
+    table.tbl { display: block; overflow-x: auto; }      /* wide tables scroll inside themselves */
+    table.tbl td:first-child { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="noir-grade"><feComponentTransfer>
+      <feFuncR type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/><feFuncG type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/><feFuncB type="table" tableValues="0.02 0.10 0.50 0.88 0.97"/>
+    </feComponentTransfer></filter>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter>
+    <filter id="stamp-rough" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
+  </defs>
+</svg>
+
+<div class="index">
+<nav class="toc" aria-label="Sections">
+  <div class="brand cut">Case Index</div>
+  <a href="#floor">00 The floor</a>
+  <a href="#start">01 Start here</a>
+  <a href="#screens">02 The screens</a>
+  <a href="#color">03 Color</a>
+  <a href="#type">04 Type</a>
+  <a href="#space">05 Scale &amp; space</a>
+  <a href="#motion">06 Motion</a>
+  <a href="#components">07 Components</a>
+  <a href="#states">08 State matrix</a>
+  <a href="#testcard-sec">09 Projector test card</a>
+</nav>
+
+<main class="pages">
+
+<!-- ============ 00 the floor: what a judge should be able to point at ============ -->
+<section class="pg" id="floor">
+  <div class="label">NOIRKIT · the floor</div>
+  <h2 class="pg-title">The floor</h2>
+  <p class="lede">Theme, effects, components, and the roll. Hover a frame. It lifts. Press roll and the picture goes black, then the next screen comes up on the same tape.</p>
+
+  <h3 class="sub">Effects</h3>
+  <div class="grid g4">
+    <div class="fx"><div class="fx-stage"><div class="fx-grain"></div><span class="label">Grain</span></div><b>Grain</b><span>stepped, not a blur</span></div>
+    <div class="fx"><div class="fx-stage"><div class="fx-flick"></div><span class="label">Flicker</span></div><b>Flicker</b><span>the lamp, not a glitch</span></div>
+    <div class="fx"><div class="fx-stage"><div class="fx-vig"></div><span class="label">Falloff</span></div><b>Vignette</b><span>the corners fall off</span></div>
+    <div class="fx"><div class="fx-stage"><div class="stamp" style="--rot:-6deg">Case Closed</div></div><b>Stamp</b><span>one red stamp</span></div>
+  </div>
+
+  <h3 class="sub">Hover</h3>
+  <p class="lede">Hover a frame. It lifts. Nothing glows.</p>
+  <div class="grid g4 hover-board">
+    <div class="fx"><div class="fx-stage"><button type="button" class="rig-stop">Stop</button></div><b>Stop</b><span>the cap button, on the page</span></div>
+    <div class="fx"><div class="fx-stage"><div class="stamp" style="--rot:-5deg">Filed</div></div><b>Stamp</b><span>the only red</span></div>
+    <div class="fx"><div class="fx-stage marker-well"><div class="marker" style="left:18%;top:38%;width:58%;height:36%;animation:none"><span class="tag">Exhibit 07</span></div></div><b>Marker</b><span>the box on the footage</span></div>
+    <div class="fx"><div class="fx-stage"><div class="suspect in" style="width:64px"><div class="photo"><div class="placard">No. 1</div></div><div class="name">Sony</div><div class="price">$500</div></div></div><b>Suspect</b><span>the photo lifts</span></div>
+    <div class="fx" style="grid-column:1 / -1"><div class="fx-stage" style="height:88px;padding:0 28px;justify-content:stretch"><div class="log" style="width:100%;max-height:none"><div class="log-line"><span class="txt"><span class="ex-k">08</span><span class="ex-name">Sony WH-1000XM6</span></span><span class="leaders"></span><span class="amt">$500</span></div></div></div><b>Case file line</b><span>name and price turn paper-white</span></div>
+  </div>
+
+  <h3 class="sub">Transition</h3>
+  <p class="lede">One strip. The frame leaves, a soft black tail, then the next picture. Sprocket holes ride with it.</p>
+  <div class="floor-gate" id="floor-gate">
+    <div class="floor-strip" id="floor-strip">
+      <div class="tape-perfs l"></div>
+      <div class="tape-perfs r"></div>
+      <div class="floor-frame" id="floor-a">
+        <div><div class="t">Reel 1<br>Live</div><div class="meta">The walk</div></div>
+      </div>
+      <div class="tape-black" id="floor-black"></div>
+      <div class="floor-frame" id="floor-b">
+        <div><div class="t">The Usual<br>Suspects</div><div class="meta">Reel 2</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="floor-actions">
+    <button class="btn" id="roll-floor" type="button">Roll the tape</button>
+    <span class="meta" id="roll-note">Picture, black, picture.</span>
+  </div>
+</section>
+
+<!-- ============ 01 ============ -->
+<section class="pg" id="start">
+  <div class="label">NOIRKIT</div>
+  <h2 class="pg-title">Start here</h2>
+  <p class="lede">This page uses the real <code>noir.css</code> and <code>noir.js</code>. The numbers come off the stylesheet. If it looks right here, it looks right on the dashboard.</p>
+  <ol class="steps">
+    <li>Link <code>noir.css</code> and copy the <code>fonts/</code> folder next to it.</li>
+    <li>Copy the markup from <code>demo.html</code> (everything above the demo driver) into the Flask template. Swap the demo canvas for <code>&lt;img id="frame" class="feed-img" alt=""&gt;</code> and the fake QR for the server's QR image.</li>
+    <li>Add <code>&lt;script src="noir.js"&gt;&lt;/script&gt;&lt;script&gt;Noir.connect('/state.json')&lt;/script&gt;</code>. That's the whole integration.</li>
+    <li>Build the three backend routes in <code>BUILD-GUIDE.md</code> §4.2: a clean <code>/frame.jpg</code>, <code>/state.json</code>, <code>/crop/&lt;n&gt;.jpg</code>.</li>
+  </ol>
+  <p class="lede" style="margin-top:14px">If the kit doesn't cover it, ask one question. Would this exist in a 1950s police station, or on 1950s film? If not, it doesn't ship. The reasons are in <code>README.md</code>.</p>
+  <p class="lede"><a href="/motion.html">Conditional motion rehearsal</a>: loading, slow responses, camera loss, reconnection, new observations, debriefs, and confirmed/failed actions. Simulated data only; no rig commands.</p>
+  <p style="margin-top:14px"><button class="btn" id="export">Export tokens.json for Figma</button> <span class="meta" id="export-note" style="margin-left:10px"></span></p>
+</section>
+
+<!-- ============ 02 ============ -->
+<section class="pg" id="screens">
+  <div class="label">02</div>
+  <h2 class="pg-title">The screens</h2>
+  <p class="lede">Previews of <code>demo.html</code>, jumped to each state. Open it and press ? to run the real sequence.</p>
+  <div class="grid g3">
+    <figure class="spec"><header><span class="label">Title card</span><span class="meta">idle</span></header><div class="screen"><iframe title="Title card" data-src="demo.html" loading="lazy"></iframe></div><div class="stage" style="min-height:0;padding:12px"><p class="meta" style="text-transform:none;letter-spacing:.04em">Job: the whole idea in five seconds, with nobody talking.</p></div></figure>
+    <figure class="spec"><header><span class="label">Live walk</span><span class="meta">/</span></header><div class="screen"><iframe title="Live walk" data-src="demo.html#live" loading="lazy"></iframe></div><div class="stage" style="min-height:0;padding:12px"><p class="meta" style="text-transform:none;letter-spacing:.04em">Job: footage, the take, the ledger, the header. That's the screen.</p></div></figure>
+    <figure class="spec"><header><span class="label">Reveal</span><span class="meta">/reveal</span></header><div class="screen"><iframe title="Reveal" data-src="demo.html#reveal" loading="lazy"></iframe></div><div class="stage" style="min-height:0;padding:12px"><p class="meta" style="text-transform:none;letter-spacing:.04em">Job: five suspects, one total, one stamp.</p></div></figure>
+    <figure class="spec"><header><span class="label">Footage lost</span><span class="meta">camera_ok: false</span></header><div class="screen"><iframe title="Footage lost" data-src="demo.html#lost" loading="lazy"></iframe></div></figure>
+    <figure class="spec"><header><span class="label">Line dead</span><span class="meta">rig unreachable</span></header><div class="screen"><iframe title="Line dead" data-src="demo.html#dead" loading="lazy"></iframe></div></figure>
+    <figure class="spec"><header><span class="label">Case file</span><span class="meta">/manifest</span></header><div class="screen"><iframe title="Case file" data-src="demo.html#manifest" loading="lazy"></iframe></div><div class="stage" style="min-height:0;padding:12px"><p class="meta" style="text-transform:none;letter-spacing:.04em">Job: a page you can scan, read on a phone, or print.</p></div></figure>
+  </div>
+  <h3 class="sub">On a phone</h3>
+  <div class="grid g4"><div class="screen phone"><iframe title="Case file on a phone" data-src="demo.html#manifest" loading="lazy"></iframe></div></div>
+</section>
+
+<!-- ============ 03 ============ -->
+<section class="pg" id="color">
+  <div class="label">03</div>
+  <h2 class="pg-title">Color</h2>
+  <p class="lede">Black and white, plus one red. The red is only a rubber stamp. Never on text, chrome, or a button. Contrast is measured live. Ink for the screen, paper for the document.</p>
+  <div class="grid g4" id="swatches"></div>
+</section>
+
+<!-- ============ 04 ============ -->
+<section class="pg" id="type">
+  <div class="label">04</div>
+  <h2 class="pg-title">Type</h2>
+  <p class="lede">Four faces. League Gothic is the headline (Alternate Gothic, 1903). Special Elite is typed onto the form. Courier Prime is the form. Caveat is one pencil note per screen. Sizes are computed at this window.</p>
+  <div id="typerows"></div>
+  <h3 class="sub">Cut-paper lettering</h3>
+  <p class="lede">Add <code>class="cut"</code> and <code>noir.js</code> tilts each letter, up to 2.5°, with a fixed baseline shift. It doesn't shimmer. Titles only. Numbers and names stay straight.</p>
+  <div class="grid g2">
+    <div class="spec"><header><span class="label">Plain</span><span class="meta">.t-view</span></header><div class="stage dark"><div class="t-view">The Usual Suspects</div></div></div>
+    <div class="spec"><header><span class="label">Cut</span><span class="meta">.t-view.cut</span></header><div class="stage dark"><div class="t-view cut">The Usual Suspects</div></div></div>
+  </div>
+</section>
+
+<!-- ============ 05 ============ -->
+<section class="pg" id="space">
+  <div class="label">05</div>
+  <h2 class="pg-title">Scale &amp; space</h2>
+  <p class="lede">Every size is a multiple of <code>--u</code>. 1px up to a 1440px screen, then it grows (1.8px at 2592). 1440 is the reference. A 4K projector gets the same layout, larger. Right now <code>--u</code> is <b id="u-now">.</p>
+  <div id="spacebars"></div>
+  <table class="tbl" style="margin-top:18px">
+    <thead><tr><th>Token</th><th>Value</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td><code>--r-frame</code> 2px · <code>--r-stamp</code> 3px</td><td>0 to 3px, nothing rounder</td><td>Feed frame and QR mat 2px, stamps 3px, everything else square. Cut paper and card stock.</td></tr>
+      <tr><td><code>--rule</code></td><td>1px</td><td>Every hairline. <code>smoke</code> by default, <code>bone</code> where it must read at a distance.</td></tr>
+      <tr><td><code>--z-*</code></td><td id="zvals"></td><td>Title card under the curtain, the curtain under the film texture. Grain and flicker always sit on top: it's still the same film.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 06 ============ -->
+<section class="pg" id="motion">
+  <div class="label">06</div>
+  <h2 class="pg-title">Motion</h2>
+  <p class="lede">Cuts, dissolves, freeze-frames. Nothing slides. Numbers don't bounce. Loops run on twos, about 12fps, with <code>steps()</code>. Change a duration token and the CSS and <code>noir.js</code> both follow.</p>
+  <div class="grid g3" id="curves"></div>
+  <table class="tbl" style="margin-top:22px" id="motiontable">
+    <thead><tr><th>Animation</th><th>What changes</th><th>Duration</th><th>Easing</th><th>Trigger</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <div class="grid g3" style="margin-top:18px">
+    <div class="spec"><header><span class="label">Stage A</span><span class="meta" id="stageA-name">feed</span></header><div class="play-stage" id="stageA"></div></div>
+    <div class="spec"><header><span class="label">Stage B</span><span class="meta" id="stageB-name">ledger &amp; counter</span></header><div class="play-stage" id="stageB"></div></div>
+    <div class="spec"><header><span class="label">Stage C</span><span class="meta" id="stageC-name">stamp &amp; lineup</span></header><div class="play-stage" id="stageC"></div></div>
+  </div>
+  <p class="lede" style="margin-top:16px">From the button press: the feed settles (<span data-tok="--dur-judder"></span>) while the curtain is already dissolving (<span data-tok="--dur-dissolve"></span>). The lineup fades up (<span data-tok="--dur-fadeup"></span>). The next suspect starts before the previous one has landed (every <span data-tok="--stagger-suspect"></span>, rank 5 to rank 1). The total rolls as the last photo settles. The stamp lands while that roll is finishing. Reduced motion turns the texture off and finishes every animation at once. The content still shows.</p>
+</section>
+
+<!-- ============ 07 ============ -->
+<section class="pg" id="components">
+  <div class="label">07</div>
+  <h2 class="pg-title">Components</h2>
+  <p class="lede">Every component, every state. Markup is the HTML. The log, the counter, and the lineup are filled by <code>noir.js</code>.</p>
+
+  <h3 class="sub">Chrome</h3>
+  <div class="grid g2">
+    <div class="spec" data-c><header><span class="label">Header</span><span class="meta">rig answering</span></header>
+      <div class="stage dark" style="padding:0"><header class="chrome"><div class="label">Case NO. <span class="case-no">1138</span> · The Appraisal Job</div><div class="meta">FR 00:14:32:08 &nbsp;·&nbsp; <span class="line-live"><span class="rec">●</span> REC</span><span class="line-dead">○ LINE DEAD</span></div></header></div></div>
+    <div class="spec" data-c><header><span class="label">Header</span><span class="meta">body.offline</span></header>
+      <div class="stage dark as-offline" style="padding:0"><header class="chrome"><div class="label">Case NO. <span class="case-no">1138</span> · The Appraisal Job</div><div class="meta">FR 00:14:32:08 &nbsp;·&nbsp; <span class="line-live"><span class="rec">●</span> REC</span><span class="line-dead">○ LINE DEAD</span></div></header></div></div>
+  </div>
+
+  <h3 class="sub">Feed</h3>
+  <div class="grid g3">
+    <div class="spec" data-c><header><span class="label">Footage</span><span class="meta">with markers</span></header>
+      <div class="stage dark mini-feed" style="padding:0"><div class="feed"><div class="frame-box" style="--ar:4/3"><div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 30% 30%,#2e2c26,transparent 70%),linear-gradient(180deg,#14130f,#0a0908)"></div><div class="markers"><div class="marker" style="left:14%;top:26%;width:34%;height:40%"><span class="tag">Exhibit 01</span><span class="cap">"VINTAGE ROLEX" · $4,200</span></div><div class="marker hot" style="left:58%;top:36%;width:26%;height:34%"><span class="tag">Exhibit 02</span><span class="cap">"LEICA M3" · $1,850</span></div></div></div><div class="cut"></div><span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span></div></div></div>
+    <div class="spec" data-c><header><span class="label">Footage lost</span><span class="meta">.feed.lost</span></header>
+      <div class="stage dark mini-feed" style="padding:0"><div class="feed lost"><div class="slate" role="status"><div class="leader"></div><div class="slate-title">Footage Lost</div><div class="meta slate-meta">Roll A · Cam 01 · reconnecting...</div></div></div></div></div>
+    <div class="spec" data-c><header><span class="label">Line dead</span><span class="meta">Noir.setOffline(true)</span></header>
+      <div class="stage dark mini-feed" style="padding:0"><div class="feed lost"><div class="slate" role="status"><div class="leader"></div><div class="slate-title">Line Dead</div><div class="meta slate-meta">Rig unreachable · redialing...</div></div></div></div></div>
+  </div>
+
+  <h3 class="sub">Evidence marker</h3>
+  <div class="grid g3">
+    <div class="spec" data-c><header><span class="label">Default</span><span class="meta">.marker</span></header><div class="stage dark" style="height:150px"><div class="marker" style="left:18%;top:32%;width:44%;height:40%;position:absolute"><span class="tag">Exhibit 07</span><span class="cap">"WATCH, WRIST" · $4,200</span></div></div></div>
+    <div class="spec" data-c><header><span class="label">Top 5 callout</span><span class="meta">.marker.hot (800ms pulse)</span></header><div class="stage dark" style="height:150px"><div class="marker" style="left:18%;top:32%;width:44%;height:40%;position:absolute"><span class="tag hot-static">Exhibit 07</span><span class="cap">"WATCH, WRIST" · $4,200</span></div></div></div>
+    <div class="spec" data-c><header><span class="label">Long name, estimate</span><span class="meta">truncates at 38ch</span></header><div class="stage dark" style="height:150px"><div class="marker" style="left:40%;top:32%;width:44%;height:40%;position:absolute"><span class="tag">Exhibit 06</span><span class="cap">"DIAMOND RIVIÈRE NECKLACE, 18K WHITE GOLD, APPRAISER'S CASE" · $1,275,000 est.</span></div></div></div>
+  </div>
+
+  <h3 class="sub">Exhibit log</h3>
+  <div class="grid g2">
+    <div class="spec" data-c><header><span class="label">Every line state</span><span class="meta">.log</span></header><div class="stage dark"><div class="log" style="flex:none">
+      <div class="log-line old"><span class="txt">EXHIBIT 01: "VINTAGE ROLEX"</span><span class="leaders"></span><span class="amt">$4,200.00</span></div>
+      <div class="log-line old"><span class="txt">EXHIBIT 02: "SILK SMOKING JACKET"</span><span class="leaders"></span><span class="amt">$420.00<span class="est">est.</span></span></div>
+      <div class="log-line old void"><span class="txt">EXHIBIT ??: UNIDENTIFIED</span><span class="leaders"></span><span class="amt">NO APPRAISAL</span></div>
+      <div class="log-line old"><span class="txt">EXHIBIT 03: "DIAMOND RIVIÈRE NECKLACE, 18K WHITE GOLD, APPRAISER'S CASE"</span><span class="leaders"></span><span class="amt">$1,275,000.00<span class="est">est.</span></span></div>
+      <div class="log-line wire"><span class="txt">&gt; LINE TO THE RIG IS DEAD. REDIALING...</span><span class="leaders"></span><span class="amt"></span></div>
+      <div class="log-line"><span class="txt">EXHIBIT 04: "BRASS DESK LAMP"</span><span class="leaders"></span><span class="amt">$180.00</span></div>
+      <div class="log-line pending typing"><span class="txt">&gt; EXAMINING EXHIBIT 05...</span><span class="leaders"></span><span class="amt"></span></div>
+    </div><p class="meta" style="text-transform:none;letter-spacing:.04em">Top to bottom: older lines (ash), estimate, unidentified, truncated long name, system line, newest line, pending with caret.</p></div></div>
+    <div class="spec" data-c><header><span class="label">Empty</span><span class="meta">before the first scan</span></header><div class="stage dark"><div class="log" style="flex:none"><div class="log-line">&gt; SCENE STABLE. AWAITING TARGETS...</div></div></div></div>
+  </div>
+
+  <h3 class="sub">Odometer</h3>
+  <div class="grid g2">
+    <div class="spec"><header><span class="label">Running take</span><span class="meta">.odo · Noir.makeOdo(el).set(n)</span></header><div class="stage dark"><div class="odo" id="odo-a"></div></div></div>
+    <div class="spec"><header><span class="label">Huge take</span><span class="meta">shrinks via --odo-k, never overflows</span></header><div class="stage dark"><div class="odo" id="odo-b"></div></div></div>
+  </div>
+
+  <h3 class="sub">Stamps</h3>
+  <div class="grid g4">
+    <div class="spec" data-c><header><span class="label">On screen</span><span class="meta">--stamp-lit</span></header><div class="stage dark" style="align-items:center"><div class="stamp" style="--rot:-6deg;transform:rotate(-6deg)">Case Closed</div></div></div>
+    <div class="spec" data-c><header><span class="label">Zero suspects</span><span class="meta">--stamp-lit</span></header><div class="stage dark" style="align-items:center"><div class="stamp" style="transform:rotate(-3deg)">Case Unsolved</div></div></div>
+    <div class="spec" data-c><header><span class="label">On paper</span><span class="meta">--stamp, multiply</span></header><div class="stage" style="align-items:center;background:var(--paper);color:var(--ink);font-family:var(--f-typed)"><div style="position:relative">"SILK SMOKING JACKET" ...... $420.00<div class="stamp" style="position:absolute;left:10%;top:-30%;border-color:var(--stamp);color:var(--stamp);opacity:.78;mix-blend-mode:multiply;transform:rotate(-12deg);font-size:34px">Evidence</div></div></div></div>
+    <div class="spec" data-c><header><span class="label">Filed</span><span class="meta">small, on paper</span></header><div class="stage" style="align-items:center;background:var(--paper)"><div class="stamp" style="border-color:var(--stamp);color:var(--stamp);opacity:.78;mix-blend-mode:multiply;transform:rotate(5deg);font-size:16px">Filed 09/26/2026</div></div></div>
+  </div>
+
+  <h3 class="sub">Lineup slot</h3>
+  <div class="spec"><header><span class="label">Filled · estimate · long name · vacant</span><span class="meta">.suspect, filled by Noir.runReveal()</span></header>
+    <div class="stage dark mini-wall" style="padding:0"><div class="lineup-wall" style="padding-right:12px">
+      <div class="suspect"><div class="photo"><div class="placard">Suspect NO. 4</div></div><div class="name">First-ed. Hemingway</div><div class="price">APPRAISED: $950</div></div>
+      <div class="suspect"><div class="photo"><div class="placard">Suspect NO. 3</div></div><div class="name">Silk Smoking Jacket</div><div class="price">APPRAISED: $420 <span class="est">est.</span></div></div>
+      <div class="suspect"><div class="photo"><div class="placard">Suspect NO. 2</div></div><div class="name">Diamond Rivière Necklace, 18K White Gold, Appraiser's Case</div><div class="price">APPRAISED: $1,275,000 <span class="est">est.</span></div></div>
+      <div class="suspect vacant"><div class="photo"><div class="placard">NO. 1 · Vacant</div></div><div class="name"></div><div class="price">NO SUSPECT</div></div>
+    </div></div>
+    <details><summary>Markup</summary><pre></pre></details>
+  </div>
+
+  <h3 class="sub">Case file</h3>
+  <div class="grid g2">
+    <div class="spec" data-c><header><span class="label">Rows</span><span class="meta">normal · estimate · long · total</span></header><div class="stage paper"><article class="doc" style="width:100%;transform:none;padding:26px 24px"><div class="rows">
+      <div class="row"><span>"VINTAGE ROLEX"</span><span class="leaders"></span><span class="amt">$4,200.00</span></div>
+      <div class="row"><span>"SILK SMOKING JACKET"</span><span class="leaders"></span><span class="amt">$420.00<span class="est">est.</span></span></div>
+      <div class="row"><span>"DIAMOND RIVIÈRE NECKLACE, 18K WHITE GOLD, APPRAISER'S CASE"</span><span class="leaders"></span><span class="amt">$1,275,000.00<span class="est">est.</span></span></div>
+    </div><div class="total"><span>TOTAL TAKE</span><span class="leaders"></span><span>$1,279,620.00</span></div></article></div></div>
+    <div class="spec" data-c><header><span class="label">Empty</span><span class="meta">nothing recovered</span></header><div class="stage paper"><article class="doc" style="width:100%;transform:none;padding:26px 24px"><div class="rows"><div class="row"><span>NO EXHIBITS RECOVERED</span></div></div><div class="total"><span>TOTAL TAKE</span><span class="leaders"></span><span>$0.00</span></div></article></div></div>
+  </div>
+
+  <h3 class="sub">Projection</h3>
+  <p class="lede">These make the screen act like a reel in a 1950s projector. The leader is the Academy leader, 1930 to the mid-1960s: a number in a circle, one per foot of film, NINE and SIX spelled out. The sweep-hand countdown people picture is the 1965 SMPTE leader. That's a decade late, so the kit doesn't use it.</p>
+  <div class="grid g4">
+    <div class="spec" data-c><header><span class="label">Leader frame</span><span class="meta">.leader</span></header><div class="stage dark" style="align-items:center"><div class="leader" style="width:120px"><span class="leader-n">8</span></div></div></div>
+    <div class="spec" data-c><header><span class="label">Spelled out</span><span class="meta">.leader-n.word</span></header><div class="stage dark" style="align-items:center"><div class="leader" style="width:120px" data-static><span class="leader-n word">SIX</span></div></div></div>
+    <div class="spec"><header><span class="label">Picture start</span><span class="meta">.reel-start</span></header><div class="stage dark" style="align-items:center;background:var(--carbon)"><div style="font-family:var(--f-display);font-size:40px;line-height:.9;letter-spacing:.08em;text-align:center;text-transform:uppercase">Picture<br>Start</div></div></div>
+    <div class="spec"><header><span class="label">Changeover cue</span><span class="meta">.cue, 4 frames</span></header><div class="stage dark" style="align-items:flex-end;justify-content:flex-start"><div style="width:26px;aspect-ratio:1;border-radius:50%;background:var(--paper);filter:url(#stamp-rough);opacity:.9"></div><p class="meta" style="text-transform:none;letter-spacing:.04em">Top right, as reel 1 ends. That's the button press.</p></div></div>
+  </div>
+  <div class="spec" style="margin-top:16px"><header><span class="label">The end</span><span class="meta">.the-end, after every run</span></header><div class="stage dark" style="align-items:center;padding:34px"><div class="meta">A RowdyHacks XII Picture</div><div class="t-view cut" style="font-size:96px">The End</div><div class="meta">Case No. 1138 · Closed</div></div></div>
+
+  <h3 class="sub">Small parts</h3>
+  <div class="grid g3">
+    <div class="spec" data-c><header><span class="label">File copy</span><span class="meta">QR on its paper mat, always</span></header><div class="stage dark" style="align-items:center"><div class="file-copy"><div class="qr-mat"><svg class="qr" width="96" height="96" role="img" aria-label="QR code"></svg></div><div class="cap meta">Scan this. It's the file.</div></div></div></div>
+    <div class="spec" data-c><header><span class="label">Marginalia</span><span class="meta">.note · one per screen</span></header><div class="stage dark"><div class="note">the good stuff's never on the first shelf.</div></div></div>
+    <div class="spec" data-c><header><span class="label">Labels</span><span class="meta">.label · .meta</span></header><div class="stage dark"><div class="label">Estimated Take</div><div class="meta">Items: 07 · Room 3 · Exhibits wing</div></div></div>
+  </div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section class="pg" id="states">
+  <div class="label">08</div>
+  <h2 class="pg-title">State matrix</h2>
+  <p class="lede">Every state the app can hit, where it's handled, and the <code>demo.html</code> key. If the rig can produce it, it has a design.</p>
+  <table class="tbl">
+    <thead><tr><th>State</th><th>What the room sees</th><th>Triggered by</th><th>Demo key</th></tr></thead>
+    <tbody>
+      <tr><td>Boot</td><td>Academy leader: PICTURE START, then 8 to 3, then the title card</td><td>Page load (<code>Noir.connect()</code> runs it)</td><td>reload</td></tr>
+      <tr><td>Idle</td><td>Title card, cycling credits, blinking prompt</td><td>15s with no new exhibit (<code>--idle-after</code>)</td><td>T</td></tr>
+      <tr><td>Scanning</td><td>Ledger types <code>&gt; EXAMINING EXHIBIT 05...</code> with a caret</td><td><code>pending: true</code></td><td>L</td></tr>
+      <tr><td>New exhibit</td><td>Typed line, then the marker, then the odometer ticks</td><td>A new entry in <code>items</code></td><td>L</td></tr>
+      <tr><td>Top-5 exhibit</td><td>Marker tag pulses once (with the speaker callout)</td><td>The new item ranks in the top five</td><td>L</td></tr>
+      <tr><td>Estimated price</td><td><code>est.</code> after the amount, everywhere</td><td><code>estimated: true</code></td><td>L (jacket)</td></tr>
+      <tr><td>No bbox</td><td>Ledger line only, no marker</td><td><code>bbox</code> missing or dropped by validation</td><td>(automatic)</td></tr>
+      <tr><td>Unidentified</td><td><code>EXHIBIT ??: UNIDENTIFIED</code>, struck through</td><td>The LLM returns nothing usable</td><td>U</td></tr>
+      <tr><td>Long name</td><td>Ellipsis in the ledger and marker, 2 lines in the lineup, wraps on paper</td><td>Verbose LLM output</td><td>B</td></tr>
+      <tr><td>Huge take</td><td>Odometer shrinks to fit (<code>--odo-k</code>)</td><td>7+ digit totals</td><td>B</td></tr>
+      <tr><td>Camera lost</td><td>FOOTAGE LOST slate; ledger and take stay</td><td><code>camera_ok: false</code></td><td>F</td></tr>
+      <tr><td>Rig unreachable</td><td>LINE DEAD slate, <code>○ LINE DEAD</code> in the header, a system line in the ledger</td><td>3 failed polls in a row (about 1.5s)</td><td>W</td></tr>
+      <tr><td>Reveal, 5 suspects</td><td>Freeze, dissolve, lineup, total, CASE CLOSED</td><td><code>revealed: true</code></td><td>R</td></tr>
+      <tr><td>Reveal, 1 to 4</td><td>Empty ranks stand VACANT; subtitle <code>ONLY THREE SUSPECTS BROUGHT IN</code></td><td>Few items</td><td>3</td></tr>
+      <tr><td>Reveal, none</td><td>NO SUSPECTS, $0, CASE UNSOLVED</td><td>Zero items</td><td>0</td></tr>
+      <tr><td>Run finished</td><td>THE END card, then the title card; the case number advances (1138 to 1139)</td><td><code>revealed</code> goes back to false</td><td>L after R</td></tr>
+      <tr><td>Case file</td><td>Paper document; scrolls on phones; prints clean</td><td><code>/manifest</code></td><td>M</td></tr>
+      <tr><td>Reduced motion</td><td>No texture, no animation, all content present</td><td>OS setting</td><td>(OS)</td></tr>
+      <tr><td>Screen reader</td><td>Each exhibit and the verdict announced once</td><td><code>#log-sr</code>, <code>#reveal-sr</code></td><td>(automatic)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 09 ============ -->
+<section class="pg" id="testcard-sec">
+  <div class="label">09</div>
+  <h2 class="pg-title">Projector test card</h2>
+  <p class="lede">Run this on the venue screen before the demo. Projectors crush dark greys. If ink and carbon merge, or the four near-black patches look the same, raise the black level until you can see every step. Then check the smallest line from the back of the table.</p>
+  <button class="btn" id="tc-open">Open full screen</button>
+</section>
+</main>
+</div>
+
+<div id="testcard" role="dialog" aria-label="Projector test card">
+  <div style="display:grid;grid-template-rows:1fr auto auto;height:100vh">
+    <div class="wedge">
+      <div style="background:var(--black);color:var(--smoke)">black</div>
+      <div style="background:var(--ink);color:var(--smoke)">ink</div>
+      <div style="background:var(--carbon);color:var(--ash)">carbon</div>
+      <div style="background:var(--smoke);color:var(--paper)">smoke</div>
+      <div style="background:var(--ash);color:var(--ink)">ash</div>
+      <div style="background:var(--bone);color:var(--ink)">bone</div>
+      <div style="background:var(--paper);color:var(--ink)">paper</div>
+    </div>
+    <div class="pluge">
+      <div style="background:#000">000</div><div style="background:#0f0e0c">ink</div><div style="background:#141310">+1</div>
+      <div style="background:#1a1916">carbon</div><div style="background:#22211d">+3</div><div style="background:var(--stamp-lit);color:var(--ink)">stamp-lit</div>
+    </div>
+    <div style="padding:20px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+      <div><div class="meta">Smallest text. It has to read from 2 meters.</div><div style="font-size:var(--fs-tag);letter-spacing:.12em;color:var(--ash);text-transform:uppercase;margin-top:6px">Roll A · Cam 01 · Room 3 · 10px tag size</div></div>
+      <button class="btn" id="tc-close">Close (Esc)</button>
+    </div>
+  </div>
+</div>
+
+<script src="anime.min.js"></script>
+<script src="noir.js"></script>
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+
+/* the floor's tape: same roll as the dashboard, held inside this stage. It stays where it lands so the next press rewinds. */
+(() => {
+  const gate = $('#floor-gate'), strip = $('#floor-strip'), black = $('#floor-black'), next = $('#floor-b');
+  if(!gate || !strip) return;
+  let parked = 0, travel = 0;
+  const sizeBlack = () => {
+    const H = gate.clientHeight;
+    const overlap = Math.round(H * 0.18);
+    black.style.height = Math.round(H * 0.46) + 'px';
+    black.style.marginTop = -overlap + 'px';
+    black.style.marginBottom = -overlap + 'px';
+    travel = next.offsetTop;
+  };
+  sizeBlack();
+  $('#roll-floor')?.addEventListener('click', () => {
+    if(!window.anime || strip.dataset.rolling) return;
+    strip.dataset.rolling = '1';
+    const dest = parked === 0 ? -travel : 0;
+    window.anime({
+      targets: strip,
+      translateY: dest,
+      duration: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dur-tape')) || 1700,
+      easing: 'easeInOutCubic',
+      complete(){
+        parked = dest;
+        strip.style.transform = `translateY(${dest}px)`;
+        delete strip.dataset.rolling;
+      },
+    });
+  });
+})();
+const root = getComputedStyle(document.documentElement);
+const tok = n => root.getPropertyValue(n).trim();
+
+/* ---------- screens: scale 1440x900 iframes into their frames, load when visible ---------- */
+const fit = () => $$('.screen').forEach(s => {
+  const f = s.querySelector('iframe'); f.style.transform = `scale(${s.clientWidth / parseFloat(getComputedStyle(f).width)})`;
+});
+new ResizeObserver(fit).observe(document.body);
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if(e.isIntersecting){ const f = e.target.querySelector('iframe'); if(!f.src) f.src = f.dataset.src; io.unobserve(e.target); }
+}), {rootMargin: '400px'});
+$$('.screen').forEach(s => io.observe(s));
+
+/* ---------- color: live values + contrast ---------- */
+const COLORS = [
+  ['--black', 'Deepest shadow only: letterbox, vignette core'],
+  ['--ink', 'App background. Warm near-black'],
+  ['--carbon', 'Panels, film bands, slates'],
+  ['--smoke', 'Hairlines, dim text, inactive'],
+  ['--ash', 'Secondary text: labels, meta. Not under 11px'],
+  ['--bone', 'Borders, markers, secondary display'],
+  ['--paper', 'Brightest text; document stock'],
+  ['--stamp', 'Stamps on paper only'],
+  ['--stamp-lit', 'Stamps on dark screens only'],
+  ['--paper-ink-2', 'Secondary type on paper'],
+  ['--paper-ink-3', 'Fine print on paper'],
+  ['--paper-rule', 'Dot leaders on paper'],
+];
+const lum = hex => { const c = [1,3,5].map(i => parseInt(hex.slice(i, i+2), 16) / 255).map(x => x <= .03928 ? x/12.92 : ((x+.055)/1.055) ** 2.4); return .2126*c[0] + .7152*c[1] + .0722*c[2]; };
+const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return ((x + .05) / (y + .05)).toFixed(1); };
+$('#swatches').innerHTML = COLORS.map(([n, use]) => {
+  const v = tok(n);
+  return `<div class="swatch"><i style="background:var(${n})"></i><div><b>${n}</b>${v}<br><span>on ink ${ratio(v, tok('--ink'))}:1 · on paper ${ratio(v, tok('--paper'))}:1</span><br><span>${use}</span></div></div>`;
+}).join('');
+
+/* ---------- type: specimens with live computed sizes ---------- */
+const TYPE = [
+  ['t-hero', '--fs-hero', 'League Gothic', 'The running take', '<div class="t-hero">$7,420</div>'],
+  ['t-view', '--fs-view', 'League Gothic', 'View titles', '<div class="t-view">The Usual Suspects</div>'],
+  ['t-item', '--fs-item', 'League Gothic', 'Suspect names', '<div class="t-item">Leica M3 Rangefinder</div>'],
+  ['t-data', '--fs-data', 'Special Elite', 'Typed entries', '<div class="t-data">EXHIBIT 02: "LEICA M3 RANGEFINDER" ...... $1,850.00</div>'],
+  ['label', '--fs-label', 'Courier Prime 700', 'Printed field labels', '<div class="label">Estimated Take</div>'],
+  ['meta', '--fs-meta', 'Courier Prime', 'Timestamps, counters, captions', '<div class="meta">FR 00:14:32:08 · Room 3 · Exhibits wing</div>'],
+  ['note', '--fs-note', 'Caveat', 'One pencil aside per screen', '<div class="note">the good stuff\'s never on the first shelf.</div>'],
+];
+const probe = document.createElement('div'); probe.style.cssText = 'position:absolute;visibility:hidden'; document.body.append(probe);
+const px = expr => { probe.style.width = expr; return Math.round(parseFloat(getComputedStyle(probe).width) * 10) / 10 + 'px'; };
+$('#typerows').innerHTML = TYPE.map(([cls, fs, face, use, sample]) =>
+  `<div class="typerow"><div class="k"><b>.${cls}</b>${face}<br><code>${fs}</code> = <span data-px="${fs}"></span><br>${use}</div><div class="sample">${sample}</div></div>`).join('');
+
+/* ---------- scale & space ---------- */
+const SPACE = ['--sp-1', '--sp-2', '--sp-3', '--sp-4', '--sp-5', '--sp-6', '--sp-7'];
+$('#spacebars').innerHTML = SPACE.map(n => `<div class="spacebar"><code style="width:70px">${n}</code><i style="width:var(${n})"></i><span data-px="${n}"></span></div>`).join('');
+$('#zvals').textContent = ['titlecard', 'curtain', 'flicker', 'vignette', 'grain', 'scratch', 'hud'].map(z => `${z} ${tok('--z-' + z)}`).join(' · ');
+const refresh = () => {
+  $('#u-now').textContent = px('var(--u)');
+  $$('[data-px]').forEach(e => e.textContent = px(`var(${e.dataset.px})`));
+  $$('[data-tok]').forEach(e => e.textContent = tok(e.dataset.tok));
+};
+refresh(); addEventListener('resize', refresh);
+
+/* ---------- motion: easing curves ---------- */
+const bez = n => tok(n).match(/-?\d*\.?\d+/g).map(Number);
+$('#curves').innerHTML = [['--ez-stamp', 'Stamp. The curve stays soft; the keyframes do a small settle.'], ['--ez-settle', 'Entrances. Slow out of the gate, long landing.'], ['--ez-odo', 'Digit rolls. A little inertia, then a soft stop. No bounce.'], ['--ez-film', 'Fades and dissolves. Soft at both ends.']].map(([n, use]) => {
+  const [a, b, c, d] = bez(n), S = 100, y = v => 130 - v * S;
+  return `<div class="spec"><header><span class="label">${n}</span><span class="meta">${tok(n)}</span></header><div class="stage dark" style="flex-direction:row;align-items:center;gap:16px">
+    <svg class="curve" viewBox="-10 -10 120 160" aria-hidden="true"><rect x="0" y="30" width="100" height="100" fill="none" stroke="#2a2925"/><path d="M0 ${y(0)} C ${a*S} ${y(b)} ${c*S} ${y(d)} ${S} ${y(1)}" fill="none" stroke="var(--bone)" stroke-width="2"/></svg>
+    <p class="meta" style="text-transform:none;letter-spacing:.04em">${use}</p></div></div>`;
+}).join('');
+
+/* ---------- motion: players ---------- */
+const restart = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+$('#stageA').innerHTML = `<div class="feed" style="position:absolute;inset:0"><div class="frame-box" style="--ar:16/10"><div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 30% 30%,#2e2c26,transparent 70%),#0a0908"></div><div class="markers" id="pm"></div></div><div class="cut"></div><div class="mini-curtain" id="pcur"></div></div>`;
+$('#stageB').innerHTML = `<div style="width:88%;display:flex;flex-direction:column;gap:10px"><div class="odo sm" id="podo"></div><div class="log" style="flex:none"><div class="log-line" id="pline"><span class="txt"></span><span class="leaders"></span><span class="amt"></span></div></div></div>`;
+$('#stageC').innerHTML = `<div id="pwrap" style="display:flex;gap:18px;align-items:center"><div class="suspect in" style="width:80px"><div class="photo" id="pphoto"><div class="placard" id="pplac">No. 1</div></div></div><div class="stamp" id="pstamp" style="--rot:-6deg">Case Closed</div></div>`;
+const podo = Noir.makeOdo($('#podo')); podo.set(7420);
+const MOTION = [
+  ['Hard cut', 'bone wash in, then out', '--dur-cut', '--ez-film', 'A new still lands', () => restart($('#stageA .feed'), 'cutting')],
+  ['Marker in', 'scale .9 and 10px up, to rest; label follows', '--dur-marker', '--ez-settle', 'Exhibit confirmed', () => { $('#pm').innerHTML = '<div class="marker" style="left:20%;top:26%;width:40%;height:44%"><span class="tag">Exhibit 07</span></div>'; }],
+  ['Top-5 pulse', 'tag eases to paper, then back', '--dur-hot', '--ez-settle', 'Item enters the top five', () => { $('#pm').innerHTML = '<div class="marker hot" style="left:20%;top:26%;width:40%;height:44%"><span class="tag">Exhibit 07</span></div>'; }],
+  ['Freeze judder', 'small settle back to the gate', '--dur-judder', '--ez-film', 'Button press, 0ms', () => restart($('#stageA .feed'), 'freeze')],
+  ['Dissolve', 'black curtain opacity 0 to 1, then back', '--dur-dissolve', '--ez-film', 'Overlaps the settle', () => { $('#pcur').classList.add('on'); setTimeout(() => $('#pcur').classList.remove('on'), parseFloat(tok('--dur-dissolve')) + parseFloat(tok('--dur-fadeup'))); }],
+  ['Teletype', 'one character per tick, linear', '--dur-type-char', 'linear (interval)', 'Pending or new exhibit', () => { const l = $('#pline'); l.querySelector('.txt').textContent = ''; l.querySelector('.amt').textContent = ''; Noir.typeInto(l, 'EXHIBIT 07: "WATCH, WRIST"', '$4,200.00'); }],
+  ['Odometer roll', 'translateY per digit, right to left', '--dur-odo', '--ez-odo', 'Take changes (digits --stagger-digit apart)', () => podo.set(Math.round(1000 + Math.random() * 90000))],
+  ['Photo drop', 'translateY -28px to 0, once the slot is shown', '--dur-drop', '--ez-settle', 'Each suspect, overlapping the previous', () => { const ph = $('#pphoto'); ph.style.animation = 'none'; void ph.offsetWidth; ph.style.animation = ''; }],
+  ['Stamp slam', 'scale 1.16, .988, 1.018, 1; contact at 42%', '--dur-stamp', '--ez-stamp', 'The verdict', () => { restart($('#pstamp'), 'enter'); setTimeout(() => { restart($('#pwrap'), 'shake'); Noir.sfx.thud(); }, parseFloat(tok('--dur-stamp')) * .42); }],
+  ['Placard', 'rises 8px and fades in after the photo', '--dur-drop', '--ez-settle', 'With its photo', () => restart($('#pplac'), 'slam-in')],
+  ['Desk thud', 'decaying translateY', '--dur-shake', 'linear', 'Stamp contact frame', () => restart($('#pwrap'), 'shake')],
+  ['Reel start', 'PICTURE START, then 8, 7, SIX, 5, 4, 3; each number settles', '--dur-leader-foot', '--ez-settle', 'Page boot (full screen)', () => Noir.reelStart()],
+  ['Changeover cue', 'white circle fades in, holds, fades out', '--dur-cue', '--ez-film', 'Button press, 0ms', () => Noir.cue()],
+  ['Gate weave', '1px drift, eased, footage only', '--weave-cycle', '--ez-film', 'Live view, always', null],
+  ['The end', 'card fades in, holds, fades out', '--dur-the-end', '--ez-film', 'A run finishes (full screen)', () => Noir.theEnd()],
+  ['Title card', 'bars travel in and the title fades up, from the top each time', '--title-cycle', '--ez-film', 'body.idle', null],
+  ['Grain', '8 positions, jumps not drifts', '660ms loop', 'steps(1)', 'Always on', null],
+];
+$('#motiontable tbody').innerHTML = MOTION.map(([name, what, dur, ez, trig, fn], i) =>
+  `<tr><td>${name}</td><td>${what}</td><td><code>${dur.startsWith('--') ? dur : ''}</code> ${dur.startsWith('--') ? tok(dur) : dur}</td><td>${ez.startsWith('--') ? `<code>${ez}</code>` : ez}</td><td>${trig}</td><td>${fn ? `<button class="btn" data-play="${i}">Play</button>` : '<span class="meta">demo.html</span>'}</td></tr>`).join('');
+$('#motiontable').addEventListener('click', e => { const b = e.target.closest('[data-play]'); if(b) MOTION[b.dataset.play][5](); });
+
+/* ---------- components: odometers, QR, copyable markup ---------- */
+Noir.makeOdo($('#odo-a')).set(7420);
+Noir.makeOdo($('#odo-b')).set(1282600);
+$$('svg.qr').forEach(svg => {
+  const N = 21, cell = 96 / N; let seed = 7; const rnd = () => (seed = (seed*1103515245+12345) & 0x7fffffff) / 0x7fffffff;
+  const fin = (x, y) => (x<7&&y<7) || (x>=N-7&&y<7) || (x<7&&y>=N-7);
+  let r = '<rect width="96" height="96" fill="#efe9db"/>';
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++) if(!fin(x,y) && rnd() < .45) r += `<rect x="${x*cell}" y="${y*cell}" width="${cell+.4}" height="${cell+.4}" fill="#0f0e0c"/>`;
+  const f = (ox, oy) => `<rect x="${ox*cell}" y="${oy*cell}" width="${7*cell}" height="${7*cell}" fill="#0f0e0c"/><rect x="${(ox+1)*cell}" y="${(oy+1)*cell}" width="${5*cell}" height="${5*cell}" fill="#efe9db"/><rect x="${(ox+2)*cell}" y="${(oy+2)*cell}" width="${3*cell}" height="${3*cell}" fill="#0f0e0c"/>`;
+  svg.setAttribute('viewBox', '0 0 96 96'); svg.innerHTML = r + f(0,0) + f(N-7,0) + f(0,N-7);
+});
+const clean = html => html.replace(/ style="[^"]*"/g, '').replace(/<svg class="qr"[\s\S]*?<\/svg>/g, '<img src="/qr.png" alt="QR code to the manifest">')
+  .replace(/>\s*</g, '>\n<').replace(/\n\s*\n/g, '\n');
+$$('.spec[data-c]').forEach(s => {
+  const d = document.createElement('details');
+  d.innerHTML = '<summary>Markup</summary><pre></pre>';
+  d.querySelector('pre').textContent = clean(s.querySelector('.stage').innerHTML.trim());
+  s.append(d);
+});
+$$('.mini-wall').forEach(w => w.parentElement.querySelector('pre').textContent = clean(w.innerHTML.trim()));
+
+/* ---------- tokens.json (W3C design tokens format) for Figma / Tokens Studio ----------
+   Sizes are resolved at the 1440x900 reference in a hidden frame, raw CSS kept alongside. */
+$('#export').addEventListener('click', async () => {
+  // computed style lists every custom property; reading cssRules would fail on file:// pages
+  const names = [...getComputedStyle(document.documentElement)].filter(p => p.startsWith('--'));
+  const f = document.createElement('iframe');
+  f.style.cssText = 'position:absolute;left:-99999px;top:0;width:1440px;height:900px;border:0';
+  f.srcdoc = `<base href="${location.href}"><link rel="stylesheet" href="noir.css"><div id="p" style="position:absolute"></div>`;
+  document.body.append(f); await new Promise(r => f.onload = r);
+  const doc = f.contentDocument, p = doc.getElementById('p'), cs = doc.defaultView.getComputedStyle(doc.documentElement);
+  const at1440 = n => { p.style.width = `var(${n})`; return Math.round(parseFloat(doc.defaultView.getComputedStyle(p).width) * 100) / 100 + 'px'; };
+  const out = {color: {}, font: {}, size: {}, tracking: {}, space: {}, shape: {}, layer: {}, easing: {}, duration: {}};
+  for(const n of names){
+    const raw = cs.getPropertyValue(n).trim(), k = n.slice(2), ext = {$extensions: {'noirkit.css': raw}};
+    if(raw.startsWith('#')) out.color[k] = {$type: 'color', $value: raw};
+    else if(n.startsWith('--f-')) out.font[k] = {$type: 'fontFamily', $value: raw.split(',').map(s => s.trim().replace(/"/g, ''))};
+    else if(n.startsWith('--fs-') || n === '--u') out.size[k] = {$type: 'dimension', $value: at1440(n), ...ext};
+    else if(n.startsWith('--tr-')) out.tracking[k] = {$type: 'dimension', $value: raw};
+    else if(n.startsWith('--sp-')) out.space[k] = {$type: 'dimension', $value: at1440(n), ...ext};
+    else if(n.startsWith('--r-') || n === '--rule') out.shape[k] = {$type: 'dimension', $value: raw};
+    else if(n.startsWith('--z-')) out.layer[k] = {$type: 'number', $value: +raw};
+    else if(n.startsWith('--ez-')) out.easing[k] = {$type: 'cubicBezier', $value: raw.match(/-?\d*\.?\d+/g).map(Number)};
+    else if(/m?s$/.test(raw)) out.duration[k] = {$type: 'duration', $value: raw};
+  }
+  f.remove();
+  out.$description = 'NOIRKIT tokens, exported from kit.html. Sizes resolved at the 1440x900 reference; noirkit.css holds the fluid CSS.';
+  const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], {type: 'application/json'})), download: 'tokens.json'});
+  a.click();
+  $('#export-note').textContent = `${names.length} tokens exported`;
+  window.__tokens = out;
+});
+
+/* ---------- projector test card ---------- */
+$('#tc-open').addEventListener('click', () => { $('#testcard').classList.add('on'); document.documentElement.requestFullscreen?.().catch(() => {}); });
+const closeTC = () => { $('#testcard').classList.remove('on'); if(document.fullscreenElement) document.exitFullscreen(); };
+$('#tc-close').addEventListener('click', closeTC);
+addEventListener('keydown', e => { if(e.key === 'Escape') closeTC(); });
+</script>
+</body>
+</html>
