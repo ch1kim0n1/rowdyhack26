@@ -197,9 +197,10 @@
   /* ---------- the price source ---------- */
   function paintSerp(sp = {}) {
     $$('.switch button').forEach(b => b.setAttribute('aria-checked', String((b.dataset.serp === 'true') === !!sp.enabled)));
-    $('#serp-note').textContent = !sp.has_key
-      ? 'No SERPAPI_API_KEY on the hub, so prices come from a model quote either way.'
-      : sp.enabled ? 'Sold listings first. A model quote if nothing sold.' : 'A model quote for every find. Sold comps are off.';
+    $('#serp-note').textContent =
+      sp.provider === 'serpapi' && !sp.has_key
+        ? 'No SERPAPI_API_KEY on the hub, so prices come from a model quote either way.'
+        : sp.enabled ? `Sold listings first (${sp.provider || 'ebay'}). A model quote if nothing sold.` : 'A model quote for every find. Sold comps are off.';
   }
   $$('.switch button').forEach(b => b.addEventListener('click', async () => {
     const r = await Noir.motion.action($$('.switch button'), signal => send('/api/serpapi', {

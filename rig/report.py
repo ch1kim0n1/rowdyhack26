@@ -48,6 +48,8 @@ SOURCE_LABELS = {
     "script": "FIXTURE: scripted demo walk, not a real observation",
 }
 PRICE_LABELS = {
+    "ebay": "eBay sold-listing comps (the listings themselves were not kept)",
+    "ebayapi": "eBay listings via the official Browse API (listings were not kept)",
     "serpapi": "eBay sold-listing comps (the listings themselves were not kept)",
     "model_quote": "model price quote (estimate)",
     "vision": "vision-model estimate only",

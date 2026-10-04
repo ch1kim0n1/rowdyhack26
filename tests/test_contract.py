@@ -126,8 +126,8 @@ class ModelPrice(unittest.TestCase):
     def test_serpapi_toggle_default_off_and_endpoint(self):
         pricing.set_serpapi_enabled(False)
         self.assertFalse(pricing.is_serpapi_enabled())
-        # With SerpAPI disabled, market_value returns None without network calls
-        self.assertIsNone(pricing._lookup("Sony WH-1000XM6"))
+        # With comps disabled, market_value finds nothing without network calls
+        self.assertEqual(pricing._lookup("Sony WH-1000XM6"), (None, "none"))
         pricing.toggle_serpapi()
         self.assertTrue(pricing.is_serpapi_enabled())
         client = rig_app.app.test_client()

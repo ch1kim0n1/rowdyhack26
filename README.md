@@ -111,6 +111,13 @@ ledger. Queues finds if the Wi-Fi blinks; refiles next tick. OV5647 capture
 verified through the Picamera2 adapter. `DRIVE_KIT=picarx` runs the Robot
 HAT motors; movement and audio features still need validation.
 
+Hosted backend (Railway): the hub can't reach the rover's `:5001` inbound
+behind venue NAT, so set `DRIVE_POLL=1` (rover long-polls `/api/drive/pending`
+for queued teleop) and `CAM_PUSH=1` (rover POSTs frames to `/api/cam/frame`,
+keeping `CAM_SOURCE=rover` working) on the rover. The hat is a camera client
+too in hosted mode — run `python -m rig.rover` on it, not `rig.app`, or it
+spawns a second ledger.
+
 ## Routes
 
 | Route | What |
@@ -120,8 +127,10 @@ HAT motors; movement and audio features still need validation.
 | `/state.json` | dashboard poll contract |
 | `/wrist.json` | compact top-5 for the wrist display |
 | `POST /api/exhibit` | rover files a find (`X-Rig-Token` if `RIG_TOKEN` set) |
-| `POST /api/rover_ping` | rover heartbeat; registers the teleop address |
-| `POST /api/drive` | teleop relay: hub forwards `{dir, secs}` to the rover |
+| `POST /api/rover_ping` | rover heartbeat; registers the teleop address (`{"poll": true}` = pull-mode) |
+| `POST /api/drive` | teleop relay: hub forwards `{dir, secs}` to the rover, or queues it for a poll-mode rover |
+| `GET /api/drive/pending` | pull-mode rover's long-poll drain (`?wait=N`) |
+| `POST /api/cam/frame` | rover pushes a JPEG frame (`CAM_PUSH=1`) |
 | `/frame.jpg` `/crop/<n>.jpg` | live still / exhibit mugshot |
 | `/health` `/trigger_reveal` `/api/serpapi` | status / the button (GET open-LAN only) / price toggle (GET=status, POST=mutate) |
 | `/kit` `/demo.html` `/board.html` | NOIRKIT index, driver, board |
@@ -141,8 +150,8 @@ HAT motors; movement and audio features still need validation.
 
 `capture.scene_changed` gates the camera on a frame diff held for
 `SCENE_CONFIRM` samples → `vision.identify` sends the still to OpenAI, then
-Anthropic, then the offline catalog → `pricing.resolve_detailed` tries SerpAPI
-sold-listing comps, then a model quote, then the vision number, every price
+Anthropic, then the offline catalog → `pricing.resolve_detailed` tries live
+comps (`COMPS_PROVIDER`: ebayapi / ebay scrape / serpapi), then a model quote, then the vision number, every price
 carries a `why`. `store` dedupes on fuzzy name + category, keeps the running
 take, tags each find `origin: hat|rover`, and mirrors the ledger to disk on
 every change.

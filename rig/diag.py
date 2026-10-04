@@ -10,7 +10,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from rig import config, journal
+from rig import config, journal, pricing
 
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env", override=True)
@@ -104,11 +104,14 @@ def check_vision_api() -> bool:
     else:
         print("[INFO] ANTHROPIC_API_KEY not set.")
 
+    provider = pricing.comps_provider()
     if serpapi_key:
         masked = serpapi_key[:7] + "..." + serpapi_key[-4:]
-        print(f"[OK] SERPAPI_API_KEY present ({masked}).")
+        print(f"[OK] SERPAPI_API_KEY present ({masked}); comps provider: {provider}.")
+    elif provider == "ebay":
+        print("[OK] Comps provider: ebay (scrapes sold listings; no key).")
     else:
-        print("[INFO] SERPAPI_API_KEY not set. Using model pricing quotes.")
+        print(f"[INFO] Comps provider: {provider}; model pricing quotes in use.")
 
     if not openai_key and not anthropic_key:
         print("[FAIL] No LLM keys configured. Offline fallback will be active.")

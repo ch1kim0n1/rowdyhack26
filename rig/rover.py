@@ -29,12 +29,26 @@ def hub_url() -> str:
     return config.env_str("HUB_URL", "http://raspberrypi.local:5000").rstrip("/")
 
 
+def drive_poll() -> bool:
+    """DRIVE_POLL=1: the hub can't reach us inbound (hosted backend, venue
+    NAT). Pings announce poll mode so the hub queues teleop, and the poller
+    thread in drive_server drains /api/drive/pending instead."""
+    return config.env_flag("DRIVE_POLL", False)
+
+
+def cam_push() -> bool:
+    """CAM_PUSH=1: POST each frame to the hub's /api/cam/frame instead of
+    waiting for it to GET :5001/frame.jpg — same NAT fix as DRIVE_POLL."""
+    return config.env_flag("CAM_PUSH", False)
+
+
 def ping_hub(url: str) -> bool:
-    """Tell the hub where teleop reaches us; the hub forwards /api/drive."""
+    """Tell the hub where teleop reaches us; the hub forwards /api/drive —
+    or queues it for our poller when we announce {"poll": true}."""
     token = config.env_str("RIG_TOKEN")
     req = Request(
         url.rstrip("/") + "/api/rover_ping",
-        data=b"{}",
+        data=json.dumps({"poll": drive_poll()}).encode(),
         headers={"Content-Type": "application/json",
                  **({"X-Rig-Token": token} if token else {})},
         method="POST",
@@ -163,6 +177,35 @@ def run(opener=None, identify=None, post=None, ping=None, sleep=time.sleep, tick
         sleep(1 / 12)
 
 
+def _cam_push_loop(hub: str) -> None:
+    """POST the latest frame to the hub's /api/cam/frame at CAM_PUSH_EVERY
+    seconds, for hubs that can't pull :5001/frame.jpg."""
+    import threading
+
+    every = config.env_float("CAM_PUSH_EVERY", 0.4, lo=0.1)
+    token = config.env_str("RIG_TOKEN")
+
+    def push() -> None:
+        while True:
+            frame = _latest_frame
+            if frame is not None:
+                try:
+                    req = Request(
+                        hub + "/api/cam/frame",
+                        data=capture.frame_jpeg(frame),
+                        headers={"Content-Type": "image/jpeg",
+                                 **({"X-Rig-Token": token} if token else {})},
+                        method="POST",
+                    )
+                    urlopen(req, timeout=4)
+                except (URLError, TimeoutError, OSError):
+                    pass   # next tick retries; a dead hub mustn't stall frames
+            time.sleep(every)
+
+    threading.Thread(target=push, daemon=True, name="cam-push").start()
+    log.info("pushing frames to %s/api/cam/frame every %.1fs", hub, every)
+
+
 def main() -> None:
     try:
         from pathlib import Path
@@ -173,7 +216,12 @@ def main() -> None:
         pass
     journal.setup()                     # after dotenv so .env can set RIG_LOG_*
     from rig import drive, drive_server
-    server = drive_server.start(drive.get_driver(), frame_source=lambda: _latest_frame)
+    driver = drive.get_driver()
+    server = drive_server.start(driver, frame_source=lambda: _latest_frame)
+    if drive_poll():
+        drive_server.start_poller(driver, hub_url())
+    if cam_push():
+        _cam_push_loop(hub_url())
     log.info("rover filing to %s%s", hub_url(),
              "" if rover_vision() else " (camera feed only; the hub does the looking)")
     try:

@@ -6,6 +6,10 @@ the rover, is honored the same way via the X-Rig-Token header.
 
 GET /frame.jpg is the rover camera's latest frame, for a hub running with
 CAM_SOURCE=rover.
+
+DRIVE_POLL=1 inverts the teleop direction for a hub the rover can't be
+reached by (hosted backend, venue NAT): start_poller long-polls the hub's
+/api/drive/pending and applies each queued command here instead.
 """
 from __future__ import annotations
 
@@ -15,6 +19,8 @@ import math
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from rig import config
 from rig.drive import DIRECTIONS, MAX_SECS, Driver
@@ -37,7 +43,61 @@ def _return_after() -> float:
     return config.env_float("DRIVE_RETURN_AFTER", 60.0, lo=0.0)
 
 
-_last_cmd = [0.0]  # mutable cell; stamped on every /drive hit
+_last_cmd = [0.0]  # mutable cell; stamped on every drive command
+
+
+def apply_command(driver: Driver, body: dict) -> str:
+    """One teleop command, same parsing whether it arrived by POST /drive
+    (hub pushes) or the hub's /api/drive/pending (rover pulls). Returns the
+    direction actually run."""
+    if not isinstance(body, dict):
+        body = {}
+    direction = str(body.get("dir") or "stop")
+    secs = body.get("secs")
+    try:
+        secs = 0.4 if secs is None else float(secs)
+    except (TypeError, ValueError):
+        secs = 0.4
+    if not math.isfinite(secs):
+        secs = 0.4
+    secs = min(max(secs, 0.0), MAX_SECS)
+    if direction == "return":
+        threading.Thread(target=driver.return_home, daemon=True,
+                         name="drive-return").start()
+    else:
+        if direction not in DIRECTIONS:
+            direction = "stop"
+        driver.move(direction, secs)
+    _last_cmd[0] = time.monotonic()
+    return direction
+
+
+def start_poller(driver: Driver, hub_url: str, wait: float = 5.0) -> threading.Thread:
+    """Drain queued teleop from a hub that can't POST inbound: GET
+    /api/drive/pending?wait=N in a loop, apply each command here."""
+    url = hub_url.rstrip("/") + "/api/drive/pending?wait=" + str(int(wait))
+
+    def poll() -> None:
+        token = config.env_str("RIG_TOKEN")
+        while True:
+            req = Request(url, headers={"X-Rig-Token": token} if token else {})
+            try:
+                with urlopen(req, timeout=wait + 5) as resp:
+                    if resp.status == 200:
+                        body = json.loads(resp.read(64 * 1024) or b"{}")
+                        apply_command(driver, (body or {}).get("cmd") or {})
+            except HTTPError as exc:
+                if exc.code in (401, 403):
+                    log.warning("drive poll rejected (%s) — check RIG_TOKEN", exc.code)
+                time.sleep(2)
+            except (URLError, TimeoutError, OSError):
+                time.sleep(1)   # hub blinked; the ping loop keeps its own cadence
+            # No delay on success: the next long-poll goes out immediately.
+
+    thread = threading.Thread(target=poll, daemon=True, name="drive-poll")
+    thread.start()
+    log.info("drive poller draining %s", url)
+    return thread
 
 
 def drive_server(driver: Driver, port: int = PORT, frame_source=None) -> ThreadingHTTPServer:
@@ -67,25 +127,7 @@ def drive_server(driver: Driver, port: int = PORT, frame_source=None) -> Threadi
                 body = json.loads(self.rfile.read(length) or b"{}")
             except (json.JSONDecodeError, OSError):
                 body = {}
-            if not isinstance(body, dict):
-                body = {}
-            direction = str(body.get("dir") or "stop")
-            secs = body.get("secs")
-            try:
-                secs = 0.4 if secs is None else float(secs)
-            except (TypeError, ValueError):
-                secs = 0.4
-            if not math.isfinite(secs):
-                secs = 0.4
-            secs = min(max(secs, 0.0), MAX_SECS)
-            if direction == "return":
-                threading.Thread(target=driver.return_home, daemon=True,
-                                 name="drive-return").start()
-            else:
-                if direction not in DIRECTIONS:
-                    direction = "stop"
-                driver.move(direction, secs)
-            _last_cmd[0] = time.monotonic()
+            direction = apply_command(driver, body)
             payload = json.dumps({"ok": True, "dir": direction}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")

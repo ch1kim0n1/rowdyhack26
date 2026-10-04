@@ -81,7 +81,7 @@ If cellular or Wi-Fi drops completely:
 
 * **Hardware Diagnostic:** Run `python3 -m rig.diag` to test the camera brightness, I2C OLED, GPIO button, and API keys before walking on stage.
 * **Offline Fallback:** If internet is unavailable, the vision engine automatically rotates through realistic heist exhibits (Sony WH-1000XM6, Razer BlackShark V2, Rolex, Leica, Hemingway, Desk Lamp) with bounding boxes and prices. Set `RIG_OFFLINE=1` in `.env` to force this mode.
-* **SerpAPI Toggle:** Disabled by default to prioritize fast, reliable local model pricing. Toggle at runtime by POSTing to `/api/serpapi` or set `SERPAPI_ENABLED=1` in `.env`.
+* **Comps Toggle:** Disabled by default to prioritize fast, reliable local model pricing. Toggle at runtime by POSTing to `/api/serpapi` or set `SERPAPI_ENABLED=1` in `.env`. `COMPS_PROVIDER` picks the source: `ebayapi` (official eBay Browse API, free dev creds), `ebay` (public sold-page scrape, keyless), `serpapi`, `off`.
 
 ---
 
@@ -102,6 +102,9 @@ the only server.
   `CAM_BACKEND=picamera2` and streams stills to the backend.
 * **Rover (PiCar-X + Pi 4 + OV5647):** same hotspot, then
   `HUB_URL=http://raspberrypi.local:5000 python3 -m rig.rover`.
+  Hosted backend instead? `HUB_URL=https://<railway-app>` plus
+  `DRIVE_POLL=1` and `CAM_PUSH=1` — the hub can't reach `:5001` inbound
+  through NAT, so the rover pulls teleop and pushes its frames.
   Set `RIG_TOKEN` to the same value on both Pis before demo if you want the
   `/api/exhibit` endpoint locked; leave it unset for open LAN operation.
 * **Mic button:** second momentary button on `LISTEN_PIN` (GPIO27). Press,

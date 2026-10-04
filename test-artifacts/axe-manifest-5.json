@@ -13,7 +13,7 @@
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-10-02T08:29:43.603Z",
+  "timestamp": "2026-10-04T13:18:59.308Z",
   "url": "http://127.0.0.1:5127/manifest",
   "toolOptions": {
     "runOnly": {
@@ -356,27 +356,6 @@
       "description": "Ensure buttons have discernible text",
       "help": "Buttons must have discernible text",
       "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/button-name?application=axeAPI",
-      "nodes": []
-    },
-    {
-      "id": "bypass",
-      "impact": null,
-      "tags": [
-        "cat.keyboard",
-        "wcag2a",
-        "wcag241",
-        "section508",
-        "section508.22.o",
-        "TTv5",
-        "TT9.a",
-        "EN-301-549",
-        "EN-9.2.4.1",
-        "RGAAv4",
-        "RGAA-12.7.1"
-      ],
-      "description": "Ensure each page has at least one mechanism for a user to bypass navigation and jump straight to the content",
-      "help": "Page must have means to bypass repeated blocks",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/bypass?application=axeAPI",
       "nodes": []
     },
     {
@@ -1137,6 +1116,38 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M3 3l10 10M13 3L3 13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"square\"></path></svg>",
+          "target": [
+            "svg"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<div class=\"confidential\" aria-hidden=\"true\">CONFIDENTIAL</div>",
           "target": [
             ".confidential"
@@ -1427,6 +1438,53 @@
       ]
     },
     {
+      "id": "bypass",
+      "impact": null,
+      "tags": [
+        "cat.keyboard",
+        "wcag2a",
+        "wcag241",
+        "section508",
+        "section508.22.o",
+        "TTv5",
+        "TT9.a",
+        "EN-301-549",
+        "EN-9.2.4.1",
+        "RGAAv4",
+        "RGAA-12.7.1"
+      ],
+      "description": "Ensure each page has at least one mechanism for a user to bypass navigation and jump straight to the content",
+      "help": "Page must have means to bypass repeated blocks",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/bypass?application=axeAPI",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "header-present",
+              "data": null,
+              "relatedNodes": [
+                {
+                  "html": "<h1>Loot Manifest</h1>",
+                  "target": [
+                    "h1"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Page has a heading"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<html lang=\"en\">",
+          "target": [
+            "html"
+          ]
+        }
+      ]
+    },
+    {
       "id": "color-contrast",
       "impact": "serious",
       "tags": [
@@ -1465,7 +1523,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<div class=\"stamp small\">Filed 10/02/2026</div>",
+          "html": "<div class=\"stamp small\">Filed 10/04/2026</div>",
           "target": [
             ".stamp"
           ]

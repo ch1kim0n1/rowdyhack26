@@ -35,7 +35,7 @@ Status: ✅ shipped+tested · 🟡 shipped, untested on hardware · 🔧 partial
 | Camera capture + backend pick | `rig/capture.py` | ✅ | IMX477 verified via Picamera2 adapter (`CAM_BACKEND=picamera2`); dshow/msmf/v4l2 order kept for other platforms; `CAM_INDEX` env |
 | Scene-diff gate + flicker confirm | `capture.scene_changed` | ✅ | `SCENE_CONFIRM`, `SCENE_THRESH`; `SCAN_ALWAYS` killswitch |
 | Vision identify | `rig/vision.py` | ✅ | OpenAI → Anthropic → offline catalog; 20s timeouts; bbox clamp |
-| Pricing ladder | `rig/pricing.py` | ✅ | SerpAPI comps → model quote → vision estimate; `why` field |
+| Pricing ladder | `rig/pricing.py` | ✅ | comps (`COMPS_PROVIDER`: ebayapi / ebay scrape / serpapi) → model quote → vision estimate; `why` field |
 | Dedup ledger | `rig/store.py` | ✅ | fuzzy name + category; persists `case.json` + `case-stills/` |
 | Dashboard routes | `rig/app.py` | ✅ | `/`, `/reveal`, `/state.json`, `/frame.jpg`, `/crop/<n>.jpg`, `/manifest`, `/qr.png`, `/health` |
 | Reveal + reset button | `rig/button.py`, GPIO17 | 🟡 | code tested; needs real button on pin 11/9 |
@@ -82,6 +82,7 @@ Status: ✅ shipped+tested · 🟡 shipped, untested on hardware · 🔧 partial
 | Feature | Status | Notes |
 |---|---|---|
 | Hub-and-spoke topology | ✅ | rover POSTs, wrist GETs, laptop polls: all hub-centered |
+| Hosted-hub teleop + feed | ✅ | `DRIVE_POLL=1` → ping `{"poll": true}`, rover drains `GET /api/drive/pending?wait=`; `CAM_PUSH=1` → `POST /api/cam/frame`; covers hub-can't-reach-rover (NAT) when the backend runs hosted |
 | `RIG_TOKEN` shared secret | ✅ | 401 without it when set; open when unset; covers /api/exhibit, /api/rover_ping, /api/drive |
 | Same-hotspot runbook | ✅ | BUILD-GUIDE §8.3 boot order + PI-TO-LAPTOP §7 |
 
@@ -96,7 +97,7 @@ Status: ✅ shipped+tested · 🟡 shipped, untested on hardware · 🔧 partial
 | Sound design | 🟡 | coded; browser autoplay needs a click to arm |
 | Premiere page `/premiere` | ✅ | title card, scroll-scrubbed film, crew dossiers, method, paperwork, credits |
 | The film `ui-kit/film/` | ✅ | three.js set + kit overlays, 501 frames, `node render.mjs film` to re-render |
-| Dispatch desk `/desk` | ✅ | live take/ledger, reveal, SerpAPI switch, wrist OLED copy, rover pad; route tests |
+| Dispatch desk `/desk` | ✅ | live take/ledger, reveal, comps switch, wrist OLED copy, rover pad; route tests |
 | Crew emblem | ❌ | needs a generated image at `ui-kit/brand/emblem.png`; pages show the wordmark until then |
 
 ## Infra / quality

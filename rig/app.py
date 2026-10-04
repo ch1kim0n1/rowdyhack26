@@ -12,6 +12,7 @@ import logging
 import math
 import threading
 import time
+from collections import deque
 from datetime import date, datetime
 from pathlib import Path
 from urllib.request import HTTPRedirectHandler
@@ -641,14 +642,22 @@ class _RoverRegistry:
         self.addr: str | None = None
         self.seen = 0.0
         self.ttl = ttl
+        self.poll = False   # rover is pull-only (behind NAT): it drains /api/drive/pending
         self._lock = threading.Lock()
 
-    def note(self, addr: str | None) -> None:
+    def note(self, addr: str | None, poll: bool = False) -> None:
         if not addr:
             return
         with self._lock:
             self.addr = addr
             self.seen = time.monotonic()
+            self.poll = poll
+
+    def touch(self) -> None:
+        """A drive-poll heartbeat: keeps the registration warm between pings."""
+        with self._lock:
+            if self.addr is not None:
+                self.seen = time.monotonic()
 
     def target(self) -> str | None:
         """Live rover address or None, expired registrations don't forward."""
@@ -657,12 +666,26 @@ class _RoverRegistry:
                 return None
             return self.addr
 
+    def wants_poll(self) -> bool:
+        """Registered rover asked for pull-mode teleop and hasn't expired."""
+        with self._lock:
+            fresh = self.addr is not None and time.monotonic() - self.seen <= self.ttl
+            return fresh and self.poll
+
     def seen_ago(self) -> float | None:
         return _seen_ago(self.seen)
 
 
 ROVER_TTL = 30  # seconds without a heartbeat before teleop forgets it
 _rover = _RoverRegistry(ROVER_TTL)
+
+# Pull-mode teleop + rover cam push, for a rover the hub can't reach inbound
+# (hosted backend, rover behind venue NAT). /api/drive enqueues, the rover
+# long-polls /api/drive/pending; /api/cam/frame accepts pushed JPEGs.
+_DRIVE_QUEUE_MAX = 60
+_drive_queue: deque[bytes] = deque(maxlen=_DRIVE_QUEUE_MAX)
+_drive_cond = threading.Condition()
+_pushed_frame: tuple[bytes, float] | None = None
 
 
 def cam_source() -> str:
@@ -694,6 +717,15 @@ class _RoverCamera:
     FRAME_TIMEOUT = 2
     FRAME_MAX = 8 * 1024 * 1024
 
+    PUSHED_FRESH_S = 3.0
+
+    def _pushed(self) -> bytes | None:
+        """A frame the rover POSTed itself (CAM_PUSH); fresher than a pull."""
+        if _pushed_frame is None:
+            return None
+        data, at = _pushed_frame
+        return data if time.monotonic() - at < self.PUSHED_FRESH_S else None
+
     def _request(self):
         from urllib.request import Request
         addr = _rover.target()
@@ -705,10 +737,14 @@ class _RoverCamera:
                        headers={"X-Rig-Token": token} if token else {})
 
     def isOpened(self) -> bool:
-        return self._request() is not None
+        return self._pushed() is not None or self._request() is not None
 
     def read(self):
         from urllib.request import build_opener
+        data = self._pushed()
+        if data is not None:
+            frame = capture.decode_jpeg(data)
+            return frame is not None, frame
         req = self._request()
         if req is None:
             return False, None
@@ -782,10 +818,16 @@ def _remote_camera():
 
 @app.post("/api/rover_ping")
 def rover_ping():
-    """Rover heartbeat: registers the address teleop should forward to."""
+    """Rover heartbeat: registers the address teleop should forward to.
+
+    {"poll": true} marks the rover pull-only (behind NAT, hosted hub): the
+    hub queues /api/drive commands and the rover drains them by long-polling
+    /api/drive/pending instead of taking a POST on its :5001."""
     if not _authorized():
         abort(401)
-    _rover.note(request.remote_addr)
+    body = request.get_json(silent=True) or {}
+    poll = isinstance(body, dict) and body.get("poll") is True
+    _rover.note(request.remote_addr, poll=poll)
     return jsonify({"ok": True})
 
 
@@ -863,6 +905,14 @@ def drive():
         abort(429)
     if not _authorized():
         abort(401)
+    if _rover.wants_poll():
+        body = request.stream.read(64 * 1024 + 1)
+        if len(body) > 64 * 1024:
+            return jsonify({"ok": False, "error": "drive body too large"}), 413
+        with _drive_cond:
+            _drive_queue.append(body)   # full queue drops the oldest move
+            _drive_cond.notify()
+        return jsonify({"ok": True, "queued": True}), 202
     addr = _rover.target()
     if addr is None:
         return jsonify({"ok": False, "error": "no rover registered"}), 503
@@ -873,6 +923,55 @@ def drive():
     except OSError:
         return jsonify({"ok": False, "error": "rover unreachable"}), 502
     return Response(body, status=status, mimetype="application/json")
+
+
+@app.get("/api/drive/pending")
+def drive_pending():
+    """The rover's pull channel when it's behind NAT (DRIVE_POLL=1 on the
+    rover). Long-polls like /wrist.json: ?wait=N holds the request open until
+    a queued /api/drive command lands. Every poll also refreshes the rover's
+    registration, so teleop survives a missed heartbeat."""
+    if not _authorized():
+        abort(401)
+    _rover.touch()
+    try:
+        wait = float(request.args.get("wait") or 0)
+    except (TypeError, ValueError):
+        wait = 0.0
+    wait = min(max(wait, 0.0), 15.0)
+    deadline = time.monotonic() + wait
+    with _drive_cond:
+        while not _drive_queue:
+            left = deadline - time.monotonic()
+            if left <= 0 or not _drive_cond.wait(left):
+                return "", 204
+        body = _drive_queue.popleft()
+    try:
+        cmd = json.loads(body or b"{}")
+    except ValueError:
+        cmd = {}
+    if not isinstance(cmd, dict):
+        cmd = {}
+    return jsonify({"cmd": cmd})
+
+
+@app.post("/api/cam/frame")
+def cam_frame():
+    """Rover pushes its latest JPEG here when the hub can't pull it
+    (CAM_PUSH=1 on a rover behind NAT). _RoverCamera prefers a fresh pushed
+    frame over GETting rover:5001/frame.jpg."""
+    global _pushed_frame
+    if not _rate_ok("camframe", 600):
+        abort(429)
+    if not _authorized():
+        abort(401)
+    body = request.stream.read(8 * 1024 * 1024 + 1)
+    if len(body) > 8 * 1024 * 1024:
+        return jsonify({"ok": False, "error": "frame too large"}), 413
+    if not body:
+        return jsonify({"ok": False, "error": "empty frame"}), 400
+    _pushed_frame = (body, time.monotonic())
+    return jsonify({"ok": True})
 
 
 def _radio() -> radio.Radio:
@@ -984,12 +1083,15 @@ def toggle_serpapi():
             pricing.set_serpapi_enabled(data["enabled"])
         else:
             pricing.toggle_serpapi()
+    provider = pricing.comps_provider()
     has_key = bool(config.env_str("SERPAPI_API_KEY"))
     enabled = pricing.is_serpapi_enabled()
+    ready = provider in ("ebay", "ebayapi") or (provider == "serpapi" and has_key)
     return jsonify({
         "enabled": enabled,
+        "provider": provider,
         "has_key": has_key,
-        "source": "serpapi" if enabled and has_key else "model_quote",
+        "source": provider if enabled and ready else "model_quote",
     })
 
 
@@ -1023,6 +1125,7 @@ def health():
         "offline_mode": vision_provider == "offline-catalog",
         "serpapi": {
             "enabled": pricing.is_serpapi_enabled(),
+            "provider": pricing.comps_provider(),
             "has_key": bool(config.env_str("SERPAPI_API_KEY")),
         },
         "voice": config.env_flag("RIG_VOICE", True),

@@ -13,7 +13,7 @@
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-10-02T08:29:33.149Z",
+  "timestamp": "2026-10-04T13:18:47.975Z",
   "url": "http://127.0.0.1:5127/",
   "toolOptions": {
     "runOnly": {
@@ -1031,6 +1031,46 @@
             }
           ],
           "impact": null,
+          "html": "<a class=\"close-x\" href=\"/premiere\" data-close-page=\"\" aria-label=\"Close the projector\" title=\"Close\"><svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M3 3l10 10M13 3L3 13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"square\"></path></svg></a>",
+          "target": [
+            ".close-x"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            },
+            {
+              "id": "aria-no-deprecated-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "No deprecated ARIA attributes are used"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
           "html": "<section class=\"view view-reveal on\" id=\"v-reveal\" aria-label=\"Reveal\">",
           "target": [
             "#v-reveal"
@@ -1186,6 +1226,24 @@
           "html": "<button type=\"button\" class=\"operation-motion\" data-vault-motion=\"\" aria-pressed=\"false\" title=\"\">Pause motion</button>",
           "target": [
             ".operation-motion"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<a class=\"close-x\" href=\"/premiere\" data-close-page=\"\" aria-label=\"Close the projector\" title=\"Close\"><svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M3 3l10 10M13 3L3 13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"square\"></path></svg></a>",
+          "target": [
+            ".close-x"
           ]
         },
         {
@@ -1359,9 +1417,41 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M3 3l10 10M13 3L3 13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"square\"></path></svg>",
+          "target": [
+            "svg[viewBox=\"0 0 16 16\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<svg width=\"0\" height=\"0\" style=\"position:absolute\" aria-hidden=\"true\">",
           "target": [
-            "svg"
+            "svg[width=\"0\"]"
           ]
         },
         {
@@ -1583,7 +1673,7 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<div class=\"feed-hud\" aria-hidden=\"true\">\n            <span class=\"hud-tl\"><span class=\"hud-rec\">REC</span><span class=\"hud-tc\" id=\"hud-tc\">00:00:00:20</span></span>\n            <span class=\"hud-bl\" id=\"hud-clock\">OCT 02 2026 · 03:29:32</span>\n          </div>",
+          "html": "<div class=\"feed-hud\" aria-hidden=\"true\">\n            <span class=\"hud-tl\"><span class=\"hud-rec\">REC</span><span class=\"hud-tc\" id=\"hud-tc\">00:00:02:09</span></span>\n            <span class=\"hud-bl\" id=\"hud-clock\">OCT 04 2026 · 08:18:47</span>\n          </div>",
           "target": [
             ".feed-hud"
           ]
@@ -2057,6 +2147,24 @@
             }
           ],
           "impact": null,
+          "html": "<a class=\"close-x\" href=\"/premiere\" data-close-page=\"\" aria-label=\"Close the projector\" title=\"Close\"><svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M3 3l10 10M13 3L3 13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"square\"></path></svg></a>",
+          "target": [
+            ".close-x"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
           "html": "<section class=\"view view-reveal on\" id=\"v-reveal\" aria-label=\"Reveal\">",
           "target": [
             "#v-reveal"
@@ -2239,6 +2347,38 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<a class=\"close-x\" href=\"/premiere\" data-close-page=\"\" aria-label=\"Close the projector\" title=\"Close\"><svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M3 3l10 10M13 3L3 13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"square\"></path></svg></a>",
+          "target": [
+            ".close-x"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<section class=\"view view-reveal on\" id=\"v-reveal\" aria-label=\"Reveal\">",
           "target": [
             "#v-reveal"
@@ -2378,6 +2518,24 @@
           "html": "<button type=\"button\" class=\"operation-motion\" data-vault-motion=\"\" aria-pressed=\"false\" title=\"\">Pause motion</button>",
           "target": [
             ".operation-motion"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a class=\"close-x\" href=\"/premiere\" data-close-page=\"\" aria-label=\"Close the projector\" title=\"Close\"><svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M3 3l10 10M13 3L3 13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"square\"></path></svg></a>",
+          "target": [
+            ".close-x"
           ]
         },
         {
@@ -3384,7 +3542,7 @@
           "impact": null,
           "html": "<a href=\"/premiere\">Premiere</a>",
           "target": [
-            "a[href$=\"premiere\"]"
+            ".operation-links > a[href$=\"premiere\"]"
           ]
         },
         {
@@ -3437,6 +3595,39 @@
           "html": "<a href=\"/manifest\">Case file</a>",
           "target": [
             ".operation-links > a[href$=\"manifest\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-label",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "aria-label attribute exists and is not empty"
+            },
+            {
+              "id": "non-empty-title",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has a title attribute"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a class=\"close-x\" href=\"/premiere\" data-close-page=\"\" aria-label=\"Close the projector\" title=\"Close\"><svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M3 3l10 10M13 3L3 13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"square\"></path></svg></a>",
+          "target": [
+            ".close-x"
           ]
         },
         {
@@ -3761,7 +3952,7 @@
           "impact": "serious",
           "html": "<a href=\"/premiere\">Premiere</a>",
           "target": [
-            "a[href$=\"premiere\"]"
+            ".operation-links > a[href$=\"premiere\"]"
           ],
           "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
         },
@@ -4776,7 +4967,7 @@
               "id": "color-contrast",
               "data": {
                 "contrastRatio": 0,
-                "fontSize": "7.5pt (10px)",
+                "fontSize": "9.0pt (12px)",
                 "fontWeight": "normal",
                 "messageKey": "bgGradient",
                 "expectedContrastRatio": "4.5:1"
@@ -4872,7 +5063,7 @@
               "id": "color-contrast",
               "data": {
                 "contrastRatio": 0,
-                "fontSize": "7.5pt (10px)",
+                "fontSize": "9.0pt (12px)",
                 "fontWeight": "normal",
                 "messageKey": "bgGradient",
                 "expectedContrastRatio": "4.5:1"
@@ -4968,7 +5159,7 @@
               "id": "color-contrast",
               "data": {
                 "contrastRatio": 0,
-                "fontSize": "7.5pt (10px)",
+                "fontSize": "9.0pt (12px)",
                 "fontWeight": "normal",
                 "messageKey": "bgGradient",
                 "expectedContrastRatio": "4.5:1"
@@ -5064,7 +5255,7 @@
               "id": "color-contrast",
               "data": {
                 "contrastRatio": 0,
-                "fontSize": "7.5pt (10px)",
+                "fontSize": "9.0pt (12px)",
                 "fontWeight": "normal",
                 "messageKey": "bgGradient",
                 "expectedContrastRatio": "4.5:1"
@@ -5160,7 +5351,7 @@
               "id": "color-contrast",
               "data": {
                 "contrastRatio": 0,
-                "fontSize": "7.5pt (10px)",
+                "fontSize": "9.0pt (12px)",
                 "fontWeight": "normal",
                 "messageKey": "bgGradient",
                 "expectedContrastRatio": "4.5:1"
