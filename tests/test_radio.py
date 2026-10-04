@@ -384,8 +384,9 @@ class Dispatch(unittest.TestCase):
         self.assertEqual(self.client.post("/api/radio/text", json={"text": "help"}).status_code, 403)
         os.environ["RIG_TOKEN"] = "crew"
         self.assertEqual(self.client.post("/api/radio/text", json={"text": "help"}).status_code, 401)
-        self.assertEqual(self.client.get("/api/radio/jobs").status_code, 401)
-        self.assertEqual(self.client.get("/narrator.json").status_code, 401)
+        # Reads stay open on a hosted demo — only mutations need the token.
+        self.assertEqual(self.client.get("/api/radio/jobs").status_code, 200)
+        self.assertEqual(self.client.get("/narrator.json").status_code, 200)
         self.assertEqual(self.client.post("/api/exhibit_status", json={"n": 1, "status": "excluded"}).status_code, 401)
         ok = self.client.post("/api/radio/text", json={"text": "help"}, headers={"X-Rig-Token": "crew"})
         self.assertEqual(ok.status_code, 202)

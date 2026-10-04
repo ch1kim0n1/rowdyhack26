@@ -195,16 +195,14 @@ def marker_seconds() -> float | None:
     return secs or None
 
 
-# Read endpoints: open while the LAN demo has no token, crew-only once
-# RIG_TOKEN is set — the feed, the ledger, and the mugshot crops then answer
-# 401 until the console supplies the token it was prompted for. Pages stay
-# open (browser navigation can't set headers), /manifest stays open (it is
-# the QR-shared evidence board, and it carries no keys), /health stays open
-# (the kiosk's curl readiness probe can't send headers, and it leaks none).
+# Read endpoints stay open even with RIG_TOKEN set: a shared demo URL must
+# render without prompting. The token still gates mutations (/api/drive,
+# /api/exhibit, radio) plus /api/reports (it carries share keys) and
+# /api/drive/pending (it drains the command queue). /manifest stays open (it
+# is the QR-shared evidence board, and it carries no keys), /health stays
+# open (the kiosk's curl readiness probe can't send headers, and it leaks none).
 @app.get("/state.json")
 def state():
-    if not _authorized():
-        abort(401)
     snap = store.snapshot(marker_ttl=marker_seconds())
     # A URL feed has no heartbeat: the rover is "on the line" while frames arrive.
     snap["rover_ok"] = _rover.target() is not None or (
@@ -223,8 +221,6 @@ def state():
 
 @app.get("/frame.jpg")
 def frame():
-    if not _authorized():
-        abort(401)
     if request.query_string.startswith(b"live"):
         reader = _stream_reader()
         if reader is not None:
@@ -248,8 +244,6 @@ def _relay(reader: feed.StreamReader):
 
 @app.get("/crop/<int:n>.jpg")
 def crop(n: int):
-    if not _authorized():
-        abort(401)
     frame_arr, bbox = store.item_frame(n)
     if frame_arr is None:
         abort(404)
@@ -283,10 +277,13 @@ def plan_json():
 
 
 def _mutation_ok() -> bool:
-    """The token, or the page's case nonce (an off-site page can't read it)."""
+    """Open-LAN demo: the page's case nonce suffices (an off-site page can't
+    read it). Once RIG_TOKEN is set the deployment is hosted — pages are
+    public, so the nonce stops being a secret and only the token mutates."""
     token = _rig_token()
-    has_token = bool(token) and request.headers.get("X-Rig-Token") == token
-    return has_token or request.headers.get("X-Case-Nonce") == _nonce()
+    if token:
+        return request.headers.get("X-Rig-Token") == token
+    return request.headers.get("X-Case-Nonce") == _nonce()
 
 
 @app.post("/api/exhibit_status")
@@ -314,10 +311,8 @@ def api_plan():
     dashboard's case nonce (an off-site page can't read it)."""
     if not _rate_ok("plan", 30):
         abort(429)
-    token = _rig_token()
-    has_token = bool(token) and request.headers.get("X-Rig-Token") == token
-    if not (has_token or request.headers.get("X-Case-Nonce") == _nonce()):
-        abort(401 if token else 403)
+    if not _mutation_ok():
+        abort(401 if _rig_token() else 403)
     try:
         mode, settings = mastermind.validate(request.get_json(silent=True))
     except ValueError as exc:
@@ -567,8 +562,6 @@ def wrist():
     and test is unchanged. The body carries "v": the version to pass back.
     """
     global _wrist_seen
-    if not _authorized():
-        abort(401)
     if "peek" not in request.args:   # the dispatch desk's preview must not count as the wrist
         _wrist_seen = time.monotonic()
     since = request.args.get("since", type=int)
@@ -591,8 +584,6 @@ def events():
     """Server-Sent Events: the compact case state, pushed the instant it
     changes, for the dashboard and the dispatch desk. Heartbeats keep the
     connection (and any proxy) alive during quiet stretches."""
-    if not _authorized():
-        abort(401)
 
     def gen():
         for version, payload in bus.stream(timeout=15.0):
@@ -614,8 +605,6 @@ def api_insights():
     come straight from the hypertable/continuous aggregate; with it off, we fall
     back to the in-memory ledger. `insight` is empty until VULTR_API_KEY is set,
     but the Tiger `stats` are returned either way."""
-    if not _authorized():
-        abort(401)
     body = {"enabled": vultr.enabled()}
     if timescale.enabled():
         try:
@@ -1020,8 +1009,6 @@ def api_radio_text():
 
 @app.get("/api/radio/jobs")
 def api_radio_jobs():
-    if not _authorized():
-        abort(401)
     resp = jsonify({"jobs": _radio().recent(), **_radio().status()})
     resp.headers["Cache-Control"] = "no-store"
     return resp
@@ -1029,8 +1016,6 @@ def api_radio_jobs():
 
 @app.get("/api/radio/jobs/<job_id>")
 def api_radio_job(job_id: str):
-    if not _authorized():
-        abort(401)
     job = _radio().get(job_id)
     if job is None:
         abort(404)
@@ -1042,8 +1027,6 @@ def api_radio_job(job_id: str):
 @app.get("/narrator.json")
 def narrator_json():
     """What the narrator said, is saying, and dropped: the desk's transcript."""
-    if not _authorized():
-        abort(401)
     sp = voice.speaker()
     resp = jsonify({"enabled": voice.enabled(), "volume": voice.volume(), "queued": sp.depth(),
                     "lines": list(sp.transcript)[:20]})
@@ -1067,12 +1050,14 @@ def trigger_reveal():
             "</form></body>", mimetype="text/html")
     # CSRF: an off-site page can POST here, but can't learn the nonce (SOP).
     # The nonce OR the token files the case — the phone confirm page posts a
-    # form with no way to set a header, so it works in token mode too.
+    # form with no way to set a header. Once RIG_TOKEN is set the pages are
+    # public and the nonce is scrapeable, so only the token mutates; on the
+    # open LAN the nonce still lets the phone button work.
     token = _rig_token()
     has_token = bool(token) and request.headers.get("X-Rig-Token") == token
     has_nonce = (request.form.get("nonce") == _nonce()
                  or request.headers.get("X-Case-Nonce") == _nonce())
-    if not (has_nonce or has_token):
+    if not (has_token or (not token and has_nonce)):
         abort(401 if token else 403)
     on_button()
     return jsonify(store.snapshot())

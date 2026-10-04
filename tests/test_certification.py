@@ -751,12 +751,12 @@ class SecurityPosture(unittest.TestCase):
                 client.post("/trigger_reveal",
                             headers={"X-Rig-Token": rig_app._rig_token(),
                                      "X-Case-Nonce": rig_app._nonce()}).status_code, 200)
-            # The phone confirm page posts a bare form — no header room.
-            # Token mode must still honor the nonce or that path is dead.
+            # Token set = hosted demo: the nonce ships in public pages, so a
+            # nonce alone must no longer file the case.
             page = client.get("/trigger_reveal").get_data(as_text=True)
             nonce = re.search(r'name=nonce value=([0-9a-f]+)', page).group(1)
             res = client.post("/trigger_reveal", data={"nonce": nonce})
-            self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.status_code, 401)
         finally:
             if saved is None:
                 os.environ.pop("RIG_TOKEN", None)
@@ -764,21 +764,28 @@ class SecurityPosture(unittest.TestCase):
                 os.environ["RIG_TOKEN"] = saved
             rig_app._auto_token = None
 
-    def test_token_mode_gates_the_reads(self):
-        """With RIG_TOKEN set the feed, the ledger, and the crops are crew-only;
-        /health and /manifest stay open for the kiosk probe and the QR board."""
+    def test_token_mode_gates_mutations_not_reads(self):
+        """With RIG_TOKEN set the hosted demo is browsable: reads stay open so
+        a shared URL doesn't prompt on load, while mutations and the rover's
+        command queue stay crew-only."""
         saved = os.environ.get("RIG_TOKEN")
         os.environ["RIG_TOKEN"] = "crew-test"
         try:
             client = rig_app.app.test_client()
-            for path in ("/state.json", "/wrist.json?peek", "/frame.jpg", "/crop/1.jpg"):
-                self.assertEqual(client.get(path).status_code, 401, path)
+            for path in ("/state.json", "/wrist.json?peek", "/frame.jpg",
+                         "/narrator.json", "/api/insights", "/api/radio/jobs"):
+                self.assertEqual(client.get(path).status_code, 200, path)
+            self.assertEqual(client.get("/crop/1.jpg").status_code, 404)
             for path in ("/health", "/manifest", "/"):
                 self.assertEqual(client.get(path).status_code, 200, path)
+            # Still gated: the share-key listing, the command queue, mutations.
+            self.assertEqual(client.get("/api/reports").status_code, 401)
+            self.assertEqual(client.get("/api/drive/pending").status_code, 401)
+            self.assertEqual(client.post("/api/exhibit", json={}).status_code, 401)
+            self.assertEqual(client.post("/api/drive", json={"dir": "stop"}).status_code, 401)
             hdrs = {"X-Rig-Token": "crew-test"}
-            self.assertEqual(client.get("/state.json", headers=hdrs).status_code, 200)
-            self.assertEqual(client.get("/wrist.json?peek", headers=hdrs).status_code, 200)
-            self.assertEqual(client.get("/frame.jpg", headers=hdrs).status_code, 200)
+            self.assertEqual(client.get("/api/reports", headers=hdrs).status_code, 200)
+            self.assertEqual(client.get("/api/drive/pending", headers=hdrs).status_code, 204)
         finally:
             if saved is None:
                 os.environ.pop("RIG_TOKEN", None)

@@ -288,7 +288,11 @@ class LivePlan(unittest.TestCase):
         self.assertEqual(self.client.post("/api/plan", json={"mode": "appraisal"}).status_code, 401)
         self.assertEqual(self.client.post("/api/plan", json={"mode": "appraisal"},
                                           headers={"X-Rig-Token": "tok"}).status_code, 200)
-        self.assertEqual(self.job(mode="appraisal").status_code, 200)   # the dashboard's nonce
+        # Token set = hosted: pages are public, so the nonce alone no longer mutates.
+        os.environ["RIG_TOKEN"] = "tok"
+        self.assertEqual(self.job(mode="appraisal").status_code, 401)   # nonce only
+        os.environ.pop("RIG_TOKEN", None)
+        self.assertEqual(self.job(mode="appraisal").status_code, 200)   # open LAN: nonce ok
 
     def test_manifest_shows_the_haul(self):
         self.job(mode="mastermind", bag_lb=25, time_s=60, level="small")

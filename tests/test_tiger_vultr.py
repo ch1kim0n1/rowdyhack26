@@ -284,10 +284,11 @@ class HubWiringTests(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
         self.assertGreater(rig_app.bus.version(), before)
 
-    def test_events_requires_token_when_set(self):
+    def test_events_stays_open_in_token_mode(self):
+        """Hosted demo: /events is a read — browsers must not 401 into a prompt."""
         os.environ["RIG_TOKEN"] = "crew"
         try:
-            self.assertEqual(self.client.get("/events").status_code, 401)
+            self.assertEqual(self.client.get("/events").status_code, 200)
         finally:
             os.environ.pop("RIG_TOKEN", None)
 
