@@ -2,7 +2,8 @@
   "name": "appraisal-job-ui-checks",
   "private": true,
   "scripts": {
-    "test:ui": "node tests/browser_ui.cjs"
+    "test:ui": "node tests/browser_ui.cjs",
+    "test:premiere": "node tests/browser_premiere.cjs"
   },
   "devDependencies": {
     "axe-core": "^4.11.0",

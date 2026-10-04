@@ -16,17 +16,26 @@
 <link rel="stylesheet" href="premiere.css">
 <link rel="stylesheet" href="premiere-portal.css">
 <link rel="stylesheet" href="premiere-title-particles.css">
+<link rel="stylesheet" href="premiere-scroll.css">
+<noscript><style>
+  .case-statement { height: auto; background: #090a0d; }
+  .statement-stage { position: relative; height: auto; padding: 80px var(--copy-right) 80px var(--gutter); }
+  .statement-copy { position: relative; inset: auto; opacity: 1; transform: none; margin-block: 40px; }
+  .statement-plate { top: 0; }
+  .reel { height: auto; }
+  .reel-stage { position: relative; }
+  .gate-loading, .reel-canvas, .scroll-invitation { display: none; }
+  @media (max-width: 720px) { .statement-shade { background: #090a0dc7; } }
+</style></noscript>
 <script>
-/* The title sequence (intro.js) is decided before first paint: once per session,
-   not for reduced or paused motion or a deep link. ?intro always plays it. */
+/* The title sequence (intro.js) is decided before first paint: it plays on every
+   load, deep links included. Reduced or paused motion skips it. ?intro plays it
+   even then; ?intro=off never does (the browser suites, a link that must land at once). */
 (() => {
-  try {
-    const forced = new URLSearchParams(location.search).has('intro');
-    const seen = sessionStorage.getItem('appraisal-intro') === 'seen';
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches
-      || localStorage.getItem('appraisal-motion') === 'paused';
-    if (forced || (!seen && !still && !location.hash)) document.documentElement.classList.add('intro-on');
-  } catch { /* no storage, no title sequence */ }
+  const asked = new URLSearchParams(location.search).get('intro');
+  let still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  try { still ||= localStorage.getItem('appraisal-motion') === 'paused'; } catch { /* no storage: the system setting decides */ }
+  if (asked !== 'off' && (asked !== null || !still)) document.documentElement.classList.add('intro-on');
 })();
 </script>
 <script src="intro.js" defer></script>
@@ -100,6 +109,7 @@
         <i style="--x:69%;--y:86%;--i:6"></i><i style="--x:60%;--y:59%;--i:7"></i>
       </div>
     </div>
+    <a class="scroll-invitation" href="#film"><span>Step inside the case</span><span class="scroll-line" aria-hidden="true"></span><span>Scroll to investigate&nbsp;↓</span></a>
   </div>
   <div class="hero-brief wrap">
     <div><span class="label">Authorized Physical Red-Team Reconnaissance</span><p>Observe. Document.<br>Debrief the room.</p></div>
@@ -122,12 +132,13 @@
     </div>
     <div class="gate">
       <video class="reel-video" muted playsinline preload="none" poster="media/film-poster.jpg" aria-label="The Appraisal Job, the film. Scrolling plays it."></video>
+      <canvas class="reel-canvas" width="960" height="540" aria-hidden="true"></canvas>
       <div class="gate-loading" aria-live="polite">
         <div class="label">Threading the projector</div>
         <div class="gate-meter"><i></i></div>
       </div>
     </div>
-    <p class="reel-sub" aria-live="polite"></p>
+    <p class="reel-sub"></p>
     <ol class="reel-strip" aria-label="Chapters">
       <li style="--at:0"><a href="#film" data-t="0">Leader</a></li>
       <li style="--at:.129"><a href="#film" data-t="2.7">The Walk</a></li>
@@ -135,7 +146,6 @@
       <li class="low" style="--at:.584"><a href="#film" data-t="12.2">Cue</a></li>
       <li style="--at:.644"><a href="#film" data-t="13.45">The Lineup</a></li>
       <li style="--at:.896"><a href="#film" data-t="18.7">The End</a></li>
-      <span class="reel-fill" aria-hidden="true"></span>
     </ol>
   </div>
 </section>
@@ -143,6 +153,24 @@
 <!-- ===================== the crew ===================== -->
 <section class="crew" id="crew" aria-labelledby="crew-title">
   <div class="wrap">
+    <div class="case-statement">
+      <div class="statement-stage">
+        <div class="statement-plate">
+          <img class="statement-image statement-room" src="media/crew-hat-wrist.webp" alt="A crew member tips the hat. Its camera sits in the crown, and the wrist unit is strapped to the other forearm." loading="lazy" width="526" height="964">
+          <img class="statement-image statement-evidence" src="media/crew-hat.webp" alt="A second crew member wears the hat, the camera lens showing in its crown." loading="lazy" width="722" height="966">
+          <div class="statement-shade" aria-hidden="true"></div>
+        </div>
+        <div class="statement-copy statement-first">
+          <p class="label">The room is only the beginning</p>
+          <p class="statement-line">Every room<br>tells a <em>story.</em></p>
+        </div>
+        <div class="statement-copy statement-second">
+          <p class="label">One shared case file</p>
+          <p class="statement-line">Bring back<br>the <em>evidence.</em></p>
+        </div>
+        <div class="statement-foot"><span>Observe / Appraise / Document</span><span>Scroll to meet the crew&nbsp;↓</span></div>
+      </div>
+    </div>
     <header class="section-head">
       <div class="label">Exhibit A</div>
       <h2 class="section-title cut" id="crew-title">The Crew</h2>
@@ -284,7 +312,7 @@
       </figure>
     </div>
 
-    <div class="priors" aria-label="Priors">
+    <div class="priors" role="group" aria-label="Priors">
       <div class="prior"><b>01</b><span class="label">Shared ledger</span><span class="prior-note">Every find. The whole crew.</span></div>
       <div class="prior"><b>3</b><span class="label">Devices</span><span class="prior-note">Hat, wrist and rover. One ledger.</span></div>
       <div class="prior"><b>3</b><span class="label">Price sources</span><span class="prior-note">Every number carries a why.</span></div>
@@ -307,7 +335,7 @@
       <dt>Set</dt><dd>Behind the vault. After hours.</dd>
       <dt>Type</dt><dd>League Gothic, Special Elite, Courier Prime, Caveat</dd>
     </dl>
-    <div class="end-title cut credits-end">The End</div>
+    <h2 class="end-title cut credits-end">The End</h2>
     <div class="meta">Case No. 1138 · Closed</div>
     <nav class="credits-nav" aria-label="Open the rig">
       <a class="btn" href="/">The live screen</a>
@@ -323,8 +351,11 @@
 <script src="noir.js"></script>
 <script src="wrist-oled.js"></script>
 <script src="vault.js"></script>
+<script src="premiere-scroll.js"></script>
+<script src="premiere-sequence.js"></script>
 <script src="premiere-portal.js"></script>
 <script src="premiere-title-particles.js"></script>
 <script src="premiere.js"></script>
+<script src="premiere-diamond-type.js"></script>
 </body>
 </html>

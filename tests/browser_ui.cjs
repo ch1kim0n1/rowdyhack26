@@ -188,7 +188,7 @@ async function axe(page, name){
     await lab.locator('.motion-toggle').click();
     await live.waitForFunction(() => document.querySelector('[data-vault-motion]').textContent === 'Pause motion');
     assert.equal(await live.evaluate(() => document.documentElement.dataset.motion), 'full');
-    await live.goto(base + '/premiere#top');
+    await live.goto(base + '/premiere?intro=off#top');
     assert.equal(await live.locator('.vault-art').count(), 1);
     assert.equal(await live.locator('.intro canvas').count(), 1);
     assert.match(await live.locator('.hero-brief').textContent(), /Authorized Physical Red-Team Reconnaissance/);

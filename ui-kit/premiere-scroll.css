@@ -1,0 +1,154 @@
+/* Cinematic scroll layer. Only this page loads these rules. */
+.premiere { --scroll-ease: cubic-bezier(.22, 1, .36, 1); }
+.premiere .flicker, .premiere #scratch { display: none; }
+.premiere .grain { opacity: .045; animation: none; }
+.premiere .marquee { background: linear-gradient(#0d0e12f5, #0d0e1280 70%, transparent); border-bottom: 0; }
+.premiere .marquee.solid { background: #0d0e12f5; }
+.premiere .marquee:focus-within { opacity: 1; pointer-events: auto; }
+.scroll-invitation {
+  position: absolute; z-index: 4; inset: auto 4vw 35px;
+  display: flex; align-items: center; gap: 20px;
+  color: var(--paper); text-decoration: none;
+  font: 10px var(--f-type); letter-spacing: .2em; text-transform: uppercase;
+}
+.scroll-invitation span:last-child { margin-left: auto; }
+.scroll-line { width: clamp(40px, 8vw, 130px); height: 1px; background: var(--stamp-lit); }
+.scroll-invitation:focus-visible { outline: 2px solid var(--paper); outline-offset: 8px; opacity: 1 !important; }
+.reel { height: 600svh; }
+.reel-stage {
+  --pad: clamp(18px, 4vw, 70px);
+  --gw: min(100vw - 2 * var(--pad), (100svh - 190px) * 16 / 9);
+  gap: 18px;
+}
+.reel-canvas {
+  display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain; opacity: 0; pointer-events: none;
+}
+.reel-canvas.is-ready { opacity: 1; }
+.gate { outline: none; border-radius: 0; }
+.reel-chapter { letter-spacing: .19em; color: var(--stamp-lit); }
+.reel-sub { font: clamp(14px, 1.25vw, 19px)/1.5 var(--f-type); color: var(--bone); min-height: 3em; }
+.reel-strip::after {
+  content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 2px;
+  background: var(--stamp-lit); transform: scaleX(var(--p, 0)); transform-origin: left;
+}
+.reel-strip a { min-height: 44px; }
+.perfs { opacity: .35; }
+
+/* A second continuous scene carries the film into the product story. The crew's own
+   photographs stand on a portrait plate, flush to the marquee above and to the right and
+   bottom of the stage; the type and the footer run from one gutter to the plate's edge.
+   Nothing rules the scene off: it has no line under it and no edge around it. */
+.case-statement {
+  --gutter: max(6vw, calc((100vw - 1240px) / 2));
+  --gap: clamp(20px, 2.4vw, 44px);
+  --plate: min(44vw, calc((100svh - var(--marquee-height)) * .6));
+  --copy-right: calc(var(--plate) + var(--gap));
+  position: relative; height: 300svh; width: calc(100vw - 16px);
+  margin-left: calc((100% - 100vw + 16px) / 2);
+  margin-top: calc(-1 * var(--section-y)); margin-bottom: var(--section-y);
+  /* No edge below: the ground thins out over its last stretch into the crew's. By then
+     premiere.js has taken everything off the stage (--story-exit). */
+  background: linear-gradient(180deg, #090a0d calc(100% - 50svh), rgba(9, 10, 13, 0) 100%);
+}
+.statement-stage { position: sticky; top: 0; height: 100svh; overflow: clip; isolation: isolate; }
+.statement-plate {
+  position: absolute; inset: var(--marquee-height) 0 0 auto; width: var(--plate); overflow: clip;
+  opacity: calc(var(--story-enter, 1) * var(--story-enter, 1) * (1 - var(--story-exit, 0)));
+  translate: 0 calc((1 - var(--story-enter, 1)) * 6svh - var(--story-exit, 0) * 5svh);
+  /* While the scene is still arriving the photograph's top edge is feathered; once it is
+     in place that edge sits on the marquee and the feather has closed to nothing. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 calc((1 - var(--story-enter, 1)) * 45%));
+  mask-image: linear-gradient(180deg, transparent 0, #000 calc((1 - var(--story-enter, 1)) * 45%));
+}
+.statement-image {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  filter: grayscale(1) contrast(1.08) brightness(.88);   /* colour snapshots, graded to the reel */
+  transform: scale(var(--story-scale, 1)); transform-origin: 50% 12%;   /* the push keeps the hat in frame */
+}
+.statement-room { object-position: 50% 0%; }
+.statement-evidence { opacity: var(--story-crossfade, 0); }
+/* Only the plate is shaded, and only a little, at its foot. */
+.statement-shade { position: absolute; inset: 0; background: linear-gradient(0deg, #090a0db3, transparent 20%); }
+.statement-copy { position: absolute; left: var(--gutter); right: var(--copy-right); top: 50%; }
+.statement-first { opacity: calc(var(--story-first, 1) * var(--story-enter, 1)); transform: translate3d(0, calc(-50% + var(--story-first-y, 0px)), 0); }
+.statement-second { opacity: calc(var(--story-second, 0) * (1 - var(--story-exit, 0))); transform: translate3d(0, calc(-50% + var(--story-second-y, 40px)), 0); }
+.statement-copy .label { color: var(--stamp-lit); margin-bottom: 24px; }
+/* The longest line is 3.97em wide, so this size runs it from the gutter to the plate. */
+.statement-line {
+  font: clamp(48px, calc((100vw - 16px - var(--gutter) - var(--copy-right)) / 4.02), 300px)/.88 var(--f-display);
+  letter-spacing: -.015em; text-transform: uppercase;
+}
+.statement-line em { color: var(--stamp-lit); font-style: normal; }
+/* The headlines again, in cut stones (premiere-diamond-type.js). The type stays in the
+   page and is only put out while its stones are lit. */
+.statement-stones {
+  position: absolute; max-width: none; pointer-events: none; opacity: 0;
+  filter: drop-shadow(0 0 4px rgba(196, 220, 255, .38));
+}
+.statement-line.in-stones { opacity: 0; transition: opacity 400ms ease-out; }   /* out slowly; back at once when the stones stop */
+.statement-foot {
+  position: absolute; inset: auto var(--copy-right) 48px var(--gutter); display: flex; justify-content: space-between; gap: 24px;
+  font: 10px var(--f-type); letter-spacing: .16em; text-transform: uppercase; color: var(--bone);
+  opacity: calc(var(--story-enter, 1) - var(--story-exit, 0) * 1.6);
+}
+/* JS owns arrival translate/opacity; avoid fighting the older CSS timelines. */
+body.premiere .dossier, body.premiere .paperwork .print {
+  animation: none; opacity: 1; transform: none;
+  translate: 0 var(--arrival-y, 0px); transition: rotate 350ms var(--scroll-ease);
+}
+.premiere .dossier .print img, .premiere .paperwork .print img { opacity: var(--arrival-opacity, 1); }
+body.premiere .dossiers::before { animation: none; }
+.premiere .on-cue:not(.dossier):not(.print) { transition-timing-function: var(--scroll-ease); }
+.premiere .board-print { transition: opacity 650ms var(--scroll-ease), transform 800ms var(--scroll-ease); }
+
+@media (max-width: 720px) {
+  .scroll-invitation { inset: auto 20px 18px; font-size: 8px; gap: 10px; letter-spacing: .1em; }
+  .scroll-invitation > span:first-child { display: none; }
+  .reel { height: 430svh; }
+  .reel-stage { --gw: calc(100vw - 32px); padding-inline: 16px; gap: 24px; }
+  .reel-sub { min-height: 6em; font-size: 15px; }
+  .reel-strip { display: flex; justify-content: space-between; gap: 4px; height: auto; }
+  .reel-strip li { position: relative; left: auto; }
+  .reel-strip li a { font-size: 8px; letter-spacing: 0; padding: 14px 2px; width: auto; height: auto; }
+  .reel-strip li.low a { padding-top: 14px; }
+  .reel-strip li.low::before { height: 9px; }
+  /* On a phone the portrait fills the stage and the type stands on its lower third. */
+  .case-statement { height: 240svh; --gutter: 6vw; --copy-right: 6vw; }
+  .statement-plate { inset: var(--marquee-height) 0 0; width: auto; }
+  .statement-shade { background: linear-gradient(0deg, #090a0d 8%, #090a0de6 32%, #090a0d66 54%, transparent 72%); }
+  .statement-evidence { top: -16%; height: 116%; }   /* less ceiling: the face clears the type */
+  .statement-copy { top: auto; bottom: 104px; }
+  .statement-first { transform: translate3d(0, var(--story-first-y, 0px), 0); }
+  .statement-second { transform: translate3d(0, var(--story-second-y, 40px), 0); }
+  .statement-foot { font-size: 8px; line-height: 1.7; }
+  .statement-foot span { max-width: 45%; }
+  .statement-foot span:last-child { text-align: right; }
+  .statement-copy .label { font-size: 9px; margin-bottom: 14px; }
+  body.premiere.film-static .statement-shade { background: #090a0dc7; }
+}
+
+/* Pause is a complete alternate reading mode, including dynamically toggled preferences. */
+body.premiere.film-static .reel { height: auto; }
+body.premiere.film-static .reel-stage { position: relative; height: auto; min-height: 0; padding-block: 112px 60px; clip-path: none; }
+body.premiere.film-static .reel-canvas { display: none; }
+body.premiere.film-static .reel-sub { max-width: 76ch; }
+body.premiere.film-static .case-statement { height: auto; background: #090a0d; }
+body.premiere.film-static .statement-stage { position: relative; height: auto; min-height: 80svh; padding: 100px var(--copy-right) 100px var(--gutter); }
+body.premiere.film-static .statement-copy { position: relative; inset: auto; opacity: 1; transform: none; margin-block: 40px; }
+body.premiere.film-static .statement-plate { top: 0; }
+body.premiere.film-static .statement-image { transform: none; }
+body.premiere.film-static :is(.statement-evidence, .statement-stones) { display: none; }
+body.premiere.motion-paused *, body.premiere.motion-paused *::before, body.premiere.motion-paused *::after { animation: none !important; transition: none !important; }
+body.premiere.motion-paused .on-cue { opacity: 1; transform: none; translate: none; }
+body.premiere.motion-paused .scroll-invitation { display: none; }
+@media (prefers-reduced-motion: reduce), print {
+  .premiere *, .premiere *::before, .premiere *::after { animation: none !important; transition: none !important; }
+  .case-statement { height: auto; background: #090a0d; }
+  .statement-stage { position: relative; height: auto; padding: 80px var(--copy-right) 80px var(--gutter); }
+  .statement-copy { position: relative; inset: auto; opacity: 1; transform: none; margin-block: 40px; }
+  .statement-plate { top: 0; }
+  .statement-image { transform: none; }
+  .statement-evidence, .statement-stones { display: none; }
+  .scroll-invitation { display: none; }
+}

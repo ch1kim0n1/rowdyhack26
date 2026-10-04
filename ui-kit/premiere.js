@@ -1,12 +1,15 @@
-/* The premiere page. The scroll wheel runs the film through the gate:
-   one frame per notch of scroll, captions typed as the picture plays.
+/* The premiere page. One shared scroll clock runs pictures through the gate,
+   with complete captions and a reversible editorial interlude.
    Everything else is small: the marquee, cuts on arrival, the method's
    evidence board, the wrist screen, and the kit's sound. */
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const preference = matchMedia('(prefers-reduced-motion: reduce)');
+  const clock = window.PremiereScroll;
+  let reduced = preference.matches || document.body.classList.contains('motion-paused');
+  let layout = {};
   const pad = (n, w = 2) => String(n).padStart(w, '0');
 
   /* ---------- the film: its length and its chapters (ui-kit/film/src/story.js) ---------- */
@@ -36,12 +39,12 @@
 
   /* ---------- marquee: solid once past the title, gone while the film runs ---------- */
   const reel = $('.reel');
-  function chrome() {
-    marquee.classList.toggle('solid', scrollY > hero.offsetHeight * 0.6);
-    const r = reel.getBoundingClientRect();
-    document.body.classList.toggle('in-reel', !reduced && r.top <= 1 && r.bottom >= innerHeight - 1);
-    const here = ['film', 'crew', 'method', 'paperwork'].findLast(id => document.getElementById(id).getBoundingClientRect().top < innerHeight * 0.4);
-    $$('.marquee-nav a').forEach(a => a.classList.toggle('here', a.hash === '#' + here));
+  const navLinks = $$('.marquee-nav a');
+  function chrome(y) {
+    marquee.classList.toggle('solid', y > layout.heroHeight * 0.6);
+    document.body.classList.toggle('in-reel', !reduced && y >= layout.filmTop && y <= layout.filmEnd);
+    const here = layout.sections.findLast(s => s.top < y + innerHeight * .4)?.id;
+    navLinks.forEach(a => a.classList.toggle('here', a.hash === '#' + here));
   }
 
   /* ---------- cuts on arrival ---------- */
@@ -62,10 +65,12 @@
 
   /* ---------- the method: the board shows the step you're reading ---------- */
   const steps = $$('.step'), prints = $$('.board-print');
-  const pickStep = () => {
-    const mid = innerHeight * 0.5;
+  let stepShown = -1;
+  const pickStep = y => {
     let best = 0;
-    steps.forEach((s, i) => { if (s.getBoundingClientRect().top < mid) best = i; });
+    layout.steps.forEach((top, i) => { if (top < y + innerHeight * .5) best = i; });
+    if (best === stepShown) return;
+    stepShown = best;
     steps.forEach((s, i) => s.classList.toggle('here', i === best));
     prints.forEach(p => p.classList.toggle('on', Number(p.dataset.step) === best));
   };
@@ -75,7 +80,16 @@
   const chapterEl = $('.reel-chapter'), counter = $('.reel-counter'), sub = $('.reel-sub');
   const loading = $('.gate-loading'), meter = $('.gate-meter');
   const strip = $('.reel-strip'), stripItems = $$('.reel-strip li');
-  let ready = false, target = 0, shown = 0, frameShown = -1, lastChars = -1, lastLine = -1, lastT = 0;
+  let ready = false, frameShown = -1, lastLine = -1, lastT = 0;
+  let sequenceReady = false, sequenceFailed = false, videoStarted = false;
+  const canvas = $('.reel-canvas');
+  const sequence = window.createPremiereSequence?.(canvas, {
+    onReady() { sequenceReady = true; loading.classList.add('done'); loading.setAttribute('aria-hidden', 'true'); clock.wake(); },
+    onFailure() { sequenceFailed = true; clock.wake(); },
+  });
+  if (!sequence) sequenceFailed = true;
+  // A bounded diagnostic surface is useful for regression and memory-budget checks.
+  window.PremiereFilm = { get stats() { return sequence?.stats || null; } };
 
   /* H.264 where the browser has it (Safari, Chrome), VP9 where it doesn't (Chromium builds) */
   const source = () => {
@@ -84,53 +98,38 @@
     return `media/film-${w >= 1300 ? 1600 : 960}.${ext}`;
   };
 
-  /* pull the whole reel into memory first, so every seek is local and instant */
-  async function thread() {
-    const url = source();
-    try {
-      const res = await fetch(url);
-      if (!res.ok || !res.body) throw new Error(res.status);
-      const total = Number(res.headers.get('content-length')) || 0;
-      const reader = res.body.getReader(), parts = [];
-      let got = 0;
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        parts.push(value); got += value.length;
-        if (total) meter.style.setProperty('--p', (got / total).toFixed(3));
-      }
-      video.src = URL.createObjectURL(new Blob(parts, { type: url.endsWith('.webm') ? 'video/webm' : 'video/mp4' }));
-      video.preload = 'auto';
-    } catch {
-      video.src = url;                    /* opened from disk, or no streams: let the browser fetch it */
-      video.preload = 'auto';
-    }
+  // Video is the fallback and the accessible manual player, not a second eager download.
+  function thread() {
+    if (videoStarted) return;
+    videoStarted = true;
     video.addEventListener('loadeddata', () => {
-      ready = true;
+      ready = true; loading.classList.add('done'); frameShown = -1; clock.wake();
+    });
+    video.addEventListener('seeked', () => clock.wake());
+    video.addEventListener('error', () => {
+      loading.classList.remove('done');
+      loading.querySelector('.label').textContent = 'Film unavailable. Continue to the crew below.';
+      meter.hidden = true;
+    });
+    video.src = source(); video.preload = 'auto'; video.load();
+  }
+  function syncMotion() {
+    reduced = preference.matches || document.body.classList.contains('motion-paused');
+    document.body.classList.toggle('film-static', reduced);
+    video.controls = reduced;
+    video.setAttribute('aria-hidden', String(!reduced));
+    if (reduced) {
+      sequence?.setActive(false); video.pause(); thread();
       loading.classList.add('done');
-      frameShown = -1;
-    }, { once: true });
-    video.load();
+      sub.textContent = LINES.map(l => l.text).join(' ');
+      chapterEl.textContent = 'The film';
+    } else video.pause();
+    lastLine = -1; frameShown = -1;
+    clock.invalidate();
   }
-
-  if (reduced) {
-    /* no scrubbing: a plain player, and the captions as a list */
-    video.controls = true; video.preload = 'metadata';
-    video.src = source();
-    loading.classList.add('done');
-    sub.textContent = LINES.map(l => l.text).join(' ');
-    chapterEl.textContent = 'The film';
-  } else {
-    const near = new IntersectionObserver(es => {
-      if (es.some(e => e.isIntersecting)) { near.disconnect(); thread(); }
-    }, { rootMargin: '150% 0px' });
-    near.observe(reel);
-  }
-
-  function progress() {
-    const len = reel.offsetHeight - innerHeight;
-    return clamp(-reel.getBoundingClientRect().top / len);
-  }
+  document.addEventListener('vaultmotionchange', syncMotion);
+  preference.addEventListener('change', syncMotion);
+  syncMotion();
 
   function paintReel(t) {
     const f = Math.min(FRAMES - 1, Math.max(0, Math.round(t * FPS)));
@@ -140,25 +139,18 @@
     stripItems.forEach(li => li.classList.toggle('here', li.querySelector('a').dataset.t <= t + 1e-3 && (li.nextElementSibling?.querySelector?.('a')?.dataset.t ?? 99) > t));
     strip.style.setProperty('--p', (t / DURATION).toFixed(4));
 
-    /* the caption types over the first half of its stretch of film, then holds */
-    const i = LINES.findLastIndex(l => t >= l.t - 1e-3);
-    const line = LINES[Math.max(0, i)];
-    const k = clamp((t - line.t) / Math.max(0.6, (line.until - line.t) * 0.5));
-    const chars = Math.round(line.text.length * k);
-    if (chars !== lastChars || i !== lastLine) {
-      if (sfx?.on && i === lastLine && chars > lastChars && chars % 3 === 0) sfx.key();
-      sub.innerHTML = '';
-      sub.append(line.text.slice(0, chars));
-      if (chars < line.text.length) sub.insertAdjacentHTML('beforeend', '<span class="caret" aria-hidden="true">▌</span>');
-      lastChars = chars; lastLine = i;
-    }
+    // Complete captions remain readable while scrubbing, with no per-character live-region chatter.
+    const i = Math.max(0, LINES.findLastIndex(l => t >= l.t - 1e-3));
+    if (i !== lastLine) { sub.textContent = LINES[i].text; lastLine = i; }
     if (sfx?.on) {
       if (lastT < BEEP_AT && t >= BEEP_AT) sfx.beep();
       if (lastT < THUD_AT && t >= THUD_AT) sfx.thud();
     }
     lastT = t;
 
-    if (ready && f !== frameShown && !video.seeking) {
+    sequence?.render(f);
+    canvas.classList.toggle('is-ready', sequenceReady && !sequenceFailed);
+    if (sequenceFailed && ready && f !== frameShown && !video.seeking) {
       video.currentTime = (f + 0.5) / FPS;    /* the middle of the frame, never the edge */
       frameShown = f;
     }
@@ -167,28 +159,62 @@
   /* the perforations roll with the scroll, like film through a projector */
   const perfs = $$('.perfs');
 
-  function loop() {
-    chrome();
-    pickStep();
-    if (!reduced) {
-      const r = reel.getBoundingClientRect();
-      if (r.bottom > 0 && r.top < innerHeight) {
-        target = progress() * DURATION;
-        shown += (target - shown) * 0.22;
-        if (Math.abs(target - shown) < 0.004) shown = target;
-        paintReel(shown);
-        perfs.forEach(p => p.style.setProperty('--roll', `${(-shown * 96).toFixed(1)}px`));
-      }
-    }
-    requestAnimationFrame(loop);
+  const statement = $('.case-statement');
+  const invitation = $('.scroll-invitation');
+  let editorial = [];
+  function measure() {
+    const filmTop = clock.top(reel);
+    layout = {
+      heroHeight: hero.offsetHeight, filmTop,
+      filmEnd: filmTop + reel.offsetHeight - innerHeight,
+      filmLength: Math.max(1, reel.offsetHeight - innerHeight),
+      sections: ['film', 'crew', 'method', 'paperwork'].map(id => ({id, top: clock.top(document.getElementById(id))})),
+      steps: steps.map(el => clock.top(el)),
+      statementTop: clock.top(statement), statementHeight: statement.offsetHeight,
+    };
+    editorial = $$('.dossier, .paperwork .print').map((el, i) => ({el, top: clock.top(el), offset: (i % 3) * 32}));
   }
-  requestAnimationFrame(loop);
+  clock.subscribe(({y, rawY, vh}) => {
+    chrome(rawY); pickStep(rawY);
+    invitation.style.opacity = reduced ? '1' : String(1 - clamp(y / (vh * .35)));
+    const near = !reduced && !document.hidden && y > layout.filmTop - vh * 2 && y < layout.filmEnd + vh;
+    sequence?.setActive(near && !sequenceFailed);
+    if (near) {
+      if (sequenceFailed) thread();
+      paintReel(clamp((y - layout.filmTop) / layout.filmLength) * DURATION);
+      perfs.forEach(p => p.style.setProperty('--roll', `${(-y * .3).toFixed(1)}px`));
+    }
+    /* The story has no edges: it comes up out of the film's black as it scrolls into place
+       (enter), and before it lets go everything on it has left (exit), so what scrolls away
+       is only its ground, dissolving into the crew's. */
+    const p = reduced ? 1 : clamp((y - layout.statementTop) / Math.max(1, layout.statementHeight - vh));
+    const enter = reduced ? 1 : clamp((y + vh - layout.statementTop) / vh);
+    const exit = reduced ? 0 : clamp((p - .8) / .18);
+    statement.style.setProperty('--story-enter', enter.toFixed(4));
+    statement.style.setProperty('--story-exit', exit.toFixed(4));
+    statement.style.setProperty('--story-scale', (1.03 + p * .09).toFixed(4));
+    statement.style.setProperty('--story-crossfade', clamp((p - .26) / .24).toFixed(4));
+    statement.style.setProperty('--story-first', (1 - clamp((p - .16) / .2)).toFixed(4));
+    statement.style.setProperty('--story-second', clamp((p - .38) / .18).toFixed(4));
+    statement.style.setProperty('--story-first-y', `${(-p * 60).toFixed(2)}px`);
+    statement.style.setProperty('--story-second-y', `${((1 - clamp((p - .34) / .24)) * 48 - exit * 36).toFixed(2)}px`);
+    for (const {el, top, offset} of editorial) {
+      const enter = reduced ? 1 : clamp((y + vh * .94 - top - offset) / (vh * .48));
+      const eased = 1 - Math.pow(1 - enter, 3);
+      el.style.setProperty('--arrival-y', `${((1 - eased) * 90).toFixed(2)}px`);
+      el.style.setProperty('--arrival-opacity', (.15 + eased * .85).toFixed(4));
+    }
+  }, measure);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { sequence?.setActive(false); video.pause(); }
+  });
 
   /* chapter ticks jump the scroll to that moment */
   $$('.reel-strip a').forEach(a => a.addEventListener('click', e => {
     e.preventDefault();
-    const len = reel.offsetHeight - innerHeight;
-    const top = reel.getBoundingClientRect().top + scrollY;
+    if (reduced) { thread(); video.currentTime = Number(a.dataset.t); return; }
+    const len = layout.filmLength;
+    const top = layout.filmTop;
     scrollTo({ top: top + (Number(a.dataset.t) / DURATION) * len + 2, behavior: reduced ? 'auto' : 'smooth' });
   }));
 

@@ -1,0 +1,9 @@
+{
+  "count": 501,
+  "fps": 24,
+  "width": 960,
+  "height": 540,
+  "bytes": 11399952,
+  "source": "../film-960.mp4",
+  "pattern": "frame-%03d.webp"
+}
