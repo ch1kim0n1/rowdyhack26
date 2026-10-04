@@ -10,6 +10,34 @@ _Pitch updated 2026-10-02. Older technical terms such as “loot,” “take,”
 pitch they mean observed assets and estimated asset value, not theft. See
 `INTERNAL-NOTES.md` for team-only track positioning._
 
+## Amendment (2026-10-04): the hardware as actually built
+
+The deployed kit differs from the plan below. Ground truth now:
+
+- **Hat:** Pi **Zero 2 W** + **IMX477** Pi camera (not Pi 4 + USB webcam).
+  Streams stills to the backend for identification and appraisal through the
+  Picamera2 adapter in `rig/capture.py` (`CAM_BACKEND=picamera2`). Capture
+  and live recognition + appraisal from the hat feed verified on the website.
+- **Wrist:** Pi **Zero W** + **PiSugar Whisplay HAT** (not ESP32 + SSD1306).
+  Receivers and setup docs live in `rig/wrist/` (`rig/wrist/README.md`):
+  `wrist_hub.py` polls the backend's `/wrist.json` over HTTPS with
+  `X-Rig-Token` (verified displaying case data); `wrist_mqtt.py` is the
+  verified MQTT fallback (Mosquitto broker on the rover Pi 4, autostart
+  after reboot verified). Runs under `wrist-display.service`.
+- **Rover:** **SunFounder PiCar-X** + Pi 4 + **OV5647** camera (not a bare
+  2WD kit). Camera capture verified; `DRIVE_KIT=picarx` drives the Robot HAT;
+  movement and audio still need validation.
+- **Backend:** the Flask app runs hosted (Railway) or on a Pi; every device
+  talks to the same API. The hub-and-spoke model below still applies — the
+  "hub" is the backend wherever it runs.
+- Lessons from bring-up: check `timedatectl` before HTTPS (a wrong wrist
+  clock broke TLS), expect intermittent Wi-Fi on one Pi 4, and carry spare
+  microSD cards (a cracked wrist card forced a rebuild).
+
+Sections §3.1–§3.5 and §8 below, and the 2026-09-30 amendment, describe the
+original plan; treat their ESP32/webcam/2WD specifics as superseded where
+they conflict with the list above and `PARTS-LIST.md`.
+
 ## Scope amendment (2026-09-30): the crew is three devices
 
 The rig above is the hub, worn on the hat. Two more devices join it:
@@ -142,19 +170,31 @@ Note the network split: only steps 3-4 (the LLM + SerpAPI calls) need internet. 
 - Speaker: USB draws power from the Pi (factor into battery budget); 3.5mm jack speakers usually need their own small battery.
 - Power: Pi runs continuously off the USB-C battery bank for the whole demo. It must supply 5V/3A minimum or the Pi will brown out and reset while the webcam and LLM calls are both active.
 
-### 3.4 Wrist Unit Wiring (ESP32)
+### 3.4 Wrist Unit (Pi Zero W + PiSugar Whisplay HAT)
 
-- SSD1306 to ESP32: VCC→3.3V, GND→GND, SDA→GPIO21, SCL→GPIO22 (pins configurable at the top of `esp32/wrist.ino`).
-- Flash: set `WIFI_SSID`/`WIFI_PASS`/`HUB` at the top of the sketch, then `arduino-cli upload -p <port> --fqbn esp32:esp32:esp32 esp32/` (or Arduino IDE → board support `esp32`, libs Adafruit SSD1306 + GFX + ArduinoJson 7). Compile-verified on esp32 core 3.3.12: 80% flash, clean. ArduinoJson **7** needs `JsonArrayConst`/`JsonObjectConst` — already handled.
-- Power: small LiPo or a lipstick USB bank on a wrist strap.
-- Note the wrist OLED is NOT the Pi OLED from §3.3. I2C can't span hat-to-wrist, so the wrist gets its own wireless ESP32; the Pi's OLED stays on the belt pouch as a rig readout.
+As built, the wrist is a Pi Zero W with a PiSugar Whisplay HAT stacked on its
+soldered 40-pin header — no display wiring beyond seating the HAT.
 
-### 3.5 Rover Wiring (Pi 4 2GB)
+- Install the Whisplay driver (https://github.com/PiSugar/Whisplay) and
+  verify the vendor display test first.
+- Copy `rig/wrist/wrist_hub.py` and a filled-in `hub.env` (`HUB_URL`,
+  `RIG_TOKEN`) per `rig/wrist/README.md`, then install
+  `wrist-display.service` + the `hub.conf` override so it starts on boot.
+- MQTT fallback: `rig/wrist/wrist_mqtt.py` reads `rowdy/hat/result` and
+  `rowdy/rover/result` from the Mosquitto broker on the rover Pi 4; the rover
+  must stay powered for that mode.
+- HTTPS needs a correct clock: check `timedatectl` on the wrist before
+  demoing; a wrong date produces certificate errors.
+- Retired plan: the original ESP32 + SSD1306 sketch (`esp32/wrist.ino`,
+  SDA=GPIO21/SCL=GPIO22) is kept for reference but is not the deployed unit.
 
-- Camera: Pi Camera Module on the CSI port or a USB webcam. `CAM_BACKEND=v4l2` is already the Linux default.
-- Motors (if driving): 2WD kit → TB6612 or L298N breakout. Wire left fwd/back and right fwd/back into the four GPIOs named by `DRIVE_PINS` (default 22/23/24/25), enables tied high or jumpered on for L298N. Feed motors from their own supply or a buck converter, never the Pi's 5V rail. Teleop path: hold WASD/arrows on the dashboard to keep rolling (a move re-fires every ~300ms while held, `stop` on release) → `POST /api/drive` on the hub → hub forwards to the rover's `/drive` on :5001 (the rover registers its address by pinging the hub every 10s). No GPIO = console driver that logs moves. `python -m rig.drive` is a wasd REPL for bench-testing wheels. Auto-return: `DRIVE_RETURN_AFTER` seconds of teleop silence (default 60, 0=off) replays the breadcrumb trail back to the drop point — dead reckoning, expect drift on carpet; `POST /drive {"dir":"return"}` forces it on demand. Beacon correction: `python -m rig.marker` prints `home-marker.png` (ArUco id `HOME_MARKER_ID`, default 0) — tape it at the drop point and during return the rover's camera sights it and steers on instead of guessing.
-- Power: its own 5V/3A bank.
-- Software: clone the repo, `bash install_pi.sh --rover` (same deps; installs `rover.service` instead of `heist.service`), set `HUB_URL` (+ `RIG_TOKEN` if the hub has one) in `.env`, then `sudo systemctl start rover` or run `python3 -m rig.rover` in the foreground for bring-up.
+### 3.5 Rover (SunFounder PiCar-X + Pi 4 + OV5647)
+
+- Camera: the PiCar-X's stock OV5647 on the CSI port. `CAM_BACKEND=picamera2` selects the Picamera2 adapter (V4L2 hands OpenCV no frames on a CSI camera). `rig/feed.py` can also read SunFounder's vilib MJPEG stream at `http://<pi>:9000/mjpg`.
+- Motors: the PiCar-X's Robot HAT drives the wheels — set `DRIVE_KIT=picarx` (no bare-GPIO TB6612 wiring needed; that path remains for non-PiCar-X builds). Teleop path: hold WASD/arrows on the dashboard to keep rolling (a move re-fires every ~300ms while held, `stop` on release) → `POST /api/drive` on the backend → backend forwards to the rover's `/drive` on :5001 (the rover registers its address by pinging the backend every 10s). No driver = console driver that logs moves. `python -m rig.drive` is a wasd REPL for bench-testing wheels. Auto-return: `DRIVE_RETURN_AFTER` seconds of teleop silence (default 60, 0=off) replays the breadcrumb trail back to the drop point — dead reckoning, expect drift on carpet; `POST /drive {"dir":"return"}` forces it on demand. Beacon correction: `python -m rig.marker` prints `home-marker.png` (ArUco id `HOME_MARKER_ID`, default 0) — tape it at the drop point and during return the rover's camera sights it and steers on instead of guessing. Movement and the PiCar-X speaker still need validation.
+- Power: the PiCar-X battery plus the Pi's own supply.
+- Software: clone the repo, `bash install_pi.sh --rover` (same deps; installs `rover.service` instead of `heist.service`), set `HUB_URL` (+ `RIG_TOKEN` if the backend has one) in `.env`, then `sudo systemctl start rover` or run `python3 -m rig.rover` in the foreground for bring-up.
+- MQTT: the rover Pi 4 also hosts the Mosquitto broker for the wrist's fallback mode; keep it powered when the wrist runs MQTT.
 
 ## 4. Software Build (CS Side)
 
@@ -230,7 +270,7 @@ Written as relative phases. Scale them to your actual hackathon length. Do the r
 1. Phase 1: Flash both SD cards (before arriving if possible), verify the webcam and button work standalone on each Pi.
 2. Phase 2: Bench the hub's core loop end to end, unmounted: frame capture, frame-delta gate, vision call, pricing, store entry. `python smoke_demo.py` covers the contract offline; `python -m rig.diag` covers hardware. Highest-risk part, solid before anything else.
 3. Phase 3: Wire reveal button (GPIO17), mic button (GPIO27), the pouch SSD1306, and the speaker. `rig.diag` covers the first three; confirm a top-5 callout plays.
-4. Phase 4: Flash the wrist (`esp32/wrist.ino`), get it polling `/wrist.json` on the hotspot. Bench-test with `RIG_SCRIPT=1` on the hub so the wrist shows a live case without a camera.
+4. Phase 4: Set up the wrist (`rig/wrist/README.md`: Whisplay driver, `wrist_hub.py`, `hub.env`, `wrist-display.service`), get it polling `/wrist.json`. Bench-test with `RIG_SCRIPT=1` on the backend so the wrist shows a live case without a camera.
 5. Phase 5: Bench the rover: same repo, `HUB_URL` + `RIG_TOKEN` set, `python -m rig.rover`. Confirm exhibits land on the hub ledger with `origin: "rover"` and dedup blocks the double-count when the hat re-sees them.
 6. Phase 6: Mount everything (cap, pouch, wrist strap, rover), run a full walk + rover pre-scan with real objects.
 7. Phase 7: Tune `SCENE_THRESH`, `SCENE_CONFIRM`, `LOOK_EVERY`, and mic `LISTEN_SECS` based on the walk test.
@@ -260,9 +300,9 @@ Written as relative phases. Scale them to your actual hackathon length. Do the r
 
 | Risk | Mitigation |
 |------|-----------|
-| Venue wifi is flaky | Use the phone hotspot for ALL devices (hub, rover, ESP32, laptop); venue wifi often blocks client-to-client anyway, and the whole sync depends on peer traffic. Test before demo day. |
-| Rover loses Wi-Fi mid-scan | Finds queue on the rover (50 deep) and refile when the hub comes back. Worst case it's a stationary camera the judges see working after reconnect. |
-| ESP32 won't flash/connect | It's read-only decoration; the pouch OLED + dashboard carry the same info. Bring a pre-recorded wrist video if flash fails at the venue. |
+| Venue wifi is flaky | Use the phone hotspot for ALL devices (hat, rover, wrist, laptop); venue wifi often blocks client-to-client anyway, and the whole sync depends on peer traffic. Test before demo day. |
+| Rover loses Wi-Fi mid-scan | Finds queue on the rover (50 deep) and refile when the backend comes back. Worst case it's a stationary camera the judges see working after reconnect. |
+| Wrist won't connect | It's read-only decoration; the dashboard carries the same info. If HTTPS fails check `timedatectl` first (a wrong clock broke TLS once), then fall back to MQTT mode via the rover's broker. |
 | Whisper/listen latency | Record is capped at `LISTEN_SECS` (4s), calls have 20s timeouts, and every failure path speaks a dead-radio line: the bit survives a bad network. |
 | `RIG_TOKEN` mismatch | Symptom is a clean 401 on the rover's POST, logged on both sides. For demo, leave `RIG_TOKEN` unset: open LAN is fine on your own hotspot. |
 | SerpAPI quota/latency | Timeout the lookup (~3 s); on failure keep the model quote/vision estimate flagged `estimated: true`, so the demo never stalls on pricing. Cache results per deduped item so prices don't repeat queries. |
@@ -280,7 +320,7 @@ Written as relative phases. Scale them to your actual hackathon length. Do the r
 
 ### 8.1 Pin map
 
-**Hat hub (Pi 4 4GB):**
+**Backend Pi (when the backend runs on a Pi — single-rig wiring):**
 
 | Signal | Pin | Notes |
 |---|---|---|
@@ -294,45 +334,43 @@ Written as relative phases. Scale them to your actual hackathon length. Do the r
 | Tripwire LDR | `TRIPWIRE_PIN` (free GPIO + GND) | optional: beam break fires reveal/reset |
 | Safe dial | `DIAL_PINS=a,b` (two free GPIOs) | optional: KY-040, DIAL_TICKS detents crack the vault |
 
-**Wrist (ESP32):**
+**Hat (Pi Zero 2 W):** IMX477 on the CSI port. No GPIO peripherals wired.
 
-| Signal | Pin | Notes |
-|---|---|---|
-| SDA: SSD1306 | GPIO21 | `SDA_PIN` in `wrist.ino` |
-| SCL: SSD1306 | GPIO22 | `SCL_PIN` in `wrist.ino` |
-| 3.3V / GND | | OLED at 0x3C, same address as the hub's |
+**Wrist (Pi Zero W + Whisplay HAT):** the HAT stacks on the 40-pin header;
+no loose wiring.
 
-**Rover (Pi 4 2GB):** camera on CSI or USB. No fixed GPIO assignment in this
-repo, motor wiring is whatever the drive build picks (out of scope).
+**Rover (PiCar-X + Pi 4):** OV5647 camera on CSI; motors + speaker on the
+Robot HAT (`DRIVE_KIT=picarx`). No bare-GPIO motor wiring.
 
 ### 8.2 Who runs what
 
 | Device | Process | Started by |
 |---|---|---|
-| Hat hub | `python3 -m rig.app` (Flask + scan loop + OLED + voice) | `heist.service` via `install_pi.sh`, or foreground for bring-up |
-| Rover | `python3 -m rig.rover` (capture → identify → POST to hub) | `rover.service` via `install_pi.sh --rover` |
-| Wrist | `esp32/wrist.ino` (polls `/wrist.json` @2s) | power on; no service |
-| Laptop | browser → `http://raspberrypi.local:5000` | Chrome, full screen |
+| Backend | `python3 -m rig.app` (Flask + scan loop + ledger) | hosted deploy, or `heist.service` via `install_pi.sh` on a Pi |
+| Hat | camera client (Pi Zero 2 W + IMX477, `CAM_BACKEND=picamera2`) | manual / service on the hat Pi |
+| Rover | `python3 -m rig.rover` (capture → identify → POST to backend) | `rover.service` via `install_pi.sh --rover` |
+| Wrist | `rig/wrist/wrist_hub.py` (polls `/wrist.json`) | `wrist-display.service` |
+| Laptop | browser → the backend URL | Chrome, full screen |
 
 ### 8.3 Boot order (demo morning)
 
 1. Phone hotspot ON, screen open, "Maximize Compatibility" (2.4 GHz), every device joins this net.
-2. Hub Pi on → `heist.service` autostarts → `journalctl -u heist -f` to watch.
-3. `python3 smoke_demo.py --live http://raspberrypi.local:5000` from the laptop, ten checks including `/wrist.json`, `/manifest`, `/qr.png`, and a mugshot crop.
-4. `python3 -m rig.diag` on the hub if anything is amber.
-5. Rover Pi on → `journalctl -u rover -f` → exhibits should land on the hub ledger within a scene change.
-6. Wrist on → "LINE DEAD" clears to the case readout on first poll.
+2. Backend up → hosted deploy healthy, or `heist.service` on a Pi → `journalctl -u heist -f` to watch.
+3. `python3 smoke_demo.py --live http://<backend>:5000` from the laptop, ten checks including `/wrist.json`, `/manifest`, `/qr.png`, and a mugshot crop.
+4. `python3 -m rig.diag` on the backend Pi if anything is amber.
+5. Hat + rover Pis on → `journalctl -u rover -f` → exhibits should land on the backend ledger within a scene change.
+6. Wrist on → `wrist-display.service` starts → "LINE DEAD" clears to the case readout on first poll.
 7. Laptop opens the dashboard; title card plays, first poll starts the walk.
 8. Walk test with 2-3 props; confirm wrist top-5 and the rover-tagged lines on `/manifest`.
 
 ### 8.4 Shutdown
 
-- Hub: `sudo systemctl stop heist` (case file + stills persist in `rig/state/`).
+- Backend: `sudo systemctl stop heist` if running on a Pi (case file + stills persist in `rig/state/`).
 - Rover: `sudo systemctl stop rover` (queued finds are lost if it never reconnected: check `journalctl -u rover` first).
-- Wrist: power off. The ledger lives on the hub; nothing else owns state.
+- Wrist: power off. The ledger lives on the backend; nothing else owns state.
 
 ## Post-MVP backlog (do not build at the event)
 
 Built since this list was written: the printable loot manifest (`/manifest` + QR), the zero-internet frame-hash fallback (`RIG_OFFLINE`), the wrist unit, the rover pre-scan, the radio check-in mic, rover driving (`rig/drive.py` + teleop relay), case-the-exits mode (`RIG_MODE=exits`), the thermal printer hook (`rig/printer.py`, `RIG_PRINTER=1`), and the prop triggers (`rig/tripwire.py`: `TRIPWIRE_PIN` LDR beam-break, `DIAL_PINS` KY-040 crack-the-vault, both fire the same reveal/reset as the button). Still open:
 
-- Hardware verification only: ESP32 flash, real motors, real mic, tripwire/dial wiring, kiosk monitor, hotspot. Every code path is complete; what remains needs physical parts.
+- Hardware verification only: PiCar-X motors + speaker, real mic, tripwire/dial wiring, kiosk monitor, hotspot, wrist live parity with the dashboard, and the full camera-to-wrist path. Every code path is complete; what remains needs physical runs.

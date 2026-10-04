@@ -6,9 +6,11 @@ and turn the observations into a shared evidence ledger and top-five debrief.
 The point is to turn visible observations into evidence the assessment team
 can review and use to discuss the potential value at stake.
 
-Built for RowdyHacks XII. Three devices in sync: a **hat** that scans a room
-and estimates asset values, a **wrist unit** that keeps the top five on the
-assessor's wrist, and a **rover** that scouts the approved assessment area.
+Built for RowdyHacks XII. Three devices in sync: a **hat** (Pi Zero 2 W +
+IMX477) that streams camera images to the backend for identification and
+appraisal, a **wrist unit** (Pi Zero W + PiSugar Whisplay HAT) that keeps the
+case, count, take, and top five on the assessor's wrist, and a **rover**
+(SunFounder PiCar-X + Pi 4) that scouts the approved assessment area.
 One ledger, one dashboard, a film-noir case-file interface.
 
 ## The pitch
@@ -32,20 +34,23 @@ exploitability. The useful output is documentation for an authorized review.
 ## Architecture
 
 ```
-  rover (Pi4 2GB)            hat (Pi4 4GB, hub)            wrist (ESP32+OLED)
-  camera -> identify/price   camera -> identify/price      polls GET /wrist.json
-        \  POST /api/exhibit      button -> reveal                 (top-5 + take)
-         ------------------>   mic button -> Whisper           ^
-                               -> evac ETA -> speaker          |
-                               case ledger (JSON+stills) ------+
-                               dashboard /manifest /qr
+  hat (Pi Zero 2 W + IMX477)      backend (Flask app)            wrist (Pi Zero W
+  camera stills --------------->  identify / appraise            + Whisplay HAT)
+                                  case ledger (JSON+stills)  <-  GET /wrist.json
+  rover (PiCar-X, Pi 4 + OV5647)  dashboard /manifest /report    (case, count,
+  camera stills --POST /api/exhibit-------------------------->   take, top-5)
 ```
+
+The backend runs hosted (Railway via `railway.json`) or on a Pi
+(`heist.service`); the hat and rover are camera clients, the wrist and the
+dashboard read the same backend API.
 
 - `PROGRESS.md`: feature ledger: what's shipped, what's tested, what's missing.
 - `BUILD-GUIDE.md`: full build walk, wiring, demo-day checklist.
 - `PARTS-LIST.md`: hardware BOM for all three devices.
 - `PI-TO-LAPTOP-GUIDE.md`: networking + dashboard on a laptop.
-- `esp32/wrist.ino`: wrist firmware sketch.
+- `rig/wrist/`: wrist receiver programs + setup docs (`rig/wrist/README.md`).
+- `esp32/wrist.ino`: retired ESP32 + SSD1306 wrist sketch, kept for reference.
 - `ui-kit/README.md`: NOIRKIT design system the dashboard runs on.
 - `/motion.html`: safe, simulated conditional-animation rehearsal for the UI/UX demo.
 - `ui-kit/film/`: source for the premiere's film (three.js set, rendered frame by frame).
@@ -53,10 +58,15 @@ exploitability. The useful output is documentation for an authorized review.
 Team-only positioning and judging-track intent live in `INTERNAL-NOTES.md`;
 that document is not served by the app.
 
-## Hub (hat Pi 4GB)
+## Backend
+
+The Flask app (`rig/app.py`) is the shared backend: the vision + appraisal
+pipeline, the case ledger, the dashboard, the manifest, the QR-linked
+Defender Report, and the `/wrist.json` feed the wrist and dashboard read.
+Deploy it hosted (see `railway.json`) or run it on a Pi / laptop:
 
 ```sh
-bash install_pi.sh && sudo systemctl start heist   # on the Pi
+bash install_pi.sh && sudo systemctl start heist   # on a Pi
 # laptop dev:
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -64,26 +74,42 @@ cp .env.example .env   # add OPENAI_API_KEY and/or ANTHROPIC_API_KEY
 python -m rig.app
 ```
 
-Dashboard at `http://<pi>:5000/`. GPIO17 = reveal button (Enter on laptop).
+Dashboard at `http://<host>:5000/`. GPIO17 = reveal button (Enter on laptop).
 GPIO27 = mic button (`q`+Enter on laptop): records a few seconds, asks dispatch
 for a grounded exercise check-in, then speaks the answer. Dispatch uses the
 case ledger and configured job clock; it isn't a real-world safety or detection timer.
 
-## Wrist (ESP32 + SSD1306)
+## Hat (Pi Zero 2 W + IMX477)
 
-Flash `esp32/wrist.ino`, set `WIFI_SSID`/`WIFI_PASS`/`HUB` at the top. It
-polls `GET /wrist.json` every 2s and renders case no, take, count, top-5.
+Hat-mounted Pi Zero 2 W with an IMX477 Pi camera streams stills into the
+same capture → scene-gate → identify → price pipeline (`CAM_BACKEND=picamera2`
+selects the Picamera2 adapter that hands frames to OpenCV; a CSI camera gets
+no frames through V4L2). Verified on hardware: camera capture and live
+recognition + appraisal from the hat feed on the website.
 
-## Rover (Pi4 2GB)
+## Wrist (Pi Zero W + PiSugar Whisplay HAT)
 
-Same codebase, different entry point:
+`rig/wrist/wrist_hub.py` polls `GET /wrist.json` with `X-Rig-Token` and
+renders the case number, total estimated value, exhibit count, and the top
+five on the Whisplay's LCD. Runs under `wrist-display.service` (systemd).
+The verified fallback is MQTT mode (`wrist_mqtt.py`, Mosquitto broker on the
+rover Pi 4), including autostart after reboot. Full setup in
+`rig/wrist/README.md`. Verified on hardware: backend case data retrieved
+and displayed; showing the same live results as the dashboard is the
+remaining integration step. Retired ESP32 + SSD1306 path: `esp32/wrist.ino`.
+
+## Rover (SunFounder PiCar-X + Pi 4 + OV5647)
+
+Second camera platform. Same codebase, different entry point:
 
 ```sh
-HUB_URL=http://raspberrypi.local:5000 RIG_TOKEN=crew python -m rig.rover
+HUB_URL=http://<backend>:5000 RIG_TOKEN=crew python -m rig.rover
 ```
 
-Captures, gates, identifies, prices locally, then POSTs exhibits to the
-hub's ledger. Queues finds if the Wi-Fi blinks; refiles next tick.
+Captures, gates, identifies, prices, then POSTs exhibits to the backend's
+ledger. Queues finds if the Wi-Fi blinks; refiles next tick. OV5647 capture
+verified through the Picamera2 adapter. `DRIVE_KIT=picarx` runs the Robot
+HAT motors; movement and audio features still need validation.
 
 ## Routes
 
@@ -92,7 +118,7 @@ hub's ledger. Queues finds if the Wi-Fi blinks; refiles next tick.
 | `/` `/reveal` | live scan view / reveal view (client swaps on `revealed`) |
 | `/manifest` | printable asset case file (QR'd from the dashboard; retains the themed “Loot Manifest” label) |
 | `/state.json` | dashboard poll contract |
-| `/wrist.json` | compact top-5 for the ESP32 |
+| `/wrist.json` | compact top-5 for the wrist display |
 | `POST /api/exhibit` | rover files a find (`X-Rig-Token` if `RIG_TOKEN` set) |
 | `POST /api/rover_ping` | rover heartbeat; registers the teleop address |
 | `POST /api/drive` | teleop relay: hub forwards `{dir, secs}` to the rover |

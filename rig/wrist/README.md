@@ -124,23 +124,23 @@ Its paths assume username pizerow.
     sudo systemctl daemon-reload
     sudo systemctl start wrist-display.service
 
-### Handoff status
+### Handoff status (updated 2026-10-04)
 
 Verified:
 - MQTT display of hat and rover messages.
 - MQTT receiver automatic startup after reboot.
-- Hat camera capture and image inspection.
-- Rover camera JPEG file creation.
+- Hat camera capture (Pi Zero 2 W + IMX477) via the Picamera2 adapter.
+- Rover camera capture (PiCar-X OV5647) via the same adapter.
 - Authenticated HTTPS access to the hub.
-- Hub case data rendered on the Whisplay.
+- Hub case data rendered on the Whisplay (HTTP mode).
+- Live recognition and appraisal from the hat feed on the website.
 
 Still to verify or finish:
-- Hub display updates after a new exhibit is submitted.
+- Wrist showing the same live results as the dashboard (live parity).
 - Hub-mode startup after reboot.
 - Reliable automatic time synchronization for HTTPS.
-- Picamera2 integration with the project's capture.py.
-- Camera-to-vision-to-hub end-to-end operation.
 - Rover motor driver compatibility and remote-control networking.
+- Full camera-to-wrist workflow end to end.
 
 The wrist clock was manually corrected after a certificate-date error.
 Check date and timedatectl status if HTTPS fails.
@@ -152,6 +152,7 @@ Camera preparation commands used on the Pis:
     mkdir -p ~/rowdy/captures
     rpicam-still --nopreview --timeout 2000 --width 1280 --height 960 --output ~/rowdy/captures/test.jpg
 
-The supplied capture.py uses cv2.VideoCapture. A Picamera2 adapter was
-discussed but has not been implemented in this contribution.
+`rig/capture.py` now ships a Picamera2 adapter (`CAM_BACKEND=picamera2`,
+selected automatically as a fallback when V4L2 yields no frames) that
+supplies frames to OpenCV — verified on both the IMX477 and OV5647.
 The requirements-pi.txt NumPy pin needs checking against installed apt packages.

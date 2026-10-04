@@ -1,63 +1,52 @@
 # Heist Crew Parts List
 
-Shopping + bring list for all three devices, hat hub, wrist unit, rover.
-Single-rig details in `BUILD-GUIDE.md` §3.
+As-built hardware for all three devices, updated 2026-10-04 to match the
+deployed kit. Original planning BOM is in git history; single-rig wiring
+details live in `BUILD-GUIDE.md` §3.
 
-## Device 2: wrist unit (buy)
+## Device 1: hat camera
 
-| Part | Spec to get | ~Price | Gotcha |
-|---|---|---|---|
-| ESP32 dev board | ESP32-WROOM-32, USB-C or micro | $8-15 | Needs Wi-Fi; all ESP32s have it |
-| SSD1306 OLED | Second unit, same 0.96" I2C 4-pin | $7 | This one lives on the wrist, wired to the ESP32 |
-| LiPo or USB power bank | Smallest that fits a wrist strap | $10-20 | ESP32+OLED sips power; a 500mAh cell runs all day |
-| Wrist strap / velcro | | $3 | |
+| Part | As built | Note |
+|---|---|---|
+| Raspberry Pi Zero 2 W | Camera client | Streams stills to the backend for identification + appraisal |
+| Pi camera (IMX477) | Raspberry Pi HQ Camera class sensor | Captures through `CAM_BACKEND=picamera2` (`rig/capture.py`); CSI gets no frames through V4L2 on current Pi OS |
+| MicroSD | 32GB, Pi OS Lite | |
+| Battery bank | 5V USB | The Zero 2 W sips power vs a Pi 4, but still test under camera load |
+| Cap + mount | Stiff structured cap | Camera on the brim, angled down ~10-15° |
 
-## Device 3: rover (buy)
+## Device 2: wrist unit
 
-| Part | Spec to get | ~Price | Gotcha |
-|---|---|---|---|
-| Raspberry Pi 4 | **2GB**: identify runs over the network, RAM is fine | $45-60 | |
-| MicroSD | 32GB, Pi OS Lite 64-bit | $8 | |
-| Camera | USB webcam or Pi Camera Module | $25 | Pi Cam needs `CAM_BACKEND=v4l2` (default on Linux already) |
-| Chassis + 2x TT motors + wheels | Any 2WD robot car kit | $15-25 | Kit bundles chassis/motors/wheels/casters |
-| Motor driver | TB6612FNG or L298N breakout | $5-8 | TB6612 is smaller and doesn't eat 1.4V |
-| Battery bank | Second bank, 5V/3A | $25-35 | Same brown-out rule as the hub |
-| Buck converter | If motors run off the same pack | $5 | Don't feed motors off the Pi's 5V rail |
+| Part | As built | Note |
+|---|---|---|
+| Raspberry Pi Zero W | Display client | Runs `rig/wrist/` under `wrist-display.service` |
+| PiSugar Whisplay HAT | Display + battery | Mounts on the 40-pin header (soldered); driver from https://github.com/PiSugar/Whisplay |
+| MicroSD | 32GB, Pi OS Lite | A physically cracked card forced one rebuild — carry a spare |
 
-## Device 1: hat hub additions (buy)
+No wiring beyond the HAT itself: the Whisplay stacks on the header. Shows
+case number, item count, total estimated value, and the top five from the
+backend's `/wrist.json` (HTTP mode) or MQTT topics (fallback mode).
 
-| Part | Spec to get | ~Price | Gotcha |
-|---|---|---|---|
-| USB mic | Any USB dongle mic, or use the webcam's built-in mic | $10-15 | Pi Camera has NO mic: webcam covers it |
-| Second push button | Same momentary tactile as the reveal button | $2-5 | Goes on LISTEN_PIN (GPIO27) |
+## Device 3: rover
 
-## Device 1: hat hub core electronics (buy)
+| Part | As built | Note |
+|---|---|---|
+| SunFounder PiCar-X | Chassis + Robot HAT + motors + speaker | `DRIVE_KIT=picarx` in `rig/drive.py`; movement + audio still unvalidated |
+| Raspberry Pi 4 | Rover brain | Also hosts the Mosquitto broker for the wrist's MQTT fallback |
+| Camera (OV5647) | PiCar-X stock camera | Verified through the Picamera2 adapter; `rig/feed.py` can also read SunFounder's vilib MJPEG stream |
+| Battery | PiCar-X pack + Pi supply | |
 
-| Part | Spec to get | ~Price | Gotcha |
-|---|---|---|---|
-| Raspberry Pi 4 | **4GB**, the hub: no local inference needed | $55-75 | |
-| MicroSD card | 32GB+, flash Pi OS Lite 64-bit before arriving | $8 | Flash + test-boot at home, not at the venue |
-| USB webcam | Any UVC cam; Logitech C270 is the safe cheap pick | $25 | 720p is plenty |
-| Battery bank | USB-C output, 5V/3A sustained | $25-35 | The #1 hardware failure mode. Cheap banks sag and brown-out the Pi mid-demo. Test under load at home |
-| Pi wall brick | Official 5V/3A USB-C | $8 | Bench-only, keeps the battery reserved for demo |
-| Push button | Arcade button or any momentary tactile | $2-5 | Two leads, no resistor needed (GPIO pull-up) |
-| SSD1306 OLED | 0.96" 128x64, I2C, 4 pins only (VCC/GND/SCL/SDA) | $7 | Do NOT buy the 7-pin SPI version |
-| Jumper wires | Dupont female-to-female pack | $3 | 4 needed for the OLED |
-| Speaker | Small powered, 3.5mm or USB | $10-15 | USB draws from the Pi's power budget; 3.5mm powered needs its own battery |
+## Backend
 
-Core total: ~$160-190 depending on what you already own.
-
-## Wear/mount (buy or scrounge)
-
-- Stiff structured baseball cap: not floppy; the brim holds the camera ($10-15)
-- Pouch or fanny pack for Pi + battery at the waist
-- Zip ties, velcro strips, gaffer tape, small hot glue gun
+- Hosted deploy (Railway, `railway.json`) serves the dashboard, manifest,
+  Defender Report, and `/wrist.json` to every device. Can also run on a Pi
+  or laptop via `install_pi.sh` / `python -m rig.app`.
 
 ## Bring from home
 
-- Laptop: dev work, flashing the SD card, dashboard display
+- Laptop: dev work, flashing SD cards, dashboard display
 - Ethernet cable: backup SSH path if venue wifi is hostile
 - Phone with hotspot: backup internet for the LLM/SerpAPI calls
+- Spare microSD cards (see wrist note above)
 
 ## Optional adds (post-MVP, only if a phase finishes early)
 
@@ -66,7 +55,12 @@ Core total: ~$160-190 depending on what you already own.
 | USB 58mm POS thermal printer | Prints the LOOT MANIFEST at reveal | ~$35 | Must be `python-escpos` compatible; avoid BLE toy printers (Peripage/Paperang) |
 | LDR + laser module | Tripwire to arm scanning (`gpiozero.LightSensor`) | ~$5 | Arming only, never on the required path |
 | KY-040 rotary encoder | Rotary "safe dial" reveal trigger | ~$3 | GPIO button stays primary |
+| SSD1306 OLED + button + speaker | Pouch readout / reveal button / voice on a backend Pi | ~$25 | Only needed when the backend runs on a Pi with the single-rig wiring in BUILD-GUIDE §3.3 |
 
 ## Pre-event check
 
-Bench-test the battery bank tonight: Pi 4 + webcam streaming + an active network call is max load. If it browns out at home, it browns out on stage.
+- Bench-test every battery under real load (camera streaming + active
+  network call). If it browns out at home, it browns out on stage.
+- Check `timedatectl` on every Pi before demo: a wrong clock broke HTTPS on
+  the wrist once already.
+- Confirm all devices join the same hotspot before powering the rover down.

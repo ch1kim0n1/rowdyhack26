@@ -1,5 +1,14 @@
 # Pre-Hardware Validation Report
 
+> **Post-report hardware revision (2026-10-04):** the deployed kit differs
+> from what this report certified — the hat is a Pi Zero 2 W + IMX477 (not a
+> Pi 4 + USB webcam), the wrist is a Pi Zero W + PiSugar Whisplay HAT running
+> `rig/wrist/` (not the ESP32 + SSD1306 sketch), and the rover is a
+> SunFounder PiCar-X + OV5647 (not a bare 2WD kit). See README, PROGRESS.md
+> "Hardware as built", and `rig/wrist/README.md` for current verified status.
+> The software-side results below still hold; the hardware-boundary rows
+> naming the old parts are superseded.
+
 Certification pass over the full system. Mocks sit **only** at the hardware
 boundary (cv2, gpiozero, luma, escpos, arecord/aplay, urllib targets);
 everything above the seam — scan loop, scene gate, pricing ladder, ledger,

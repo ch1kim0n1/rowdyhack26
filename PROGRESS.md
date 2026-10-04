@@ -1,14 +1,38 @@
 # PROGRESS: The Appraisal Job
 
-Feature ledger for the three-device crew build. Updated 2026-09-30.
+Feature ledger for the three-device crew build. Updated 2026-10-04.
 
 Status: ✅ shipped+tested · 🟡 shipped, untested on hardware · 🔧 partial · ❌ missing
 
-## Device 1: Hat hub (Pi 4, 4GB)
+## Hardware as built (2026-10-04 ground truth)
+
+- **Hat:** Raspberry Pi **Zero 2 W** + **IMX477** Pi camera. Streams stills to
+  the backend for identification and appraisal. Camera capture verified;
+  live recognition + appraisal from the hat feed demonstrated on the website.
+- **Wrist:** Raspberry Pi **Zero W** + **PiSugar Whisplay HAT** (soldered
+  40-pin header). Shows current case, item count, total estimated value, and
+  the top five. Runs `rig/wrist/` under `wrist-display.service`. HTTP mode
+  (`wrist_hub.py`) reads the backend API directly — verified retrieving and
+  displaying case data. MQTT mode (`wrist_mqtt.py`, Mosquitto on the rover
+  Pi 4) verified including autostart after reboot.
+- **Rover:** **SunFounder PiCar-X** + Pi 4 + **OV5647** camera. Second camera
+  platform; capture verified. Movement and audio still need validation.
+- **Backend:** the Flask app (`rig/app.py`), deployed hosted (Railway); both
+  cameras and the wrist talk to the same API.
+- Both cameras capture through the Picamera2 adapter in `rig/capture.py`
+  (`CAM_BACKEND=picamera2`), which supplies frames to OpenCV.
+- Integration issues hit and handled: intermittent Wi-Fi on one Pi 4, an
+  incorrect system clock that blocked HTTPS (corrected manually; automatic
+  time sync still open), and a physically cracked wrist microSD that required
+  a rebuild.
+- Remaining integration: wrist showing the same live results as the
+  dashboard; rover movement, audio, and the full camera-to-wrist path.
+
+## Device 1: Hat (Pi Zero 2 W + IMX477)
 
 | Feature | Where | Status | Notes |
 |---|---|---|---|
-| Camera capture + backend pick | `rig/capture.py` | ✅ | dshow/msmf/v4l2 order; `CAM_INDEX`/`CAM_BACKEND` envs |
+| Camera capture + backend pick | `rig/capture.py` | ✅ | IMX477 verified via Picamera2 adapter (`CAM_BACKEND=picamera2`); dshow/msmf/v4l2 order kept for other platforms; `CAM_INDEX` env |
 | Scene-diff gate + flicker confirm | `capture.scene_changed` | ✅ | `SCENE_CONFIRM`, `SCENE_THRESH`; `SCAN_ALWAYS` killswitch |
 | Vision identify | `rig/vision.py` | ✅ | OpenAI → Anthropic → offline catalog; 20s timeouts; bbox clamp |
 | Pricing ladder | `rig/pricing.py` | ✅ | SerpAPI comps → model quote → vision estimate; `why` field |
@@ -26,26 +50,31 @@ Status: ✅ shipped+tested · 🟡 shipped, untested on hardware · 🔧 partial
 | Pi-as-hotspot | `rig/hotspot.sh` (nmcli) | 🟡 | venue-Wi-Fi escape hatch; needs a real Pi run |
 | Hardware diagnostic | `python -m rig.diag` | 🟡 | camera/OLED/GPIO/keys/audio/motors; needs real Pi |
 
-## Device 2: Wrist unit (ESP32 + SSD1306)
+## Device 2: Wrist unit (Pi Zero W + PiSugar Whisplay HAT)
 
 | Feature | Where | Status | Notes |
 |---|---|---|---|
-| Wrist data contract | `GET /wrist.json` on hub | ✅ | compact: case_no, take, count, pending, revealed, top5 |
-| Firmware sketch | `esp32/wrist.ino` | 🟡 | written; compile-verified on arduino-cli (esp32:esp32 3.3.12, 80% flash); needs a real board flash |
-| OLED render (top-5) | `wrist.ino draw()` | 🟡 | 128x64, 0x3C, SDA=21/SCL=22 |
-| Dead-link screens | `drawDead()` | 🟡 | "LINE DEAD" states coded |
+| Wrist data contract | `GET /wrist.json` on backend | ✅ | compact: case_no, take, count, pending, revealed, top5 |
+| HTTP receiver | `rig/wrist/wrist_hub.py` | ✅ | long-polls `/wrist.json` with `X-Rig-Token`; verified retrieving + displaying backend case data on the Whisplay |
+| Whisplay render | `wrist_hub.py render()` | ✅ | case no, take, count, top-5 names + prices; "LINE DEAD" error screens |
+| MQTT fallback receiver | `rig/wrist/wrist_mqtt.py` | ✅ | Mosquitto broker on the rover Pi 4; hat + rover topics verified on the display |
+| Autostart | `rig/wrist/wrist-display.service` | 🟡 | MQTT-mode boot autostart verified; HTTP-mode boot test still open |
+| Live parity with dashboard | `wrist_hub.py` | 🔧 | wrist shows case data; matching the dashboard's live results is the remaining integration step |
+| Retired ESP32 sketch | `esp32/wrist.ino` | — | superseded by the Whisplay build; kept for reference |
 
-## Device 3: Rover (Pi 4, 2GB)
+## Device 3: Rover (SunFounder PiCar-X + Pi 4 + OV5647)
 
 | Feature | Where | Status | Notes |
 |---|---|---|---|
-| Eyes pipeline | `rig/rover.py` | ✅ | same capture/gate/identify/price; POSTs to hub |
+| Eyes pipeline | `rig/rover.py` | ✅ | same capture/gate/identify/price; POSTs to backend |
+| Camera capture | `rig/capture.py` | ✅ | OV5647 verified via Picamera2 adapter |
 | Offline queue | `rover.run` deque ×50 | ✅ | tested: holds on failure, drains on reconnect |
 | Hub intake | `POST /api/exhibit` | ✅ | dedup + `origin: rover` + optional `frame_b64` mugshot |
 | Autostart | `rover.service`, `install_pi.sh --rover` | 🟡 | written; needs rover Pi boot test |
-| **Driving / motor control** | `rig/drive.py` + `rig/drive_server.py` | 🟡 | gpiozero Robot on `DRIVE_PINS`; `/drive` on :5001; console driver off-Pi; needs real motors |
-| Teleop chain | hub `POST /api/drive` → rover `:5001`; WASD/arrows via `Noir.drive()` | 🟡 | rover registers via `/api/rover_ping`; forward tested, wheels untested |
+| **Driving / motor control** | `rig/drive.py` + `rig/drive_server.py` | 🟡 | `DRIVE_KIT=picarx` drives the Robot HAT; `/drive` on :5001; movement still needs validation |
+| Teleop chain | backend `POST /api/drive` → rover `:5001`; WASD/arrows via `Noir.drive()` | 🟡 | rover registers via `/api/rover_ping`; forward tested, wheels untested |
 | Auto-return | breadcrumbs + `dir:"return"` + `DRIVE_RETURN_AFTER` watchdog | 🟡 | beacon-sighted steering via `rig/marker.py` ArUco tag; needs floor test |
+| Rover audio | PiCar-X speaker | 🟡 | not yet validated |
 | LiDAR mapping | n/a | ❌ | dropped from spec; would be +$100 RPLIDAR + 1–2 days |
 
 ## Sync / network
@@ -82,7 +111,11 @@ Status: ✅ shipped+tested · 🟡 shipped, untested on hardware · 🔧 partial
 
 ## Missing / not started
 
-- 🟡 ESP32 flash: sketch compiles clean on esp32:esp32 3.3.12 (80% flash); only the physical upload is left
+- 🔧 Wrist live parity: wrist displays backend case data; matching the same live results shown on the dashboard is the remaining integration step
+- 🟡 Wrist HTTP-mode autostart after reboot (MQTT-mode autostart verified)
+- 🟡 Automatic time sync on the wrist Pi: a wrong clock blocked HTTPS until corrected manually
+- 🟡 Rover movement + audio validation: PiCar-X motors and speaker untested
+- 🟡 Full camera-to-wrist workflow end to end
 - 🟡 Real-motor + real-mic bench test: code paths done and covered, GPIO untested
 - ❌ Recorded voice wavs (`rig/voice/alert.wav`, `reveal.wav`): human task: record a dry read; TTS covers if skipped
 - 🟡 `.asoundrc` USB-mic config: template at `rig/asoundrc.usb-mic.example`, only needed if `arecord` can't see the mic
@@ -96,7 +129,8 @@ Status: ✅ shipped+tested · 🟡 shipped, untested on hardware · 🔧 partial
 
 ## Next up (ordered)
 
-1. Parts in hand → flash wrist, boot rover, `smoke_demo.py --live` the whole net.
-2. Real-button + mic bench test on the hub (`rig.diag` + a `q`-key radio check-in).
-3. Motors wired → `python -m rig.drive` REPL on the rover, then WASD teleop through the hub.
-4. Walk test → tune `SCENE_THRESH` / `LOOK_EVERY` / `LISTEN_SECS`.
+1. Wire the wrist to the same live results as the dashboard; verify HTTP-mode autostart after reboot.
+2. Full camera-to-wrist walk: hat capture → backend → wrist + dashboard together.
+3. PiCar-X movement + audio bench test (`python -m rig.drive` REPL, then WASD teleop through the backend).
+4. Real-button + mic bench test on the backend Pi (`rig.diag` + a `q`-key radio check-in).
+5. Walk test → tune `SCENE_THRESH` / `LOOK_EVERY` / `LISTEN_SECS`.

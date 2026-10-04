@@ -66,7 +66,7 @@ rover ─POST /api/exhibit─┐
                          ├─► hub (hat): rig/store.Store  ──► case.json (+ stills)
 hat camera ──────────────┘        │
                                   ├─ GET /state.json   (dashboard @80ms, desk @1s)
-                                  └─ GET /wrist.json    (ESP32 @2s)
+                                  └─ GET /wrist.json    (wrist @2s)
 ```
 
 After (new pieces marked ✦, all optional):
@@ -83,7 +83,7 @@ hat camera ──────────────┘        │
    └✦ vultr.analyze(ledger)  ◄─────┤  insights / report                 │
                                    │                                    ▼
                                    └─✦ sync.ChangeBus ──► SSE /events  (dashboard, desk)
-                                                      └─► long-poll /wrist.json?wait  (ESP32)
+                                                      └─► long-poll /wrist.json?wait  (wrist)
                                         ▲                                │
                                         └── pg LISTEN 'detections' ──────┘  (multi-hub fan-in)
 ```
@@ -212,7 +212,7 @@ plan) calls `bus.publish(payload)`; waiters wake immediately.
   `ui-kit/desk.js` (desk) each open an `EventSource('/events')` that pokes an
   immediate refresh on every message; the existing interval polling stays as the
   fallback (and covers token mode, where `EventSource` can't send the header).
-- **Wrist (ESP32) → long-poll** `GET /wrist.json?since=<v>&wait=<secs>`: blocks
+- **Wrist (Pi Zero W + Whisplay) → long-poll** `GET /wrist.json?since=<v>&wait=<secs>`: blocks
   on the bus until `version > since` (or the timeout), then returns the usual
   body plus `"v"`. The firmware keeps `v` and re-requests with it, so an update
   reaches the wrist in **tens of milliseconds** instead of up to 2 s, with
@@ -226,7 +226,7 @@ plan) calls `bus.publish(payload)`; waiters wake immediately.
 ### Why long-poll for the wrist and SSE for the browsers
 
 SSE is the clean browser story (EventSource, auto-reconnect). But SSE on a
-battery ESP32 behind flaky venue Wi-Fi is fiddly; a `since`+`wait` long-poll is
+battery-powered wrist Pi behind flaky venue Wi-Fi is fiddly; a `since`+`wait` long-poll is
 dead-simple firmware, survives reconnects trivially, and gives the same
 perceived latency. Right tool per device.
 
@@ -250,7 +250,7 @@ hypertable analytics + a Vultr read. `pip install -r requirements.txt` pulls in
 
 ## Rollout order
 
-1. `rig/sync.py` + SSE + wrist long-poll + firmware — **the headline "zero-delay
+1. `rig/sync.py` + SSE + wrist long-poll + receiver — **the headline "zero-delay
    sync" feature**, works with zero cloud dependencies.
 2. `rig/vultr.py` + vision wiring — Vultr as the CV engine, one key to enable.
 3. `rig/timescale.py` + schema + record/analytics hooks — the Tiger ledger.

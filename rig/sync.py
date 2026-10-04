@@ -1,15 +1,15 @@
 """The change bus: one in-process nerve that turns a store mutation into an
 instant push to every device.
 
-The dashboard polls /state.json fast, the desk slower, and the ESP32 wrist
-every two seconds. Polling a quick database is still as slow as the poll
+The dashboard polls /state.json fast, the desk slower, and the Whisplay wrist
+every few seconds. Polling a quick database is still as slow as the poll
 interval, so "near real-time" has to come from a *push*, not from a faster
 read. This module is that push: every write path (a new exhibit, the reveal,
 a reset, a status or plan change) calls `bus.publish(...)`, and anyone waiting
 on the bus wakes at once.
 
 Three transports ride one bus (see rig/app.py): SSE `/events` for the browser
-consoles, a `?since=&wait=` long-poll on `/wrist.json` for the ESP32, and a
+consoles, a `?since=&wait=` long-poll on `/wrist.json` for the wrist, and a
 Postgres `LISTEN` bridge for a second hub. The bus itself is pure stdlib and
 always on, so the zero-delay sync works with no cloud dependency at all.
 """

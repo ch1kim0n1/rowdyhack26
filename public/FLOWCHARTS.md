@@ -53,7 +53,7 @@ flowchart LR
 Skillicons strip, one image:
 
 ```markdown
-![stack](https://skillicons.dev/icons?i=python,flask,opencv,arduino,raspberrypi,js,html,css,docker,railway,githubactions)
+![stack](https://skillicons.dev/icons?i=python,flask,opencv,raspberrypi,js,html,css,docker,railway,githubactions)
 ```
 
 Shield badges, fuller list:
@@ -62,7 +62,7 @@ Shield badges, fuller list:
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask%20%2B%20Waitress-000?logo=flask&logoColor=white)
 ![OpenCV](https://img.shields.io/badge/OpenCV-headless-5C3EE8?logo=opencv&logoColor=white)
-![ESP32](https://img.shields.io/badge/ESP32-FreeRTOS-E7352C?logo=espressif&logoColor=white)
+![Wrist](https://img.shields.io/badge/Wrist-Pi%20Zero%20W%20%2B%20Whisplay-E7352C?logo=raspberrypi&logoColor=white)
 ![OpenAI](https://img.shields.io/badge/Vision%20%2B%20Whisper-OpenAI-412991?logo=openai&logoColor=white)
 ![Railway](https://img.shields.io/badge/Deploy-Railway-0B0D0E?logo=railway&logoColor=white)
 ```

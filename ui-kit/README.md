@@ -449,7 +449,7 @@ Two small files sit on top of the title card, and both stand down when motion is
 
 `desk.css` and `desk.js` (`/desk`) are the crew's console. The take and ledger come from `/state.json`, the posts from `/health`, the wrist from `/wrist.json?peek` (the peek keeps the desk from counting as the wrist). Every change goes through `Noir.authFetch`, so the token rule is the dashboard's.
 
-`wrist-oled.js` copies `draw()` from `esp32/wrist.ino` pixel for pixel: the same 5x7 font, cursor positions and truncation.
+`wrist-oled.js` copies `draw()` from `esp32/wrist.ino` pixel for pixel: the same 5x7 font, cursor positions and truncation. (The deployed wrist is now the Pi Zero W + Whisplay HAT running `rig/wrist/`; this preview still mirrors the retired ESP32 layout.)
 
 `film/` is the film's source. A three.js office set (blinds, a banker's lamp, six exhibits) with this kit's markup laid over it: the leader, tracking markers, the typed ledger, the odometer, the dashboard, the lineup, the stamp, THE END. Every frame is a pure function of time. `cd film && npm install && node render.mjs film` renders 501 frames and encodes `media/film-1600.mp4` and `media/film-960.mp4` with a six-frame GOP for scrubbing; `node render.mjs stills` writes the hero, rover and mugshot stills. Serve `ui-kit/` and open `film/film.html` to look at the set.
 

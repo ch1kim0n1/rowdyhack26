@@ -87,13 +87,20 @@ If cellular or Wi-Fi drops completely:
 
 ## 7. Wrist + Rover on the Same Net
 
-All three devices ride the same hotspot, the Pi hub is the only server.
+All devices ride the same hotspot; the backend (hosted deploy or a Pi) is
+the only server.
 
-* **Wrist (ESP32):** set `WIFI_SSID`/`WIFI_PASS` to the hotspot and `HUB` to
-  `http://raspberrypi.local:5000` in `esp32/wrist.ino`, flash, done. It polls
-  `/wrist.json` every 2s. If mDNS fails on the hotspot, use the Pi's numeric
+* **Wrist (Pi Zero W + PiSugar Whisplay HAT):** runs
+  `rig/wrist/wrist_hub.py` under `wrist-display.service`; set `HUB_URL` and
+  `RIG_TOKEN` in `~/rowdy/hub.env` (setup: `rig/wrist/README.md`). It
+  long-polls `/wrist.json` and renders case, take, count, top-5 on the
+  Whisplay LCD. Fallback: `wrist_mqtt.py` against the Mosquitto broker on
+  the rover Pi 4. If HTTPS fails check `timedatectl` first — a wrong clock
+  broke TLS once. If mDNS fails on the hotspot, use the backend's numeric
   IP from the hotspot device list.
-* **Rover (second Pi 4):** same hotspot, then
+* **Hat (Pi Zero 2 W + IMX477):** same hotspot; captures through
+  `CAM_BACKEND=picamera2` and streams stills to the backend.
+* **Rover (PiCar-X + Pi 4 + OV5647):** same hotspot, then
   `HUB_URL=http://raspberrypi.local:5000 python3 -m rig.rover`.
   Set `RIG_TOKEN` to the same value on both Pis before demo if you want the
   `/api/exhibit` endpoint locked; leave it unset for open LAN operation.
@@ -112,7 +119,7 @@ Climb down in order. Each rung needs less infrastructure than the last.
    `bash rig/hotspot.sh` → AP `HEIST-RIG` (password `crewcrew`, override via
    `HOTSPOT_SSID`/`HOTSPOT_PSK`). Laptop, wrist, and rover all join it; hub is
    `http://10.42.0.1:5000`. Set `HUB_URL=http://10.42.0.1:5000` in the rover's
-   `.env` and `serverIP = "10.42.0.1"` in the wrist sketch. Internet is gone,
+   `.env` and in the wrist's `~/rowdy/hub.env`. Internet is gone,
    so vision degrades to the offline catalog, the demo still runs.
    Tear down: `sudo nmcli connection down Hotspot`.
 
