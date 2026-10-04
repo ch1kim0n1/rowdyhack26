@@ -1,0 +1,124 @@
+/* Cinematic scroll layer. Only this page loads these rules. */
+.premiere { --scroll-ease: cubic-bezier(.22, 1, .36, 1); }
+.premiere .flicker, .premiere #scratch { display: none; }
+.premiere .grain { opacity: .045; animation: none; }
+.premiere .marquee { background: linear-gradient(#0d0e12f5, #0d0e1280 70%, transparent); border-bottom: 0; }
+.premiere .marquee.solid { background: #0d0e12f5; }
+.premiere .marquee:focus-within { opacity: 1; pointer-events: auto; }
+.scroll-invitation {
+  position: absolute; z-index: 4; inset: auto 4vw 35px;
+  display: flex; align-items: center; gap: 20px;
+  color: var(--paper); text-decoration: none;
+  font: 10px var(--f-type); letter-spacing: .2em; text-transform: uppercase;
+}
+.scroll-invitation span:last-child { margin-left: auto; }
+.scroll-line { width: clamp(40px, 8vw, 130px); height: 1px; background: var(--stamp-lit); }
+.scroll-invitation:focus-visible { outline: 2px solid var(--paper); outline-offset: 8px; opacity: 1 !important; }
+.reel { height: 600svh; }
+.reel-stage {
+  --pad: clamp(18px, 4vw, 70px);
+  --gw: min(100vw - 2 * var(--pad), (100svh - 190px) * 16 / 9);
+  gap: 18px;
+}
+.reel-canvas {
+  display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain; opacity: 0; pointer-events: none;
+}
+.reel-canvas.is-ready { opacity: 1; }
+.gate { outline: none; border-radius: 0; }
+.reel-chapter { letter-spacing: .19em; color: var(--stamp-lit); }
+.reel-sub { font: clamp(14px, 1.25vw, 19px)/1.5 var(--f-type); color: var(--bone); min-height: 3em; }
+.reel-strip::after {
+  content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 2px;
+  background: var(--stamp-lit); transform: scaleX(var(--p, 0)); transform-origin: left;
+}
+.reel-strip a { min-height: 44px; }
+.perfs { opacity: .35; }
+
+/* A second continuous scene carries the film into the product story. */
+.case-statement {
+  position: relative; height: 240svh; width: calc(100vw - 16px);
+  margin-left: calc((100% - 100vw + 16px) / 2);
+  margin-top: calc(-1 * var(--section-y)); margin-bottom: var(--section-y);
+  background: #090a0d;
+}
+.statement-stage { position: sticky; top: 0; height: 100svh; overflow: clip; isolation: isolate; }
+.statement-image {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transform: scale(var(--story-scale, 1));
+}
+.statement-room { object-position: 55% center; }
+.statement-evidence { opacity: var(--story-crossfade, 0); }
+/* The lower band stays near-solid: the ledger still has its own type down there, under the footer. */
+.statement-shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, #08090bea, #08090b80 55%, #08090b35),
+              linear-gradient(0deg, #090a0d 7%, #090a0dd9 15%, transparent 36%, transparent 75%, #090a0d);
+}
+.statement-copy { position: absolute; left: max(6vw, calc((100vw - 1240px) / 2)); right: 5vw; top: 50%; }
+.statement-first { opacity: var(--story-first, 1); transform: translate3d(0, calc(-50% + var(--story-first-y, 0px)), 0); }
+.statement-second { opacity: var(--story-second, 0); transform: translate3d(0, calc(-50% + var(--story-second-y, 40px)), 0); }
+.statement-copy .label { color: var(--stamp-lit); margin-bottom: 24px; }
+.statement-line { font: clamp(72px, 11.5vw, 184px)/.88 var(--f-display); letter-spacing: -.015em; text-transform: uppercase; }
+.statement-line em { color: var(--stamp-lit); font-style: normal; }
+.statement-foot {
+  position: absolute; inset: auto 6vw 48px; display: flex; justify-content: space-between; gap: 24px;
+  font: 10px var(--f-type); letter-spacing: .16em; text-transform: uppercase; color: var(--bone);
+}
+.statement-rule {
+  position: absolute; inset: auto 6vw 28px; height: 1px; background: var(--stamp-lit);
+  transform: scaleX(var(--statement-progress, 0)); transform-origin: left;
+}
+/* JS owns arrival translate/opacity; avoid fighting the older CSS timelines. */
+body.premiere .dossier, body.premiere .paperwork .print {
+  animation: none; opacity: 1; transform: none;
+  translate: 0 var(--arrival-y, 0px); transition: rotate 350ms var(--scroll-ease);
+}
+.premiere .dossier .print img, .premiere .paperwork .print img { opacity: var(--arrival-opacity, 1); }
+body.premiere .dossiers::before { animation: none; }
+.premiere .on-cue:not(.dossier):not(.print) { transition-timing-function: var(--scroll-ease); }
+.premiere .board-print { transition: opacity 650ms var(--scroll-ease), transform 800ms var(--scroll-ease); }
+
+@media (max-width: 720px) {
+  .scroll-invitation { inset: auto 20px 18px; font-size: 8px; gap: 10px; letter-spacing: .1em; }
+  .scroll-invitation > span:first-child { display: none; }
+  .reel { height: 430svh; }
+  .reel-stage { --gw: calc(100vw - 32px); padding-inline: 16px; gap: 24px; }
+  .reel-sub { min-height: 6em; font-size: 15px; }
+  .reel-strip { display: flex; justify-content: space-between; gap: 4px; height: auto; }
+  .reel-strip li { position: relative; left: auto; }
+  .reel-strip li a { font-size: 8px; letter-spacing: 0; padding: 14px 2px; width: auto; height: auto; }
+  .reel-strip li.low a { padding-top: 14px; }
+  .reel-strip li.low::before { height: 9px; }
+  .case-statement { height: 190svh; }
+  .statement-line { font-size: clamp(62px, 15vw, 100px); }
+  .statement-foot { font-size: 8px; line-height: 1.7; inset-inline: 6vw; }
+  .statement-foot span { max-width: 45%; }
+  .statement-foot span:last-child { text-align: right; }
+  .statement-copy .label { font-size: 9px; }
+  .statement-evidence { object-position: 40% center; }
+}
+
+/* Pause is a complete alternate reading mode, including dynamically toggled preferences. */
+body.premiere.film-static .reel { height: auto; }
+body.premiere.film-static .reel-stage { position: relative; height: auto; min-height: 0; padding-block: 112px 60px; clip-path: none; }
+body.premiere.film-static .reel-canvas { display: none; }
+body.premiere.film-static .reel-sub { max-width: 76ch; }
+body.premiere.film-static .case-statement { height: auto; }
+body.premiere.film-static .statement-stage { position: relative; height: auto; min-height: 80svh; padding: 100px 6vw; }
+body.premiere.film-static .statement-copy { position: relative; inset: auto; opacity: 1; transform: none; margin-block: 40px; }
+body.premiere.film-static .statement-line { font-size: clamp(60px, 9vw, 130px); }
+body.premiere.film-static .statement-image { transform: none; }
+body.premiere.film-static .statement-evidence { display: none; }
+body.premiere.motion-paused *, body.premiere.motion-paused *::before, body.premiere.motion-paused *::after { animation: none !important; transition: none !important; }
+body.premiere.motion-paused .on-cue { opacity: 1; transform: none; translate: none; }
+body.premiere.motion-paused .scroll-invitation { display: none; }
+@media (prefers-reduced-motion: reduce), print {
+  .premiere *, .premiere *::before, .premiere *::after { animation: none !important; transition: none !important; }
+  .case-statement { height: auto; }
+  .statement-stage { position: relative; height: auto; padding: 80px 6vw; }
+  .statement-copy { position: relative; inset: auto; opacity: 1; transform: none; margin-block: 40px; }
+  .statement-image { transform: none; }
+  .statement-evidence { display: none; }
+  .scroll-invitation { display: none; }
+}

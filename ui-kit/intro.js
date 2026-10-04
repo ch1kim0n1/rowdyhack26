@@ -1,11 +1,12 @@
 /* The title sequence: Bond's gun barrel, in the crew's colours. Dots roll
    across the dark and the last one opens into a spyglass. The spyglass tracks
-   the emblem in from the wing to the centre, locks on and zooms in, then the
-   dark closes around the emblem as it returns to its corner of the marquee
-   and the premiere fades up from black.
-   The head decides whether it plays (html.intro-on): once per session, never
-   for reduced or paused motion or a deep link; ?intro replays it. Any key,
-   click, wheel or touch skips it. */
+   the emblem in from the wing to the centre and locks on; the emblem fires,
+   red runs down the glass and the barrel sways and sinks. Then the dark closes
+   around the emblem as it returns to its corner of the marquee and the
+   premiere fades up from black.
+   The head decides whether it plays (html.intro-on): every load, except for
+   reduced or paused motion; ?intro plays it regardless and ?intro=off never
+   does. Any key, click, wheel or touch skips it. */
 (() => {
   const root = document.documentElement;
   const overlay = document.querySelector('.intro');
@@ -21,7 +22,7 @@
   const emblem = new Image();
   emblem.src = mark.src;
 
-  const NIGHT = '#050507', INK = '#0d0e12', PAPER = '242,240,233', RED = '220,40,40';
+  const NIGHT = '#050507', INK = '#0d0e12', PAPER = '242,240,233', RED = '220,40,40', BLOOD = '158,14,22';
   const TAU = Math.PI * 2;
 
   /* the cue sheet, in seconds */
@@ -30,8 +31,10 @@
   const WALK = [1.05, 2.6];      /* the emblem walks in from the right */
   const TRACK = [1.4, 2.7];      /* the glass follows it to the centre */
   const LOCK = [2.7, 3.0];       /* crosshair, red dot */
+  const SHOT = [3.0, 3.16];      /* the emblem fires: a flash, and the glass kicks */
   const ZOOM = [3.0, 3.35];      /* into the glass */
-  const HOME = [3.35, 4.15];     /* back to the marquee as the dark closes in */
+  const RUN = [3.12, 4.0];       /* red runs down the glass; the barrel sways and sinks */
+  const HOME = [4.0, 4.8];       /* back to the marquee as the dark closes in */
 
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const lerp = (a, b, k) => a + (b - a) * k;
@@ -70,7 +73,7 @@
       hx: lerp(x3, stopX, outQuad(clamp(t / DOTS_STOP))), hy: cy,
       hr: lerp(rd, R, bloom), wall: bloom, cream: 1 - bloom, rim: bloom,
       lx: 0, ly: cy, lr: L, rot: 0, logo: t >= WALK[0],
-      cross: 0, ping: 0, spin: t * .35,
+      cross: 0, ping: 0, spin: t * .35, flash: 0, run: 0,
     };
 
     /* the walk: a stride that settles as it arrives */
@@ -86,7 +89,7 @@
     s.hy = cy + Math.sin(t * 3.1) * R * .025 * (1 - span(t, LOCK)) * bloom;
 
     /* lock on */
-    s.cross = clamp(span(t, LOCK) * 2) * (1 - span(t, [ZOOM[1] - .1, HOME[0] + .15]));
+    s.cross = clamp(span(t, LOCK) * 2) * (1 - span(t, [SHOT[0], SHOT[1] + .12]));
     s.ping = t >= LOCK[0] ? span(t, [LOCK[0] + .08, LOCK[1] + .3]) : 0;
 
     /* zoom in through the glass */
@@ -94,6 +97,19 @@
     s.hr *= 1 + .55 * z;
     s.lr *= 1 + .3 * z;
     s.spin += z * .9;
+
+    /* the shot: the emblem recoils, the glass flashes white and kicks */
+    if (t >= SHOT[0]) {
+      s.flash = 1 - span(t, SHOT);
+      s.rot = -.14 * s.flash;
+      s.hx += Math.sin(t * 95) * R * .035 * s.flash;
+    }
+
+    /* red runs down the glass while the barrel sways and sinks, as the hand holding it goes slack */
+    s.run = span(t, RUN);
+    const sink = R * .34 * s.run ** 2;
+    s.hx += Math.sin(s.run * Math.PI * 3) * R * .08 * s.run;
+    s.hy += sink;
 
     /* home: the emblem returns to the marquee and the dark closes around it */
     if (t >= HOME[0]) {
@@ -103,7 +119,7 @@
       s.lx = lerp(W / 2, mx, e);
       s.ly = lerp(cy, my, e ** 1.6);          /* y lags x, so it arcs up and over */
       s.lr = logLerp(L * 1.3, mr, e);
-      s.hx = s.lx; s.hy = s.ly;
+      s.hx = s.lx; s.hy = s.ly + sink * (1 - e);   /* the sunk glass gathers itself around the emblem */
       s.hr = logLerp(R * 1.55, mr * 1.02, e);
       s.wall = s.rim = 1 - span(h, [0, .7]);
       s.rot = 0;
@@ -166,11 +182,30 @@
     ctx.fillStyle = glow;
     ctx.fillRect(hx - hr, hy - hr, hr * 2, hr * 2);
 
+    /* the red, from the top of the glass: a ragged front that hangs lowest in the middle */
+    if (s.run > 0 && s.wall > 0) {
+      const top = hy - hr, front = top + hr * 2.5 * outQuad(s.run), N = 28;
+      ctx.fillStyle = `rgba(${BLOOD},${.9 * s.wall})`;
+      ctx.beginPath();
+      ctx.moveTo(hx - hr, top); ctx.lineTo(hx + hr, top);
+      for (let i = N; i >= 0; i--) {
+        const u = i / N;
+        const drip = Math.sin(u * 9.4 + 1.3) * .5 + Math.sin(u * 23.1) * .28 + Math.sin(u * 4.1 + 2) * .4;
+        ctx.lineTo(hx - hr + u * hr * 2, front + drip * hr * .1 - Math.abs(u - .5) * hr * .7 * (1 - s.run));
+      }
+      ctx.closePath(); ctx.fill();
+    }
+
     if (s.logo && emblem.naturalWidth) {
       ctx.save();
       ctx.translate(s.lx, s.ly); ctx.rotate(s.rot);
       ctx.drawImage(emblem, -s.lr, -s.lr, s.lr * 2, s.lr * 2);
       ctx.restore();
+    }
+
+    if (s.flash > 0) {
+      ctx.fillStyle = `rgba(${PAPER},${.92 * s.flash})`;
+      ctx.fillRect(hx - hr, hy - hr, hr * 2, hr * 2);
     }
 
     if (s.cross > 0) {
@@ -250,7 +285,6 @@
   addEventListener('resize', size);
 
   overlay.classList.add('running');                   /* the CSS failsafe stands down */
-  try { sessionStorage.setItem('appraisal-intro', 'seen'); } catch { /* replays next load; harmless */ }
   size();
   ctx.fillStyle = NIGHT;
   ctx.fillRect(0, 0, W, H);
