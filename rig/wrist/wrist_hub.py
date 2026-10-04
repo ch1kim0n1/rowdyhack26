@@ -28,12 +28,9 @@ W, H = board.LCD_WIDTH, board.LCD_HEIGHT
 
 
 def font(size):
-    try:
-        return ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size
-        )
-    except OSError:
-        return ImageFont.load_default()
+    return ImageFont.truetype(
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size
+    )
 
 
 small = font(14)
