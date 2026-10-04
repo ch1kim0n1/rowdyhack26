@@ -17,6 +17,7 @@ import urllib.request
 from pathlib import Path
 from unittest.mock import patch
 
+os.environ["PYTHON_DOTENV_DISABLED"] = "1"   # importing rig.app must not load a real .env over this setup
 os.environ.setdefault("RIG_VOICE", "0")   # the suite never talks out loud
 os.environ.pop("OPENAI_API_KEY", None)
 os.environ.pop("ANTHROPIC_API_KEY", None)

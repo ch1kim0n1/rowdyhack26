@@ -21,6 +21,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+os.environ["PYTHON_DOTENV_DISABLED"] = "1"   # importing rig.app must not load a real .env over this setup
 os.environ.setdefault("RIG_VOICE", "0")   # the suite never talks out loud
 
 for var in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "SERPAPI_API_KEY", "RIG_TOKEN",

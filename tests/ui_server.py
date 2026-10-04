@@ -6,6 +6,9 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# The real .env can override the fixture state path and camera source on import.
+# UI acceptance must never inherit connected hardware or production credentials.
+os.environ["PYTHON_DOTENV_DISABLED"] = "1"
 os.environ["RIG_STATE_FILE"] = str(Path(tempfile.mkdtemp(prefix="heist-ui-")) / "case.json")
 os.environ["RIG_OFFLINE"] = "1"
 os.environ["RIG_VOICE"] = "0"
@@ -55,4 +58,7 @@ def fixture():
 
 
 if __name__ == "__main__":
-    hub.app.run(host="127.0.0.1", port=int(os.environ.get("UI_TEST_PORT", "5127")), use_reloader=False)
+    # Flask's run() reads .env by itself (PYTHON_DOTENV_DISABLED does not cover it);
+    # left on, a real CAM_SOURCE makes the fixture pull the live camera and report the scout online.
+    hub.app.run(host="127.0.0.1", port=int(os.environ.get("UI_TEST_PORT", "5127")), use_reloader=False,
+                load_dotenv=False)
