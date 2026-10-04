@@ -28,6 +28,13 @@ async function atFilm(page, p) {
     const s = PremiereFilm.stats; return s && Math.abs(s.target - s.shown) <= 1;
   });
 }
+async function atStory(page, p) {
+  await page.evaluate(p => {
+    const el = document.querySelector('.case-statement');
+    scrollTo({top:PremiereScroll.top(el) + (el.offsetHeight - innerHeight) * p, behavior:'instant'});
+  }, p);
+  await settle(page);
+}
 async function audit(page, label) {
   await page.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
   const result = await page.evaluate(() => axe.run(document, {runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}}));
@@ -48,8 +55,8 @@ async function audit(page, label) {
   const page=await context.newPage(); page.on('pageerror', e=>errors.push(String(e)));
   await page.goto(base+'/premiere?intro=off#top');
   await check('New routes and all sequence frames are served', async()=>{
-    for(const asset of ['premiere-scroll.js','premiere-scroll.css','premiere-sequence.js','media/scroll-frames/manifest.json'])
-      assert.equal((await fetch(base+'/'+asset)).status,200,asset);
+    for(const asset of ['premiere-scroll.js','premiere-scroll.css','premiere-sequence.js','premiere-diamond-type.js','media/crew-hat-wrist.webp','media/crew-hat.webp','media/scroll-frames/manifest.json'])
+    { const res=await fetch(base+'/'+asset); await res.arrayBuffer(); assert.equal(res.status,200,asset); }   // read it: an unread image body crashes Node's fetch when the server closes
     const manifest=await (await fetch(base+'/media/scroll-frames/manifest.json')).json();
     assert.equal(manifest.count,501);
     assert.equal(fs.readdirSync(path.join(root,'ui-kit/media/scroll-frames')).filter(n=>n.endsWith('.webp')).length,501);
@@ -69,14 +76,14 @@ async function audit(page, label) {
     await page.getByRole('link',{name:'The Lineup',exact:true}).click();
     await settle(page);
     await page.waitForFunction(()=>PremiereFilm.stats.target>310);
-    for(const p of [0,.82,.1]) {
+    for(const p of [0,.68,.1]) {
       await page.evaluate(p=>{
         const el=document.querySelector('.case-statement');
         scrollTo({top:PremiereScroll.top(el)+(el.offsetHeight-innerHeight)*p,behavior:'instant'});
       },p); await settle(page);
       const opacity=await page.locator('.statement-second').evaluate(el=>Number(getComputedStyle(el).opacity));
-      assert.ok(p>.8?opacity>.95:opacity<.05, `story progress=${p}, opacity=${opacity}`);
-      if(p>.8) await page.screenshot({path:path.join(output,'story-desktop.png')});
+      assert.ok(p>.6?opacity>.95:opacity<.05, `story progress=${p}, opacity=${opacity}`);
+      if(p>.6) await page.screenshot({path:path.join(output,'story-desktop.png')});
     }
   });
   await check('Pause and resume switch to a readable manual player',async()=>{
@@ -103,11 +110,12 @@ async function audit(page, label) {
         // The loading card fades once the first frame is drawn; it must be gone, not just fading.
         await page.waitForFunction(()=>getComputedStyle(document.querySelector('.gate-loading')).opacity==='0');
         await page.screenshot({path:path.join(output,'film-mobile.png')});
-        for(const [p,name] of [[.08,'story-mobile-first.png'],[.82,'story-mobile-second.png']]) {
+        for(const [p,name] of [[.08,'story-mobile-first.png'],[.68,'story-mobile-second.png']]) {
           await page.evaluate(p=>{
             const el=document.querySelector('.case-statement');
             scrollTo({top:PremiereScroll.top(el)+(el.offsetHeight-innerHeight)*p,behavior:'instant'});
           },p); await settle(page);
+          await page.waitForFunction(()=>[...document.querySelectorAll('.statement-line')].every(l=>getComputedStyle(l).opacity==='0'));   // type out, stones alone
           await page.screenshot({path:path.join(output,name)});
         }
       }
@@ -123,6 +131,58 @@ async function audit(page, label) {
     await atFilm(page,.6);
     await page.waitForFunction(()=>PremiereFilm.stats.pending===0);
     assert.ok((await page.evaluate(()=>PremiereFilm.stats.cached))<=32);
+  });
+  await check('Story scene: photographs on a flush plate, type flush beside it, headlines set in stones',async()=>{
+    await page.setViewportSize({width:1440,height:900}); await page.goto('about:blank'); await page.goto(base+'/premiere?intro=off#top'); await settle(page);
+    await atStory(page,.08);
+    await page.waitForFunction(()=>[...document.querySelectorAll('.statement-image')].every(i=>i.complete&&i.naturalWidth>0));
+    await page.waitForFunction(()=>document.querySelector('.statement-first .statement-stones')?.dataset.running==='true'
+      &&getComputedStyle(document.querySelector('.statement-first .statement-line')).opacity==='0');
+    const g=await page.evaluate(()=>{
+      const box=s=>document.querySelector(s).getBoundingClientRect();
+      const range=document.createRange(); range.selectNodeContents(document.querySelector('.statement-first .statement-line'));
+      const type=[...range.getClientRects()].filter(r=>r.width);
+      const plate=box('.statement-plate'), stage=box('.statement-stage'), foot=box('.statement-foot');
+      return {plate:{l:plate.left,t:plate.top,r:plate.right,b:plate.bottom}, stage:{t:box('.marquee').bottom,r:stage.right,b:stage.bottom},
+        typeLeft:Math.min(...type.map(r=>r.left)), typeRight:Math.max(...type.map(r=>r.right)), footLeft:foot.left, footRight:foot.right,
+        stones:[...document.querySelectorAll('.statement-stones')].map(c=>Number(c.dataset.particleCount)),
+        srcs:[...document.querySelectorAll('.statement-image')].map(i=>i.getAttribute('src'))};
+    });
+    assert.deepEqual(g.srcs,['media/crew-hat-wrist.webp','media/crew-hat.webp']);
+    for(const side of ['t','r','b']) assert.ok(Math.abs(g.plate[side]-g.stage[side])<=1,`plate is flush on ${side}: ${JSON.stringify(g)}`);
+    assert.ok(g.typeRight<=g.plate.l&&g.plate.l-g.typeRight<64,`longest line ends at the plate: ${JSON.stringify(g)}`);
+    assert.ok(Math.abs(g.typeLeft-g.footLeft)<=3&&g.footRight<=g.plate.l,`type and footer share one gutter: ${JSON.stringify(g)}`);
+    assert.ok(g.stones.length===2&&g.stones.every(n=>n>3000),`both headlines are set in stones: ${g.stones}`);
+    await audit(page,'story-desktop');
+    // No section is ruled off or ends on an edge. By the time the scene lets go, everything on it has left...
+    assert.equal(await page.locator('.statement-rule').count(),0);
+    await atStory(page,.995);
+    const gone=await page.evaluate(()=>['.statement-plate','.statement-second','.statement-foot'].map(s=>Number(getComputedStyle(document.querySelector(s)).opacity)));
+    assert.ok(gone.every(o=>o<.02),`plate, type and footer have left before the scene lets go: ${gone}`);
+    // ...and its ground thins out into the next section's. Measured in the page margin, where there is only ground:
+    // a block ending or a ruled line would show as a jump in brightness between two neighbouring rows.
+    const probe=await context.newPage();
+    for(const beyond of [.2,.45,.7]) {
+      await page.evaluate(v=>{
+        const el=document.querySelector('.case-statement');
+        scrollTo({top:PremiereScroll.top(el)+el.offsetHeight-innerHeight+v*innerHeight,behavior:'instant'});
+      },beyond); await settle(page);
+      const jump=await probe.evaluate(async b64=>{
+        const img=new Image(); img.src='data:image/png;base64,'+b64; await img.decode();
+        const c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
+        const g=c.getContext('2d'); g.drawImage(img,0,0);
+        const w=Math.round(img.width*.03), d=g.getImageData(Math.round(img.width*.004),0,w,img.height).data;
+        let worst=0, prev=null;
+        for(let r=Math.round(img.height*.12); r<img.height-2; r++) {
+          let sum=0; for(let i=r*w*4,e=i+w*4; i<e; i+=4) sum+=d[i]*.299+d[i+1]*.587+d[i+2]*.114;
+          if(prev!==null) worst=Math.max(worst,Math.abs(sum/w-prev)); prev=sum/w;
+        }
+        return worst;
+      },(await page.screenshot()).toString('base64'));
+      assert.ok(jump<3,`no hard edge where the story ends (${beyond} screens past): brightest row-to-row jump ${jump.toFixed(1)} of 255`);
+    }
+    await probe.close();
+    await page.screenshot({path:path.join(output,'story-first-desktop.png')});
   });
   await check('Title sequence plays on every load, deep links included, and can be skipped',async()=>{
     const p=await context.newPage(); p.on('pageerror',e=>errors.push(String(e)));
@@ -149,6 +209,8 @@ async function audit(page, label) {
     await p.goto(base+'/premiere#crew'); await p.waitForLoadState('networkidle');
     assert.equal(await p.evaluate(()=>document.documentElement.classList.contains('intro-on')),false,'reduced motion gets no title sequence');
     assert.equal(frames,0); assert.ok(await p.locator('video').evaluate(el=>el.controls));
+    assert.equal(await p.locator('.statement-first .statement-stones').evaluate(el=>el.dataset.running),'false');
+    assert.equal(await p.locator('.statement-first .statement-line').evaluate(el=>getComputedStyle(el).opacity),'1');
     await audit(p,'reduced-mobile');
     await p.emulateMedia({reducedMotion:'no-preference'}); await settle(p);
     assert.equal(await p.locator('body').evaluate(el=>el.classList.contains('film-static')),false);
@@ -169,6 +231,8 @@ async function audit(page, label) {
     await c.close();
   });
   await page.setViewportSize({width:1440,height:900}); await page.goto(base+'/premiere?intro=off#film'); await atFilm(page,.25);
+  // The marquee fades out as the film starts; audited mid-fade, its button reads as low contrast.
+  await page.waitForFunction(()=>getComputedStyle(document.querySelector('.marquee')).opacity==='0');
   await check('Animated film passes serious/critical accessibility checks',()=>audit(page,'film-desktop'));
   // Diagnostic only: hardware/CI timings are not a universal frame-rate guarantee.
   const timing=await page.evaluate(()=>new Promise(resolve=>{

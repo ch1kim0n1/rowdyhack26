@@ -184,15 +184,20 @@
       paintReel(clamp((y - layout.filmTop) / layout.filmLength) * DURATION);
       perfs.forEach(p => p.style.setProperty('--roll', `${(-y * .3).toFixed(1)}px`));
     }
+    /* The story has no edges: it comes up out of the film's black as it scrolls into place
+       (enter), and before it lets go everything on it has left (exit), so what scrolls away
+       is only its ground, dissolving into the crew's. */
     const p = reduced ? 1 : clamp((y - layout.statementTop) / Math.max(1, layout.statementHeight - vh));
-    const cross = clamp((p - .35) / .3);
-    statement.style.setProperty('--statement-progress', p.toFixed(4));
+    const enter = reduced ? 1 : clamp((y + vh - layout.statementTop) / vh);
+    const exit = reduced ? 0 : clamp((p - .8) / .18);
+    statement.style.setProperty('--story-enter', enter.toFixed(4));
+    statement.style.setProperty('--story-exit', exit.toFixed(4));
     statement.style.setProperty('--story-scale', (1.03 + p * .09).toFixed(4));
-    statement.style.setProperty('--story-crossfade', cross.toFixed(4));
-    statement.style.setProperty('--story-first', (1 - clamp((p - .22) / .25)).toFixed(4));
-    statement.style.setProperty('--story-second', clamp((p - .5) / .22).toFixed(4));
+    statement.style.setProperty('--story-crossfade', clamp((p - .26) / .24).toFixed(4));
+    statement.style.setProperty('--story-first', (1 - clamp((p - .16) / .2)).toFixed(4));
+    statement.style.setProperty('--story-second', clamp((p - .38) / .18).toFixed(4));
     statement.style.setProperty('--story-first-y', `${(-p * 60).toFixed(2)}px`);
-    statement.style.setProperty('--story-second-y', `${((1 - clamp((p - .45) / .3)) * 48).toFixed(2)}px`);
+    statement.style.setProperty('--story-second-y', `${((1 - clamp((p - .34) / .24)) * 48 - exit * 36).toFixed(2)}px`);
     for (const {el, top, offset} of editorial) {
       const enter = reduced ? 1 : clamp((y + vh * .94 - top - offset) / (vh * .48));
       const eased = 1 - Math.pow(1 - enter, 3);

@@ -250,6 +250,42 @@ Results: `npm run test:premiere` 12 of 12; `UI_TEST_PORT=5164 npm run test:ui` 1
 
 Scope: `/premiere` only. The dashboard at `/` keeps its own cold open. Add `ui-kit/intro.js` and `tests/browser_ui.cjs` to the commit list in Session 2.
 
+## Session 4 (2026-10-04): crew photographs and stone headlines in the story scene
+
+Request: replace the story scene's backgrounds with two photographs of the crew wearing the hat, sit the type flush with them, and give the headlines the hero title's diamond finish. Not committed.
+
+| File | Change |
+| --- | --- |
+| `ui-kit/media/crew-hat-wrist.webp`, `crew-hat.webp` | The two supplied photographs (526x964 and 722x966), as supplied |
+| `ui-kit/premiere.html` | Photographs sit in a `.statement-plate`; descriptive alt text; loads `premiere-diamond-type.js` |
+| `ui-kit/premiere-scroll.css` | Desktop: a portrait plate flush to the marquee, the right edge and the bottom of the stage; headline sized so its longest line (3.97em) runs from the gutter to the plate; footer and rule end at the plate. Phone: the photograph fills the stage under the marquee and the type stands on its lower third. Photographs are graded to black and white |
+| `ui-kit/premiere-diamond-type.js` | New. Sets both headlines in the same cut stones as the title (own copy of the shader, so the hero file is untouched): diamonds, with the accent word in rubies. Letters are read from the page's real type, which stays in the DOM and is only hidden while the stones are lit. Scroll-driven: the first headline's stones blow away as it leaves, the second's gather as it arrives. Off for reduced or paused motion and without WebGL |
+| `rig/app.py` | One more static route, for the new script. A hub started earlier needs a restart |
+| `tests/browser_premiere.cjs` | New group: photographs load, plate is flush, type ends at the plate, both headlines are in stones, axe passes with the stones lit. Reduced motion shows type, not stones. Asset fetches read their bodies. The last audit waits for the marquee's fade (it was flaky: audited mid-fade, the marquee button read as low contrast) |
+
+Results: `npm run test:premiere` 13 of 13, four consecutive runs after the flake fix; `npm run test:ui` 13 of 13; UI contracts 4 and premiere/desk route contracts 8 pass. Screenshots inspected at 1440x900, 1600x736 at 1.25x, 390x844 at 1x and at 3x.
+
+Limits: the photographs are small, so they are shown close to their native size on a plate, not stretched across the stage. Frame cadence measured 30Hz with and without the new script, on battery at 16%, so the stones' own cost could not be separated out here. At 1x pixel density on a phone-width window the stones are coarse.
+
+## Session 5 (2026-10-04): no section is ruled off or ends on an edge
+
+Request, with a screenshot of the story scene's hard bottom edge and the rule under its footer: a proper transition there, and never a section of the page marked out by lines.
+
+`premiere.css` already said "no hairlines between sections: each seam is a gradient into the next section's ground, and each gets its own scroll-driven move". The story scene, added later, broke it: a solid block that ended on an edge, with a rule under its footer.
+
+| File | Change |
+| --- | --- |
+| `ui-kit/premiere-scroll.css` | The scene's ground is a gradient that thins to nothing over its last 50svh. Plate, type and footer take `--story-enter` and `--story-exit`. The plate's top edge is feathered while the scene is arriving. The rule is gone. Scene is 300svh (240svh on a phone), up from 240 and 190, to give the exit room |
+| `ui-kit/premiere.js` | Writes `--story-enter` (0 to 1 as the scene scrolls into place) and `--story-exit` (0 to 1 over progress .80 to .98). Beats retimed: first out .16-.36, photographs cross .26-.50, second in .38-.56, held to .80 |
+| `ui-kit/premiere-diamond-type.js` | Each headline's stones gather as it arrives and blow away as it leaves, both ends of the scene |
+| `ui-kit/premiere.html` | `.statement-rule` removed |
+| `ui-kit/premiere.css` | Hairlines above and below the mission strip and the priors row removed |
+| `tests/browser_premiere.cjs` | No rule exists; plate, type and footer are at zero before the scene lets go; a pixel check in the page margin at three positions past the scene's end finds no row-to-row brightness jump of 3/255 or more |
+
+Results: `npm run test:premiere` 13 of 13, `npm run test:ui` 13 of 13, UI contracts and premiere/desk route contracts pass. Contact sheets of the entrance and exit inspected at 1600x736 and 390x844. A sweep of every section boundary through the screen found no remaining full-width edge in the page margins; the jumps it reported were content (the photograph, the hero artwork, a paper card) or the fixed wallpaper's own detail.
+
+Still there on purpose: the marquee's bottom border, the film's chapter strip, and the separators between the method's steps. They are a top bar, a timeline control and list dividers, not section boundaries.
+
 ### Additional research closure
 
 The reference's finale returns to the opening Roman street, then presents a large two-color closing headline, app download, replay control, and compact footer. The circular narrative reinforces a single continuous journey. Our ending retains the project's credits and live-dispatch links. Public code observations and browser frames support the mechanics described above; exact device frame-rate profiling of the reference was not performed.

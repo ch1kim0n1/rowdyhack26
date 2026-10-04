@@ -196,7 +196,7 @@ body.in-reel .marquee { opacity: 0; pointer-events: none; }
 .brief-film span { margin-left: 12px; }
 .btn.primary { background: var(--paper); border-color: var(--paper); color: var(--ink); font-family: var(--f-type); font-weight: 700; letter-spacing: .1em; gap: 22px; }
 .btn.primary:hover { background: #dcd9d1; border-color: #dcd9d1; }
-.mission-strip { display: flex; justify-content: space-between; gap: 18px; padding: 18px max(24px, calc((100vw - 1240px) / 2)); border-block: 1px solid var(--hair); background: rgba(13,14,18,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: var(--ash); font: 10px var(--f-type); letter-spacing: .17em; text-transform: uppercase; }
+.mission-strip { display: flex; justify-content: space-between; gap: 18px; padding: 18px max(24px, calc((100vw - 1240px) / 2)); background: rgba(13,14,18,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: var(--ash); font: 10px var(--f-type); letter-spacing: .17em; text-transform: uppercase; }
 .mission-strip span:first-child { color: var(--paper); }
 .mission-strip .tc-credit { color: var(--ash); font-size: 10px; }
 @media (max-width: 780px) {
@@ -429,8 +429,7 @@ body.in-reel .marquee { opacity: 0; pointer-events: none; }
 
 .priors {
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: var(--section-y);
-  border-top: var(--rule) solid var(--hair); border-bottom: var(--rule) solid var(--hair);
+  margin-top: var(--section-y);   /* no rules above or below: nothing on this page is ruled off */
 }
 .prior { display: grid; gap: 6px; padding: 28px 24px; border-left: var(--rule) solid var(--hair); }
 .prior:first-child { border-left: 0; padding-left: 0; }

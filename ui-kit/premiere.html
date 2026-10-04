@@ -18,12 +18,14 @@
 <link rel="stylesheet" href="premiere-title-particles.css">
 <link rel="stylesheet" href="premiere-scroll.css">
 <noscript><style>
-  .case-statement { height: auto; }
-  .statement-stage { position: relative; height: auto; padding: 80px 6vw; }
+  .case-statement { height: auto; background: #090a0d; }
+  .statement-stage { position: relative; height: auto; padding: 80px var(--copy-right) 80px var(--gutter); }
   .statement-copy { position: relative; inset: auto; opacity: 1; transform: none; margin-block: 40px; }
+  .statement-plate { top: 0; }
   .reel { height: auto; }
   .reel-stage { position: relative; }
   .gate-loading, .reel-canvas, .scroll-invitation { display: none; }
+  @media (max-width: 720px) { .statement-shade { background: #090a0dc7; } }
 </style></noscript>
 <script>
 /* The title sequence (intro.js) is decided before first paint: it plays on every
@@ -153,9 +155,11 @@
   <div class="wrap">
     <div class="case-statement">
       <div class="statement-stage">
-        <img class="statement-image statement-room" src="media/still-desk.jpg" alt="" loading="lazy" width="1600" height="900">
-        <img class="statement-image statement-evidence" src="media/frame-ledger.jpg" alt="" loading="lazy" width="1600" height="900">
-        <div class="statement-shade" aria-hidden="true"></div>
+        <div class="statement-plate">
+          <img class="statement-image statement-room" src="media/crew-hat-wrist.webp" alt="A crew member tips the hat. Its camera sits in the crown, and the wrist unit is strapped to the other forearm." loading="lazy" width="526" height="964">
+          <img class="statement-image statement-evidence" src="media/crew-hat.webp" alt="A second crew member wears the hat, the camera lens showing in its crown." loading="lazy" width="722" height="966">
+          <div class="statement-shade" aria-hidden="true"></div>
+        </div>
         <div class="statement-copy statement-first">
           <p class="label">The room is only the beginning</p>
           <p class="statement-line">Every room<br>tells a <em>story.</em></p>
@@ -165,7 +169,6 @@
           <p class="statement-line">Bring back<br>the <em>evidence.</em></p>
         </div>
         <div class="statement-foot"><span>Observe / Appraise / Document</span><span>Scroll to meet the crew&nbsp;↓</span></div>
-        <span class="statement-rule" aria-hidden="true"></span>
       </div>
     </div>
     <header class="section-head">
@@ -353,5 +356,6 @@
 <script src="premiere-portal.js"></script>
 <script src="premiere-title-particles.js"></script>
 <script src="premiere.js"></script>
+<script src="premiere-diamond-type.js"></script>
 </body>
 </html>

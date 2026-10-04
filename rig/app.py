@@ -1116,6 +1116,7 @@ def premiere_page():
 @app.get("/premiere-portal.js")
 @app.get("/premiere-title-particles.css")
 @app.get("/premiere-title-particles.js")
+@app.get("/premiere-diamond-type.js")
 @app.get("/intro.js")
 @app.get("/desk.css")
 @app.get("/desk.js")
