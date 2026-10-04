@@ -301,10 +301,6 @@ body.in-reel .marquee { opacity: 0; pointer-events: none; }
 }
 .section-lede { font-family: var(--f-type); font-size: clamp(15px, 1.4vw, 18px); line-height: 1.7; color: var(--ash); max-width: 56ch; }
 
-/* things arrive like a cut, not a slide */
-.on-cue { opacity: 0; transform: translateY(14px); transition: opacity 900ms var(--ez-film), transform 900ms var(--ez-settle); }
-.on-cue.in { opacity: 1; transform: none; }
-
 /* ---------- photographs: prints with a white border and tape ---------- */
 .print {
   position: relative;
@@ -506,17 +502,8 @@ body.in-reel .marquee { opacity: 0; pointer-events: none; }
     }
     body:not(.motion-paused) .paperwork .print:nth-child(odd) { --deal-r: -7deg; }
     body:not(.motion-paused) .paperwork .print:nth-child(even) { --deal-r: 7deg; }
-    /* paperwork -> credits: fade to black, then the credits roll up out of it */
-    body:not(.motion-paused) .paperwork > .wrap {
-      animation: fade-to-black linear forwards;
-      animation-timeline: --paper;
-      animation-range: exit 10% exit 80%;
-    }
-    body:not(.motion-paused) .credits-roll {
-      animation: credits-up linear backwards;
-      animation-timeline: view();
-      animation-range: entry 0% entry 100%;
-    }
+    /* paperwork -> credits: the fade to black and the credits coming up out of it are
+       drawn from the scroll clock now (premiere.js, and the credits' own data-motion) */
   }
 }
 @keyframes reel-iris-in  { from { clip-path: circle(12% at 50% 50%); } to { clip-path: circle(75% at 50% 50%); } }
@@ -529,8 +516,6 @@ body.in-reel .marquee { opacity: 0; pointer-events: none; }
   from { translate: 0 120px; rotate: calc(var(--tilt, 0deg) + var(--deal-r)); opacity: 0; }
   60%  { opacity: 1; }
 }
-@keyframes fade-to-black { to { opacity: .15; } }
-@keyframes credits-up { from { translate: 0 140px; opacity: 0; } }
 
 /* ---------- THE END, shot up (premiere.js) ---------- */
 .credits-end .ch {           /* each letter carries its own holes; the knock stacks on the cut-paper tilt (transform) */
@@ -590,6 +575,5 @@ body.in-reel .marquee { opacity: 0; pointer-events: none; }
   .reel { height: auto; }
   .reel-stage { position: relative; height: auto; min-height: 0; padding-block: 96px; }
   .perfs { display: none; }
-  .on-cue { opacity: 1; transform: none; }
   .board-print { transition: none; }
 }

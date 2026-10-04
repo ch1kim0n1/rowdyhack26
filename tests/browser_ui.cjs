@@ -203,6 +203,33 @@ async function axe(page, name){
     assert.equal(await live.locator('#narrator-log').count(), 1);
     await live.close(); await lab.close();
   });
+  await check('The desk settles in as it opens, keeps polling, and the screens dissolve into one another', async () => {
+    const desk = await context.newPage(); desk.on('pageerror', error => errors.push(String(error)));
+    await desk.addInitScript(() => addEventListener('pagereveal', event => { window.dissolved = !!event.viewTransition; }));
+    let polls = 0; desk.on('request', request => { if(request.url().endsWith('/state.json')) polls++; });
+    await fixture({count:2}); await desk.goto(base + '/desk');
+    assert.equal(await desk.locator('.desk-grid[data-cinematic-scene="desk"] > [data-motion="settle"]').count(), 4);
+    // The entrance is one short CSS animation per panel; once it has run nothing of it is left.
+    await desk.waitForFunction(() => [...document.querySelectorAll('.desk-grid > [data-motion]')]
+      .every(panel => !panel.getAnimations().length && getComputedStyle(panel).opacity === '1' && getComputedStyle(panel).translate === 'none'));
+    assert.ok(await desk.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    await desk.waitForFunction(() => document.querySelector('#desk-count').textContent === '2');
+    const before = polls; await wait(2300);
+    assert.ok(polls - before >= 2, `the desk asked for state ${polls - before} times in 2.3s`);
+    await fixture({count:3}); await desk.waitForFunction(() => document.querySelector('#desk-count').textContent === '3');
+    // From the premiere into the working screen: a dissolve where the browser has one, a plain cut when motion is paused.
+    await desk.goto(base + '/premiere?intro=off#top');
+    await desk.getByRole('link', {name:/Enter dispatch/}).click();
+    await desk.waitForURL('**/desk'); await desk.waitForFunction(() => 'dissolved' in window);
+    const supported = await desk.evaluate(() => 'CSSViewTransitionRule' in window);
+    assert.equal(await desk.evaluate(() => window.dissolved), supported);
+    await desk.locator('[data-vault-motion]').click();
+    await desk.locator('.desk-nav').getByRole('link', {name:'Premiere'}).click();
+    await desk.waitForURL('**/premiere'); await desk.waitForFunction(() => 'dissolved' in window);
+    assert.equal(await desk.evaluate(() => window.dissolved), false, 'paused motion cuts');
+    await desk.locator('[data-vault-motion]').click();
+    await desk.close();
+  });
   await check('Letter manifest fits one sheet for 0–15 long-name exhibits', async () => {
     const print = await context.newPage();
     for(const count of [0,1,5,15]){

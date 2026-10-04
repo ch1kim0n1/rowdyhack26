@@ -30,6 +30,8 @@
     if(event.key === 'appraisal-motion'){ paused = event.newValue === 'paused'; sync(); }
   });
   document.addEventListener('visibilitychange', () => body.classList.toggle('vault-suspended', document.hidden));
+  /* The dissolve from one screen to the next (vault.css) is motion too. */
+  addEventListener('pageswap', event => { if (paused || reduced.matches) event.viewTransition?.skipTransition(); });
 
   document.querySelectorAll('[data-vault-stage]').forEach(stage => {
     stage.addEventListener('pointermove', event => {

@@ -11,6 +11,9 @@
 <link rel="stylesheet" href="/vault.css">
 <link rel="stylesheet" href="/operations.css">
 <link rel="stylesheet" href="/motion.css">
+<link rel="stylesheet" href="/cinematic-motion.css">
+<!-- The dissolve between screens (vault.css). The opt-in is inline because the browser reads it as the body opens, before a linked sheet has arrived. -->
+<style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
 </head>
 <body class="dispatch vault-theme">
 <div class="vault-wallpaper" aria-hidden="true"></div>
@@ -47,10 +50,10 @@
   </div>
 </header>
 
-<main class="desk-grid">
+<main class="desk-grid" data-cinematic-scene="desk" data-cinematic-trigger="load">
 
   <!-- the take, and the one button that matters -->
-  <section class="panel take-panel" aria-labelledby="take-h">
+  <section class="panel take-panel" aria-labelledby="take-h" data-motion="settle">
     <h2 class="label" id="take-h">Estimated take</h2>
     <div class="take-slip">
       <div class="odo" id="desk-odo" aria-live="polite"></div>
@@ -69,7 +72,7 @@
   </section>
 
   <!-- the ledger -->
-  <section class="panel ledger-panel" aria-labelledby="ledger-h">
+  <section class="panel ledger-panel" aria-labelledby="ledger-h" data-motion="settle" data-motion-order="1">
     <div class="panel-head">
       <h2 class="label" id="ledger-h">The ledger</h2>
       <a class="meta" href="/manifest">Open the case file</a>
@@ -81,7 +84,7 @@
   </section>
 
   <!-- the crew -->
-  <section class="panel crew-panel" aria-labelledby="crew-h">
+  <section class="panel crew-panel" aria-labelledby="crew-h" data-motion="settle" data-motion-order="2">
     <div class="crew-top">
     <h2 class="label" id="crew-h">The crew</h2>
 
@@ -124,7 +127,7 @@
     </article>
   </section>
   <!-- the radio: typed or keyed calls, answered from the plan; the narrator's transcript -->
-  <section class="panel radio-panel" aria-labelledby="radio-h">
+  <section class="panel radio-panel" aria-labelledby="radio-h" data-motion="settle" data-motion-order="3">
     <div class="panel-head">
       <h2 class="label" id="radio-h">Dispatch radio</h2>
       <span class="meta" id="radio-state" role="status">Radio quiet.</span>

@@ -447,6 +447,33 @@ Three pieces built on the kit after the dashboard.
 
 Two small files sit on top of the title card, and both stand down when motion is paused or reduced, leaving the page above exactly as it is. `premiere-title-particles.js` sets the three words of the title in small cut stones: it samples the lettering out of the artwork, paints the wall back over it, and draws the letters again as a WebGL point cloud of faceted diamonds, each one placed wholly inside its letter so the strokes keep their edges. Each stone has a flat table and four facets that take the light in turn as it idles; one in six also throws a four-pointed flare now and then, and every few seconds a bar of light crosses the lettering and sets off the readiest of them. They gather on arrival, part around the pointer and scatter as the camera leaves. `premiere-portal.js` pins the title card and pushes the camera into the diamond from the first scroll; the film opens out of the diamond through a circular aperture and takes over at its first frame. Native scroll only, no wheel or touch handling. Where the title card is taller than the window (any laptop or desktop), the brief and the mission strip move to after the film so the artwork alone fills the screen; they are read there on the reel's black, and the crew's ground dissolves up out of it with no rule between. On a phone, where art and band fit one screen, they stay under the art.
 
+The scenes after the film run on a small motion system, in four files. Nothing in it plays by itself: the scroll decides where everything stands, so scrolling back runs it backwards.
+
+- `scroll-cinema.js` is the scene registry. Every `[data-cinematic-scene]` gets a `progress` (through its pinned length), an `enter` and an `exit`, from the one clock in `premiere-scroll.js`. A page draws a scene with `ScrollCinema.scene(name, draw)`; scenes far from the window are skipped (an IntersectionObserver marks them `data-active`). It holds animation state only and never touches the rig's data.
+- `motion-presets.js` is the vocabulary. Markup names an entrance and, where it wants one, a way out: `<h2 data-motion="rise" data-motion-out="lift">`. Each is an Anime.js animation that is only ever sought, never played.
+
+  | Preset | What it does |
+  |---|---|
+  | `rise` | Display type comes up from under its baseline behind a mask: a `.cut` title glyph by glyph, plain type line by line. Anything else rises 70px whole |
+  | `slide-left`, `slide-right`, `signal` | In from the side: 60px, or 68px for `signal` |
+  | `scan` | A typed label read off from its left end: a short slide with a wipe |
+  | `focus` | Out of blur, settling back from 1.05 |
+  | `relief` | Out of blur, coming forward from 0.94 |
+  | `depth-in` | From 1.08, for large type |
+  | `settle`, `dialogue` | 12px up into place: `settle` from 80% and slightly large, `dialogue` from nothing |
+  | `mist` | A line of plain type, letter by letter out of blur. The words stay in the page for a screen reader |
+  | `lift` | Up 34px and gone. The usual exit |
+  | `crossfade` | Opacity only |
+  | `drift` | A layer that lags the scroll by `data-motion-depth` |
+
+  An exit runs as the element's foot nears the top of the window, and the element is put back once it is above it. `data-motion-order` holds a neighbour back a step, `data-motion-start` and `data-motion-span` move where an entrance begins and how long it takes, and anything inside `[data-motion-rest]` stays put. Curves are `--ez-settle` and `--ez-film`. A phone moves 60% as far with no blur, nothing large is blurred, and nothing is scaled past the window's width.
+- `webgl-scenes.js` dissolves the story's two photographs into one another through a displaced blend. Without WebGL, or with motion off, the CSS crossfade shows instead.
+- `cinematic-motion.css` holds the masks, stands down the older timers where the scroll now owns a property, and resets everything for print.
+
+The film's captions use the same presets by the film's own time: each arrives (`dialogue`) and leaves (`lift`) over a fraction of a second of film, so they move with the wheel like the picture.
+
+With motion paused or reduced none of it is built: no inline style, no mask, no canvas. A screen that does not scroll can still declare a preset: the desk's panels carry `data-motion="settle"` under `data-cinematic-trigger="load"`, which is one short CSS animation. Links between the premiere, the projector and the desk dissolve (`@view-transition`, opted into inline in each page's head because the browser reads it before a linked sheet arrives); `vault.js` skips the dissolve when motion is paused. A reload of the premiere plays the title sequence over the top of the page, not where it was left.
+
 `desk.css` and `desk.js` (`/desk`) are the crew's console. The take and ledger come from `/state.json`, the posts from `/health`, the wrist from `/wrist.json?peek` (the peek keeps the desk from counting as the wrist). Every change goes through `Noir.authFetch`, so the token rule is the dashboard's.
 
 `wrist-oled.js` copies `draw()` from `esp32/wrist.ino` pixel for pixel: the same 5x7 font, cursor positions and truncation.

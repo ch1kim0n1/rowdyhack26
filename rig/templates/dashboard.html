@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="/vault.css">
 <link rel="stylesheet" href="/operations.css">
 <link rel="stylesheet" href="/motion.css">
+<!-- The dissolve between screens (vault.css). The opt-in is inline because the browser reads it as the body opens, before a linked sheet has arrived. -->
+<style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
 <meta name="case-nonce" content="{{ case_nonce }}">
 </head>
 <body class="vault-theme projector">

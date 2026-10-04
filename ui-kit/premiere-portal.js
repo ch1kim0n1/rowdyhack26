@@ -78,6 +78,7 @@
     const x = (g.w * .5 - g.dx) * camera - (zoom - 1) * g.dx;
     const dy = (targetY - g.dy) * camera - (zoom - 1) * g.dy;
     scene.style.transform = `translate3d(${x.toFixed(2)}px,${dy.toFixed(2)}px,0) scale(${zoom.toFixed(4)})`;
+    scene.style.setProperty('--camera', camera.toFixed(4));   /* the light and the dust move at their own depth */
     tell(camera);
     const portal = smooth(range(y, g.filmTop - g.vh, g.arrive));
     const cx = x + g.dx * zoom;
@@ -134,6 +135,7 @@
     else if (later.isConnected) { pin.append(...band); later.remove(); }
     if (!active) {
       scene.style.removeProperty('transform');
+      scene.style.removeProperty('--camera');
       reel.inert = false;
       reel.removeAttribute('aria-hidden');
       reel.classList.remove('is-open');

@@ -297,3 +297,87 @@ The reference's finale returns to the opening Roman street, then presents a larg
 - Added the two-scene room/evidence bridge and editorial arrivals; retained the vault, diamond, crew, method, and working product links.
 - Corrected the existing portal opacity math and credits semantics; kept paper text fully opaque following the accessibility audit.
 - Completed the focused browser checks, UI/route contracts, and motion unit tests; recorded the separate dashboard regression failure and environment timing limits.
+
+## Session 6 (2026-10-04): a motion system for the scenes after the film
+
+Branch `cinematic-scroll-dev`, cut from `origin/main` at `d2fbd22` (the merged `UI-dev`). Not committed. Three requests in one session:
+
+1. Follow `cinematic_scroll_transition_upgrade_spec_flask_noirkit.md`.
+2. A reload plays the title sequence but did not go back to the top of the page.
+3. With the reference page's markup pasted in: take its transition types and use the same kind here.
+
+The spec describes a scroll-as-timeline site in general terms. Most of its first half already existed here (one damped clock, a frame-scrubbed canvas film with a bounded cache, pinned scenes, reduced-motion fallbacks), so this session added what was missing and left the hero camera, the film and the title stones as they were.
+
+### What was added
+
+| Spec | Here |
+| --- | --- |
+| Central controller, scene registry, progress ranges (1, 26, 27) | `scroll-cinema.js`: every `[data-cinematic-scene]` gets `progress`, `enter`, `exit`; handlers register by name; `clamp`, `lerp`, `range`, `smooth` are shared |
+| Anime.js as the animation library, driven by scroll (5 to 7) | `motion-presets.js`: each `[data-motion]` element is an Anime.js animation with `autoplay: false`, sought to the scroll position. Anime.js was vendored but not loaded on this page before |
+| Presets and masked type (8 to 11, 44) | Section titles rise glyph by glyph behind a mask, labels are scanned in, ledes come into focus, the credits' columns close on the centre line |
+| Scene overlap and crossfades (12, 13) | A scene leaving by the top sinks and dims while the next one arrives. The method's evidence board lays each print over the last by scroll position, not by a 650ms timer |
+| Camera movement and parallax (14, 15) | The fixed wallpaper is pushed in 5% over the length of the page; the light and the dust in the hero move at their own depth during the camera move; the dossier stamps lag their files |
+| WebGL morph with a fallback (20, 21) | `webgl-scenes.js`: the story's two photographs dissolve through a displaced blend with a little exposure at its middle; the CSS crossfade remains underneath |
+| Offscreen work pauses (38, 39) | IntersectionObserver marks scenes `data-active`; inactive scenes are not drawn, and the morph draws only when its progress changes |
+| Capability hints (40), mobile (32) | Below 720px: 60% of the travel, no blur, no drift, files are not turned. Four or fewer cores: no blur |
+| Film into the live UI (42) | Links between `/premiere`, `/` and `/desk` dissolve (cross-document view transitions) in the kit's `--dur-fade` and `--ez-film` |
+| Jinja integration (24, 25) | `desk.html` declares `data-cinematic-scene="desk"` and `data-motion="settle"` on its four panels: a staggered settle on load, in CSS, with no script of its own |
+
+### The reference's transition types
+
+Read from the pasted markup's `data-text-motion` and `data-block-motion` attributes and the inline styles beside them. Only the motion was taken: no colour, type, layout or code.
+
+| Seen there | Here |
+| --- | --- |
+| Lines `rise` from 135% behind a mask | Already here as `rise` |
+| `slide-left`, `slide-right`, `focus` | Already here |
+| `scan`: a short slide for data-like lines | New `scan`, with a wipe; used on the four typed labels |
+| `signal`, `relief`, `dialogue` block motions | New presets. `relief` is on the credits' links; `dialogue` on the mission copy and the film's captions |
+| "Mist" intertitles, one blurred letter at a time | New `mist`; used on the credits' two small lines. The words stay in the page (`.sr-only`) and the letters are `aria-hidden` |
+| Every block also leaves (`lift`: up 34px and gone) | New `data-motion-out`. Section heads and the mission band lift away as they reach the marquee, and are put back once above the window |
+| Copy that changes over a pinned, scrubbed film | The film's captions arrive and leave by film time (0.45s in, 0.35s out) instead of cutting |
+| Exposure layers between scenes | A 16% lift in exposure at the middle of the photograph dissolve |
+
+### Reload
+
+`premiere.html`'s head script: when the title sequence is going to play and the navigation is a reload, scroll restoration is switched to manual for that load, a `#section` is dropped from the address, and the page is put at the top. A link to a section and going back to the page are unchanged.
+
+### Files
+
+| File | Change |
+| --- | --- |
+| `ui-kit/scroll-cinema.js`, `motion-presets.js`, `webgl-scenes.js`, `cinematic-motion.css` | New |
+| `ui-kit/premiere.html` | 8 scenes, 37 `data-motion` and 12 `data-motion-out` attributes; loads Anime.js and the three scripts; inline view-transition opt-in; reload-to-top |
+| `ui-kit/premiere.js` | The story, the arrivals, the board and the exits are scene handlers; captions move by film time. The one-shot `on-cue` IntersectionObserver is gone. If `scroll-cinema.js` is missing (an old hub) the story and the arrivals still run from the clock |
+| `ui-kit/premiere.css`, `premiere-scroll.css`, `premiere-portal.css` | Removed `on-cue`, `fade-to-black`, `credits-up` and `mission-rise`: the scroll clock owns those now, in every browser, not only where `animation-timeline` exists. Files and prints take an `--arrival-turn`. Morph canvas, caption line and hero depth rules |
+| `ui-kit/premiere-portal.js` | Writes `--camera` on the hero scene |
+| `ui-kit/vault.css`, `vault.js` | Dissolve timing; `pageswap` skips the dissolve when motion is paused |
+| `rig/templates/desk.html`, `dashboard.html` | Desk: the stylesheet, scene and preset attributes, opt-in. Dashboard: the one-line opt-in only |
+| `rig/app.py` | Four static routes. A hub started before this needs a restart |
+| `tests/browser_premiere.cjs`, `browser_ui.cjs`, `test_ui_contract.py` | Five new premiere groups and one new dashboard group; the reduced-motion, viewport and title-sequence groups extended |
+
+Nothing in NOIRKIT changed: no token, colour, font or component was added or edited, and the page's copy is untouched.
+
+### Decisions worth knowing
+
+- `data-motion` is also an attribute on `<html>` (`full` or `reduce`, set by `vault.js`). The presets only look inside `<body>`, and no preset is named `full` or `reduce`. Do not write a bare `[data-motion]` CSS selector.
+- Display type is revealed by mask and movement, not by fading. Paper text on the dossiers stays opaque, as the earlier audit required.
+- An exiting scene dims only once it is in the top half of the window and is restored when it has left it; an exiting head is restored once it is above the window. Nothing off-screen is left hidden or at low contrast.
+- The dissolve's opt-in has to be inline in each page's `<head>`. Chrome resolves it as `<body>` opens; in a linked stylesheet it was missed on `/` and `/desk`, and only worked on `/premiere` by the accident of a blocking script in its head.
+- Not built, on purpose. `state-manager.js`: `noir.js` and `desk.js` already own polling and were left alone. `canvas-scenes.js`: `premiere-sequence.js` is that file. Smooth-scroll libraries: native scroll stays. Blur on large elements: THE END only scales and fades, and the mission copy is not blurred because it arrives while the film's iris is closing.
+
+### Results
+
+- `npm run test:premiere`: 18 of 18. New: scenes register and a head arrives, leaves and is put back, forward and in reverse; a caption arrives and leaves by film time; the board lays prints by scroll and a scene overlaps the next; the photographs dissolve through WebGL and through CSS without it; pausing clears every inline style, the marquee links still work, and axe passes at a settled method scene and at the foot of the page. Reduced motion builds zero motion elements, masks and letters. A reload lands at the top with the sequence playing, with and without a `#section`; a link to a section still lands on it.
+- `UI_TEST_PORT=5165 npm run test:ui`: 14 of 14. New: the desk's four panels settle and leave nothing behind, `/state.json` is still polled and a new find still appears, the premiere-to-desk link dissolves, and with motion paused it cuts. One run failed in the unrelated manifest group with an operating-system error writing `test-artifacts/axe-manifest-5.json`; the next run passed.
+- `node --test tests/test_motion.cjs`: 13 pass. `.venv/Scripts/python.exe -X utf8 -m unittest discover -s tests`: 310 tests, 1 error, 1 skipped; the error is the same Windows symlink-privilege test as before.
+- The suite caught two real faults during the work. A full-width strip scaled by `settle` made the page wider than the window; presets now refuse to scale anything that would. Exited scenes were left dimmed, which axe reports as low contrast; they are now restored once out of the window.
+- Whole-page scroll sweep in headless Chrome (36px a frame, down and back, 855 frames), against `origin/main` served from a scratch copy. Median frame gap 16.7ms on both. Frames over 34ms varied a lot from run to run: 5 to 21 on main, 8 to 31 here, in the same places on both (the film's frame decoding, the stones where the story ends, the volley at the credits). Two hotspots that were this branch's own were found and removed: blur on THE END, and blur on the mission copy. Headless Chrome renders in software, where blur costs far more than on a GPU; this compares the two versions and does not certify the judging laptop.
+- Screenshots inspected at 1440x900 and 390x844: each section head mid-entrance, at rest and on its way out, the dissolve at its start, middle and end, the board mid-dissolve, the mission band, the priors, the credits and their letters, the foot of the page, and a scene exit.
+
+### Still open
+
+1. Not committed or pushed. To commit: the four new files, the files in the table above, and this log.
+2. Not seen on a real GPU or in Safari or Firefox. The view-transition dissolve is Chromium and Safari 18.2 or later; elsewhere links cut as before. The in-app browser pane was hidden during this session (the page's clock sleeps while hidden), so every visual check was made in headless Chrome.
+3. The film's iris-out into the next scene is still a CSS `animation-timeline` effect and does not run in Firefox.
+4. Rehearse on the judging laptop, as before: wheel, trackpad, fast reverse, tab away and back. If the credits or a section head stutter there, the first things to try are `mist` to `dialogue` on the two credit lines and `focus` to `dialogue` on the ledes: both remove blur.

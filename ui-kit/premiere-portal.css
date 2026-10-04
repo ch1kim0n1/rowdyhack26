@@ -23,6 +23,10 @@ body.portal-ready .hero .vault-art {
   scale: none;
 }
 .portal-ready .hero .vault-stage::after { animation: none; }
+/* Depth inside the move: the light around the diamond swells ahead of the wall it falls
+   on, and the dust in the air rises past both. */
+.portal-ready .hero .vault-aura { scale: calc(1 + var(--camera, 0) * .2); }
+.portal-ready .hero .vault-dust { translate: 0 calc(var(--camera, 0) * -5%); }
 .portal-ready .reel {
   margin-top: -100svh;
   /* Clear only where it overlaps the title card. From there down it is the reel's
@@ -72,14 +76,7 @@ body.portal-open .marquee:not(:focus-within) { opacity: 0; pointer-events: none;
   backdrop-filter: none; -webkit-backdrop-filter: none;
 }
 .mission-later .brief-film span { display: inline-block; rotate: 180deg; }   /* the film is above now */
-@supports (animation-timeline: view()) {
-  .mission-later > * {
-    animation: mission-rise linear both;
-    animation-timeline: view();
-    animation-range: entry 5% entry 95%;
-  }
-}
-@keyframes mission-rise { from { opacity: 0; translate: 0 56px; } to { opacity: 1; translate: 0 0; } }
+/* Its lines arrive one after another as it comes up (data-motion, scroll-cinema.js). */
 /* The crew's ground comes up out of that black on a long eased ramp rather than a
    short straight one: a dissolve, with no place the eye can find an edge. */
 .portal-ready .crew {
@@ -91,7 +88,6 @@ body.portal-open .marquee:not(:focus-within) { opacity: 0; pointer-events: none;
 @media print {
   .mission-later { padding-block: 0; background: none; }
   .portal-ready .crew { background: none; }
-  .mission-later > * { animation: none; }
   .portal-ready .hero { height: auto; }
   .portal-ready .hero-portal-pin { position: static; min-height: 0; }
   .portal-ready .hero .vault-scene { transform: none !important; }
