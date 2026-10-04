@@ -137,6 +137,13 @@ Verified:
 
 Still to verify or finish:
 - Wrist showing the same live results as the dashboard (live parity).
+  One-command check once you have the backend's RIG_TOKEN:
+
+      HUB_URL=https://heist-production-75b7.up.railway.app \
+      RIG_TOKEN=<token> bash rig/wrist/post_test_item.sh
+
+  It POSTs a labeled TEST ITEM exhibit and prints /wrist.json so you can
+  confirm the shape; the running wrist picks it up on its next long-poll.
 - Hub-mode startup after reboot.
 - Reliable automatic time synchronization for HTTPS.
 - Rover motor driver compatibility and remote-control networking.
