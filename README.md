@@ -1,4 +1,17 @@
-# The Appraisal Job: physical red-team reconnaissance
+<div align="center">
+
+<img src="ui-kit/brand/appraisal-job-hero-wide.png" alt="The Appraisal Job — a noir vault heist scene" width="100%">
+
+# The Appraisal Job
+
+**Physical red-team reconnaissance, dressed as a heist film.**
+
+![Built at RowdyHacks XII](https://img.shields.io/badge/built%20at-RowdyHacks%20XII-8b0000?style=flat-square)
+![Python](https://img.shields.io/badge/python-3.10%2B-1a1a1a?style=flat-square)
+![Flask](https://img.shields.io/badge/backend-Flask-1a1a1a?style=flat-square)
+![Hardware](https://img.shields.io/badge/rig-3%20devices-1a1a1a?style=flat-square)
+
+</div>
 
 An AI-assisted field kit for authorized physical red-team walkthroughs.
 Identify visible assets, attach market-value estimates with source labels,
@@ -6,32 +19,68 @@ and turn the observations into a shared evidence ledger and top-five debrief.
 The point is to turn visible observations into evidence the assessment team
 can review and use to discuss the potential value at stake.
 
-Built for RowdyHacks XII. Three devices in sync: a **hat** (Pi Zero 2 W +
-IMX477) that streams camera images to the backend for identification and
-appraisal, a **wrist unit** (Pi Zero W + PiSugar Whisplay HAT) that keeps the
-case, count, take, and top five on the assessor's wrist, and a **rover**
-(SunFounder PiCar-X + Pi 4) that scouts the approved assessment area.
-One ledger, one dashboard, a film-noir case-file interface.
+> **The pitch.** The Appraisal Job turns an authorized room walkthrough into
+> a live evidence file. Our AI identifies visible assets, estimates their
+> market value, and keeps the field operator and dispatch desk working from
+> the same ledger. Finish the walkthrough and get a ranked top-five debrief
+> with a shareable case file — so the team can discuss what deserves closer
+> review.
 
-## The pitch
+---
 
-> The Appraisal Job turns an authorized room walkthrough into a live evidence
-> file. Our AI identifies visible assets, estimates their market value, and
-> keeps the field operator and dispatch desk working from the same ledger.
-> Finish the walkthrough and get a ranked top-five debrief with a shareable
-> case file—so the team can discuss what deserves closer review.
+## See it
 
-Use only in spaces the assessment team has permission to inspect. The dollar
-total is estimated asset value, **not** a security-risk score or a prediction
-of losses. Visibility alone does not prove an asset is unsecured. The system
-doesn't verify access controls, detect vulnerabilities, or perform intrusion
-testing. Offline/scripted results are demo data, not observed findings.
+The whole interface is a film-noir case file: a title card, a live "reel"
+that frames every scanned exhibit, a mug-shot lineup on reveal, and a paper
+manifest you can pull up on a phone by QR.
 
-The noir vocabulary (crew, exhibits, lineup, take) is presentation: “take”
-means the summed estimated asset value, and the lineup ranks by value, not
-exploitability. The useful output is documentation for an authorized review.
+| Title card | Live scan |
+|:---:|:---:|
+| <img src="test-artifacts/cold-open.png" alt="Title card — pick Appraisal or Mastermind" width="100%"> | <img src="test-artifacts/live.png" alt="Live scan — exhibits land on the reel with estimates" width="100%"> |
+| *Pick the job: open-ended Appraisal, or Mastermind with a bag and a clock.* | *Every find is framed, named, and priced live on the reel.* |
+
+| The reveal | The manifest |
+|:---:|:---:|
+| <img src="ui-kit/shots/reveal.gif" alt="The Usual Suspects — top-five lineup reveal" width="100%"> | <img src="test-artifacts/manifest-15.png" alt="Loot Manifest — printable evidence register" width="100%"> |
+| *The Usual Suspects: the top five get the lineup treatment.* | *The manifest: the full ledger as a shareable case file.* |
+
+Every exhibit also gets a mug shot — a cropped still preserved as evidence:
+
+<p align="center">
+<img src="ui-kit/media/mug-1.jpg" alt="Exhibit mug shot" width="15%">&nbsp;
+<img src="ui-kit/media/mug-2.jpg" alt="Exhibit mug shot" width="15%">&nbsp;
+<img src="ui-kit/media/mug-3.jpg" alt="Exhibit mug shot" width="15%">&nbsp;
+<img src="ui-kit/media/mug-4.jpg" alt="Exhibit mug shot" width="15%">&nbsp;
+<img src="ui-kit/media/mug-5.jpg" alt="Exhibit mug shot" width="15%">&nbsp;
+<img src="ui-kit/media/mug-6.jpg" alt="Exhibit mug shot" width="15%">
+</p>
+
+---
+
+## The crew
+
+Three devices in sync, one ledger, one dashboard.
+
+| The Hat | The Wrist | The Rover |
+|:---:|:---:|:---:|
+| <img src="ui-kit/media/crew-hat.webp" alt="Hat-mounted Pi Zero 2 W with IMX477 camera" width="100%"> | <img src="ui-kit/film/wrist/view-01.png" alt="Wrist unit — Pi Zero W + PiSugar Whisplay" width="100%"> | <img src="ui-kit/film/rover/view-01.webp" alt="PiCar-X rover scouting the floor" width="100%"> |
+| **Pi Zero 2 W + IMX477.** Streams camera stills to the backend for identification and appraisal. | **Pi Zero W + PiSugar Whisplay HAT.** Keeps the case, count, take, and top five on the assessor's wrist. | **SunFounder PiCar-X + Pi 4.** Scouts the approved assessment area and files finds over Wi-Fi. |
+
+The dispatch desk ties it together — the ledger, the reveal button, the
+price-source switch, a live preview of the wrist's screen, and the rover
+teleop pad:
+
+<p align="center"><img src="ui-kit/media/desk.jpg" alt="Dispatch desk — ledger, crew status, wrist preview" width="90%"></p>
+
+---
 
 ## Architecture
+
+<img src="public/flowchart-devices.png" alt="Device diagram — hat, rover, wrist and dashboard around one backend" width="100%">
+
+The backend runs hosted (Railway via `railway.json`) or on a Pi
+(`heist.service`); the hat and rover are camera clients, the wrist and the
+dashboard read the same backend API.
 
 ```
   hat (Pi Zero 2 W + IMX477)      backend (Flask app)            wrist (Pi Zero W
@@ -41,22 +90,50 @@ exploitability. The useful output is documentation for an authorized review.
   camera stills --POST /api/exhibit-------------------------->   take, top-5)
 ```
 
-The backend runs hosted (Railway via `railway.json`) or on a Pi
-(`heist.service`); the hat and rover are camera clients, the wrist and the
-dashboard read the same backend API.
+## How a look flows
 
-- `PROGRESS.md`: feature ledger: what's shipped, what's tested, what's missing.
-- `BUILD-GUIDE.md`: full build walk, wiring, demo-day checklist.
-- `PARTS-LIST.md`: hardware BOM for all three devices.
-- `PI-TO-LAPTOP-GUIDE.md`: networking + dashboard on a laptop.
-- `rig/wrist/`: wrist receiver programs + setup docs (`rig/wrist/README.md`).
-- `esp32/wrist.ino`: retired ESP32 + SSD1306 wrist sketch, kept for reference.
-- `ui-kit/README.md`: NOIRKIT design system the dashboard runs on.
-- `/motion.html`: safe, simulated conditional-animation rehearsal for the UI/UX demo.
-- `ui-kit/film/`: source for the premiere's film (three.js set, rendered frame by frame).
+<img src="public/flowchart-pipeline.png" alt="Pipeline — capture, scene gate, identify, price, ledger" width="100%">
 
-Team-only positioning and judging-track intent live in `INTERNAL-NOTES.md`;
-that document is not served by the app.
+`capture.scene_changed` gates the camera on a frame diff held for
+`SCENE_CONFIRM` samples → `vision.identify` sends the still to OpenAI, then
+Anthropic, then the offline catalog → `pricing.resolve_detailed` tries live
+comps (`COMPS_PROVIDER`: ebayapi / ebay scrape / serpapi), then a model quote, then the vision number — every price
+carries a `why`. `store` dedupes on fuzzy name + category, keeps the running
+take, tags each find `origin: hat|rover`, and mirrors the ledger to disk on
+every change.
+
+Badges, keycards, and school/student IDs come back as `category: "badge"`
+with a `card` (`name`, `id`, `org`, `role`, `card_no`, `issued`, `expires`)
+holding only the text the model could read, exactly as printed. The prompt
+knows the UT Dallas Comet Card: front gives role, full name, and `UTD ID#`
+(`id`); back gives the 16-digit `card_no` and the `issued` date. Show both
+sides and they fill in one exhibit (a match on `id` or `card_no`, or the same
+card name, merges instead of re-filing). Badges skip the resale ladder, file
+as "credential cloned", show CLONED in the lineup, and the card rides
+`/state.json` (`items[].card`) for any frontend to show.
+Long public numbers (library barcodes, campus card numbers) are kept as is.
+**Never real payment cards:** the prompt refuses them, and any Visa/Mastercard/
+Amex/Discover number that passes the Luhn check is masked to `****1234` in
+`vision` and again in `store`, so it never reaches `case.json` or `/state.json`.
+
+## What's real vs. demo
+
+Honesty is part of the build — the project is explicit about which parts ran
+on hardware and which are scripted for the demo:
+
+<img src="public/flowchart-why-hard.png" alt="What the rig actually does vs. what is simulated" width="320">
+
+Use only in spaces the assessment team has permission to inspect. The dollar
+total is estimated asset value, **not** a security-risk score or a prediction
+of losses. Visibility alone does not prove an asset is unsecured. The system
+doesn't verify access controls, detect vulnerabilities, or perform intrusion
+testing. Offline/scripted results are demo data, not observed findings.
+
+The noir vocabulary (crew, exhibits, lineup, take) is presentation: "take"
+means the summed estimated asset value, and the lineup ranks by value, not
+exploitability. The useful output is documentation for an authorized review.
+
+---
 
 ## Backend
 
@@ -118,57 +195,6 @@ keeping `CAM_SOURCE=rover` working) on the rover. The hat is a camera client
 too in hosted mode — run `python -m rig.rover` on it, not `rig.app`, or it
 spawns a second ledger.
 
-## Routes
-
-| Route | What |
-|---|---|
-| `/` `/reveal` | live scan view / reveal view (client swaps on `revealed`) |
-| `/manifest` | printable asset case file (QR'd from the dashboard; retains the themed “Loot Manifest” label) |
-| `/state.json` | dashboard poll contract |
-| `/wrist.json` | compact top-5 for the wrist display |
-| `POST /api/exhibit` | rover files a find (`X-Rig-Token` if `RIG_TOKEN` set) |
-| `POST /api/rover_ping` | rover heartbeat; registers the teleop address (`{"poll": true}` = pull-mode) |
-| `POST /api/drive` | teleop relay: hub forwards `{dir, secs}` to the rover, or queues it for a poll-mode rover |
-| `GET /api/drive/pending` | pull-mode rover's long-poll drain (`?wait=N`) |
-| `POST /api/cam/frame` | rover pushes a JPEG frame (`CAM_PUSH=1`) |
-| `/frame.jpg` `/crop/<n>.jpg` | live still / exhibit mugshot |
-| `/health` `/trigger_reveal` `/api/serpapi` | status / the button (GET open-LAN only) / price toggle (GET=status, POST=mutate) |
-| `/kit` `/demo.html` `/board.html` | NOIRKIT index, driver, board |
-| `/premiere` | the one-sheet: title card, a film the scroll wheel plays, the crew, the method |
-| `/desk` | dispatch desk for the crew: take, ledger, reveal button, price switch, wrist preview, rover pad |
-| `/media/*` `/shots/*` `/brand/*` | the premiere's film and stills, kit screenshots, the emblem slot |
-| `/plan.json` `POST /api/plan` | Mastermind: the job and live plan / pick the job (`{"mode": "appraisal"}` or `{"mode": "mastermind", "bag_lb", "time_s", "level": "small"\|"big"}`; token or the dashboard's case nonce) |
-| `POST /api/radio` `POST /api/radio/text` | key the mic / a typed call (`{"text", "job_id"}`); returns the job at once (202) |
-| `/api/radio/jobs` `/api/radio/jobs/<id>` | radio calls: transcript, intent, state, plan revision, reply, errors |
-| `POST /api/exhibit_status` | Mastermind: `{"n", "status": "available"\|"collected"\|"excluded"}`; the desk's buttons and the radio use it |
-| `/narrator.json` | what the narrator said, is saying, and dropped |
-| `/report/<id>` `/report/<id>.json` | Defender Report for a closed case (`?secure=3&move=5` runs an owner what-if) |
-| `/report/<id>/evidence/<n>.jpg` `/report/<id>/qr.png` | the report's preserved evidence crops / its read-only phone QR |
-| `POST /report/<id>/unlock` `/api/reports` | token mode: trade `RIG_TOKEN` (form body) for the share link / operator list |
-
-## How a look flows
-
-`capture.scene_changed` gates the camera on a frame diff held for
-`SCENE_CONFIRM` samples → `vision.identify` sends the still to OpenAI, then
-Anthropic, then the offline catalog → `pricing.resolve_detailed` tries live
-comps (`COMPS_PROVIDER`: ebayapi / ebay scrape / serpapi), then a model quote, then the vision number, every price
-carries a `why`. `store` dedupes on fuzzy name + category, keeps the running
-take, tags each find `origin: hat|rover`, and mirrors the ledger to disk on
-every change.
-
-Badges, keycards, and school/student IDs come back as `category: "badge"`
-with a `card` (`name`, `id`, `org`, `role`, `card_no`, `issued`, `expires`)
-holding only the text the model could read, exactly as printed. The prompt
-knows the UT Dallas Comet Card: front gives role, full name, and `UTD ID#`
-(`id`); back gives the 16-digit `card_no` and the `issued` date. Show both
-sides and they fill in one exhibit (a match on `id` or `card_no`, or the same
-card name, merges instead of re-filing). Badges skip the resale ladder, file
-as "credential cloned", show CLONED in the lineup, and the card rides
-`/state.json` (`items[].card`) for any frontend to show.
-Long public numbers (library barcodes, campus card numbers) are kept as is.
-**Never real payment cards:** the prompt refuses them, and any Visa/Mastercard/
-Amex/Discover number that passes the Luhn check is masked to `****1234` in
-`vision` and again in `store`, so it never reaches `case.json` or `/state.json`.
 ## Two jobs: Appraisal and Mastermind
 
 The title card offers both (and `P`, or the mode chip in the live header,
@@ -246,6 +272,39 @@ form) or the report's own read-only share key, which its QR carries.
 `RIG_TOKEN` never goes into a URL or QR. Retention: `RIG_REPORT_KEEP`,
 `RIG_REPORT_DAYS`; expired reports keep a tombstone page and lose their evidence.
 
+## Routes
+
+<details>
+<summary><b>Full route table</b> (click to expand)</summary>
+
+| Route | What |
+|---|---|
+| `/` `/reveal` | live scan view / reveal view (client swaps on `revealed`) |
+| `/manifest` | printable asset case file (QR'd from the dashboard; retains the themed “Loot Manifest” label) |
+| `/state.json` | dashboard poll contract |
+| `/wrist.json` | compact top-5 for the wrist display |
+| `POST /api/exhibit` | rover files a find (`X-Rig-Token` if `RIG_TOKEN` set) |
+| `POST /api/rover_ping` | rover heartbeat; registers the teleop address (`{"poll": true}` = pull-mode) |
+| `POST /api/drive` | teleop relay: hub forwards `{dir, secs}` to the rover, or queues it for a poll-mode rover |
+| `GET /api/drive/pending` | pull-mode rover's long-poll drain (`?wait=N`) |
+| `POST /api/cam/frame` | rover pushes a JPEG frame (`CAM_PUSH=1`) |
+| `/frame.jpg` `/crop/<n>.jpg` | live still / exhibit mugshot |
+| `/health` `/trigger_reveal` `/api/serpapi` | status / the button (GET open-LAN only) / price toggle (GET=status, POST=mutate) |
+| `/kit` `/demo.html` `/board.html` | NOIRKIT index, driver, board |
+| `/premiere` | the one-sheet: title card, a film the scroll wheel plays, the crew, the method |
+| `/desk` | dispatch desk for the crew: take, ledger, reveal button, price switch, wrist preview, rover pad |
+| `/media/*` `/shots/*` `/brand/*` | the premiere's film and stills, kit screenshots, the emblem slot |
+| `/plan.json` `POST /api/plan` | Mastermind: the job and live plan / pick the job (`{"mode": "appraisal"}` or `{"mode": "mastermind", "bag_lb", "time_s", "level": "small"\|"big"}`; token or the dashboard's case nonce) |
+| `POST /api/radio` `POST /api/radio/text` | key the mic / a typed call (`{"text", "job_id"}`); returns the job at once (202) |
+| `/api/radio/jobs` `/api/radio/jobs/<id>` | radio calls: transcript, intent, state, plan revision, reply, errors |
+| `POST /api/exhibit_status` | Mastermind: `{"n", "status": "available"\|"collected"\|"excluded"}`; the desk's buttons and the radio use it |
+| `/narrator.json` | what the narrator said, is saying, and dropped |
+| `/report/<id>` `/report/<id>.json` | Defender Report for a closed case (`?secure=3&move=5` runs an owner what-if) |
+| `/report/<id>/evidence/<n>.jpg` `/report/<id>/qr.png` | the report's preserved evidence crops / its read-only phone QR |
+| `POST /report/<id>/unlock` `/api/reports` | token mode: trade `RIG_TOKEN` (form body) for the share link / operator list |
+
+</details>
+
 ## Tests and checks
 
 ```sh
@@ -257,7 +316,22 @@ python -m rig.diag                        # hardware + key check on the Pi
 
 ## Config
 
-All env vars documented in `.env.example`, keys, model picks, offline/script
+All env vars documented in `.env.example`: keys, model picks, offline/script
 modes, camera index/backend, scene gate (`SCENE_CONFIRM`, `SCENE_THRESH`),
 `LOOK_EVERY`, `HOST`/`PORT`, voice, multi-device (`RIG_TOKEN`, `HUB_URL`,
 `LISTEN_PIN`, `LISTEN_SECS`), and persistence path.
+
+## The rest of the file room
+
+- `PROGRESS.md` — feature ledger: what's shipped, what's tested, what's missing.
+- `BUILD-GUIDE.md` — full build walk, wiring, demo-day checklist.
+- `PARTS-LIST.md` — hardware BOM for all three devices.
+- `PI-TO-LAPTOP-GUIDE.md` — networking + dashboard on a laptop.
+- `rig/wrist/` — wrist receiver programs + setup docs (`rig/wrist/README.md`).
+- `esp32/wrist.ino` — retired ESP32 + SSD1306 wrist sketch, kept for reference.
+- `ui-kit/README.md` — NOIRKIT design system the dashboard runs on.
+- `/motion.html` — safe, simulated conditional-animation rehearsal for the UI/UX demo.
+- `ui-kit/film/` — source for the premiere's film (three.js set, rendered frame by frame).
+
+Team-only positioning and judging-track intent live in `INTERNAL-NOTES.md`;
+that document is not served by the app.
